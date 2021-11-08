@@ -1,0 +1,54 @@
+version: "3.9"
+
+networks:
+  customnetwork:
+    external: true
+    name: ${NETWORK_NAME}
+
+volumes:
+  staticfiles:
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./db/data/db:/var/lib/postgresql/data
+    env_file:
+      - .env
+    expose:
+      - 5432
+    restart: unless-stopped
+  app:
+    image: kaplanpro/cloud
+    command: bash -c "python manage.py migrate --no-input &&
+                      python manage.py collectstatic --no-input &&
+                      gunicorn kaplancloud.wsgi:application -b 0.0.0.0:8080 -w 2 -t 300"
+    volumes:
+      - ./app/projects:/code/kaplancloudapp/projects
+      - staticfiles:/code/staticfiles
+    env_file:
+      - .env
+    depends_on:
+      - db
+    expose:
+      - 8080
+    restart: unless-stopped
+  nginx:
+    image: nginx
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PORT=8080
+    links:
+      - app
+    networks:
+      - default
+      - customnetwork
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - staticfiles:/staticfiles
+    expose:
+      - 8080
+    restart: unless-stopped

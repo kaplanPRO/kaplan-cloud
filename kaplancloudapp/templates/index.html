@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}
+Kaplan Cloud
+{% endblock %}
+{% block body %}
+<main id="dashboard">
+    <div id="nav">
+        <nav>
+            <a id="nav-projects" {% if at_projects %}class="selected"{% endif %} href="{% url 'projects' %}">Projects</a>
+            <a id="nav-tms" {% if at_tms %}class="selected"{% endif %} href="{% url 'translation-memories' %}">Translation<br/>Memories</a>
+            <!---<a id="nav-tbs" class="disabled" href="#" disabled>Termbases</a>
+            <a id="nav-linguists" class="disabled" href="#" disabled>Linguists</a>
+            <a id="nav-clients" class="disabled" href="#" disabled>Clients</a>--->
+        </nav>
+        <div id="version">
+          <p>v0.0.1-alpha</p>
+        </div>
+    </div>
+    {% block div %}
+    {% endblock %}
+</main>
+{% endblock %}

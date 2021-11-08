@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Log In | Kaplan Cloud{% endblock %}
+
+{% block body %}
+<main id="login">
+  <div>
+    {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
+
+    {% if next %}
+        {% if user.is_authenticated %}
+        <p>Your account doesn't have access to this page. To proceed,<br/>
+        please login with an account that has access.</p>
+        {% else %}
+        <p>Please login to see this page.</p>
+        {% endif %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    <table>
+    <tr>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+    </tr>
+    <tr>
+        <td>{{ form.password.label_tag }}</td>
+        <td>{{ form.password }}</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><button type="submit">Log In</button></td>
+    </tr>
+    </table>
+    <input type="hidden" name="next" value="{{ next }}">
+    </form>
+
+    {# Assumes you setup the password_reset view in your URLconf #}
+    {#<p><a href="{% url 'password_reset' %}">Lost password?</a></p>#}
+  </div>
+</main>
+{% endblock %}

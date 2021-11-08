@@ -1,0 +1,52 @@
+{% extends "index.html" %}
+{% load static %}
+{% block head %}
+<script type="text/javascript" src="{% static 'project.js' %}"></script>
+{% endblock %}
+{% block div %}
+<header id="header-project">
+  <nav>
+    <!--<a class="disabled" href="#" title="Not yet implemented">Import</a> TODO-->
+    <!--<a class="disabled" href="#" title="Not yet implemented">Export</a> TODO-->
+    <!--<a class="disabled" href="#" title="Not yet implemented">Settings</a> TODO-->
+    <!--<a class="disabled" href="#" title="Not yet implemented">Archive</a> TODO-->
+    {% if not user.is_authenticated %}
+    <a id="logout" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
+    {% else %}
+    <a id="logout" href="{% url 'logout' %}"><span class="material-icons" title="logout">logout</span></a>
+    {% endif %}
+  </nav>
+</header>
+<div id="project">
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Source Language</th>
+      <th>Target Language</th>
+      <th>Due by</th>
+      <th></th>
+    </tr>
+    {% for file in files %}
+    <tr id="{{ id }}">
+      <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
+      <td>{{file.source_language}}</td>
+      <td>{{file.target_language}}</td>
+      <td>
+          {% if file.due_by %}
+            {{file.due_by}}
+          {% elif project.due_by %}
+            {{project.due_by}}
+          {% else %}
+            -
+          {% endif %}
+      </td>
+      <td><span class="material-icons" onclick="toggleExpand(this)">expand_more</span></td>
+    </tr>
+    <tr hidden>
+      <td colspan="5"><button type="button" onclick="downloadTranslation(this, '{{ file.id }}', '{{ file.name }}')">Download Translation</button></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% csrf_token %}
+{% endblock %}

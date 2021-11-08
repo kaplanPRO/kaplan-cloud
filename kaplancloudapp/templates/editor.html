@@ -1,0 +1,67 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'main.css' %}">
+    <link rel="stylesheet" href="{% static 'editor.css' %}">
+    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+<script type="text/javascript" src="{% static 'editor.js' %}"></script>
+<title>
+{{file.name}} | {{file.project.name}} | Kaplan Cloud </title></head>
+<body>
+<header>
+  <nav>
+    <a href="{% url 'project' file.project.id %}">
+      <span class="material-icons">
+        arrow_back
+      </span>
+    </a>
+  </nav>
+</header>
+<main id="editor">
+    <div id="editor">
+      {% csrf_token %}
+      <hr>
+      {% for tu_id, translation_unit in translation_units.items %}
+      <table id="{{tu_id}}" class="tu">
+          {% for s_id, segment in translation_unit.items %}
+          <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}}">
+              <th class="sid">{{s_id}}</th>
+              <td class="source">{{segment.source | safe}}</td>
+              <td class="target" contenteditable="true">{{segment.target | safe}}</td>
+          </tr>
+          {% endfor %}
+      </table>
+      <hr>
+      {% endfor %}
+    </div>
+  <div class="sidebar">
+    <div class="sidebar-icons">
+      <span class="material-icons expand-icon" onclick="toggleExpand(this)">expand_more</span>
+      <span class="material-icons">feedback</span>
+      <span class="material-icons">question_answer</span>
+    </div>
+    <div class="toggle" hidden>
+    </div>
+  </div>
+  <div class="sidebar">
+    <div class="sidebar-icons">
+      <span class="material-icons expand-icon" onclick="toggleExpand(this)">expand_more</span>
+      <span class="material-icons">translate</span>
+    </div>
+    <div class="toggle" hidden>
+      <div id="tm-hits">
+
+      </div>
+    </div>
+  </div>
+</main>
+</body>
+</html>

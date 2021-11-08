@@ -1,0 +1,81 @@
+body {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+div.sidebar div.toggle {
+  width: 25ch;
+}
+main#editor {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  overflow-y: hidden;
+}
+main#editor div#editor {
+  overflow-y: auto;
+}
+main#editor div.sidebar {
+  border: 0.1em solid #2a2f33;
+  border-collapse: collapse;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  overflow-y: hidden;
+}
+main#editor div.sidebar div {
+  overflow-y: auto;
+}
+main#editor div.sidebar span.expand-icon {
+  transform: rotate(90deg);
+}
+span.tm-hit {
+  border: 0.1em solid #2a2f33;
+  display: grid;
+  grid-template-rows: 1fr 1fr auto;
+  padding: 0.1em;
+}
+span.tm-hit p.detail {
+  font-size: 0.5em;
+  text-align: center;
+}
+span.tm-hit span.details {
+  display: grid;
+  grid-template-columns: auto auto;
+}
+table.tu {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+table.tu td, table.tu th {
+  border: 0.05em solid #2a2f33;
+  border-collapse: inherit;
+  padding: 0.25em;
+}
+tr.segment.draft th {
+  background-color: tan;
+}
+tr.segment.error th {
+  background-color: red;
+}
+tr.segment.translated th {
+  background-color: teal;
+}
+tr.segment.reviewed th {
+  background-color: forestgreen;
+}
+ec, g, sc, ph, x {
+  background-color: #2a2f33;
+  border-radius: 1em;
+  color: #f5f5f5;
+  cursor: pointer;
+  padding: 0.1em;
+  user-select: all;
+}
+table.tu th {
+  width: 4em;
+}
+tr.error {
+  background-color: rgb(256 0 0 / 15%);
+}
+tr.evenrow {
+  background-color: rgb(42 47 51 / 15%);
+}

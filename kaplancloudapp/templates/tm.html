@@ -1,0 +1,30 @@
+{% extends "index.html" %}
+{% load static %}
+
+{% block div %}
+<header>
+  <nav>
+    <!--<a class="disabled" href="#" title="Not yet implemented">Import</a> TODO-->
+    <!--<a class="disabled" href="#" title="Not yet implemented">Export</a> TODO-->
+    {% if not user.is_authenticated %}
+    <a id="logout" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
+    {% else %}
+    <a id="logout" href="{% url 'logout' %}"><span class="material-icons" title="logout">logout</span></a>
+    {% endif %}
+  </nav>
+</header>
+<div id="tm-entries">
+  <table>
+    <tr>
+      <th>Source</th>
+      <th>Target</th>
+    </tr>
+    {% for tm_entry in tm_entries %}
+    <tr id="{{ tm_entry.id }}" class="{% cycle 'oddrow' 'evenrow' %}">
+      <td>{{tm_entry.source | safe}}</td>
+      <td>{{tm_entry.target | safe}}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

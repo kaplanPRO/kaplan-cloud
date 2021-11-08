@@ -1,0 +1,35 @@
+{% extends "index.html" %}
+
+{% block div %}
+<header>
+  <nav>
+    <a href="{% url 'newproject' %}">Create</a>
+    <!--<a class="disabled" href="#" title="Not yet implemented">Import</a> TODO-->
+    {% if not user.is_authenticated %}
+    <a id="logout" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
+    {% else %}
+    <a id="logout" href="{% url 'logout' %}"><span class="material-icons" title="logout">logout</span></a>
+    {% endif %}
+  </nav>
+</header>
+<div id="projects">
+  <table>
+    <tr>
+      <th>Name</th>
+      <th>Source Language</th>
+      <th>Target Language</th>
+      <th>Due By</th>
+      <!--<th></th>-->
+    </tr>
+    {% for project in projects %}
+    <tr>
+      <td><a href="{% url 'project' project.id %}">{{project.name}}</a></td>
+      <td>{{project.source_language}}</td>
+      <td>{{project.target_language}}</td>
+      <td>{{project.due_by}}</td>
+      <!--<td><span class="material-icons">expand_more</span></td> TODO-->
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

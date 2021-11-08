@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Kaplan Cloud
+projects/
+app/
+.tmp/
+db/
