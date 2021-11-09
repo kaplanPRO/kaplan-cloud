@@ -83,13 +83,14 @@ window.onload = function() {
           {
             targetList = [...document.getElementsByClassName('target')];
             let isNext = false;
-            for (i = 1; i < targetList.length; i++)
+            for (i = 0; i < targetList.length; i++)
             {
               nextTarget = targetList[i];
 
               if (nextTarget == this)
               {
                 isNext = true;
+                continue;
               }
               if (isNext && !nextTarget.parentNode.classList.contains('translated'))
               {
