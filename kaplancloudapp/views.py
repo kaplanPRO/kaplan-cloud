@@ -89,6 +89,8 @@ def project(request, id):
     project_files = ProjectFile.objects.filter(project=project)
     if project.created_by != request.user and request.user not in project.managed_by.all():
         project_files = project_files.filter(translator=request.user) | project_files.filter(reviewer=request.user)
+        if len(project_files) == 0:
+            return redirect('/accounts/login?next={0}'.format(request.path))
 
     if request.method == 'POST':
         if request.POST.get('task') == 'download_translation':
