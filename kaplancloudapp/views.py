@@ -5,13 +5,15 @@ from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
 from .forms import ProjectForm, TranslationMemoryForm
-from .models import ProjectFile, Project, Segment, TranslationMemory, TMEntry
+from .models import ProjectFile, ProjectReport, Project, Segment, TranslationMemory, TMEntry
 
 from datetime import datetime
+import difflib
 from pathlib import Path
 
 from lxml import etree
 from kaplan import open_bilingualfile
+from kaplan.kdb import KDB
 
 # Create your views here.
 
@@ -101,8 +103,91 @@ def project(request, id):
                 return FileResponse(open(Path(project_file.get_target_directory()) / project_file.name, 'rb'))
             else:
                 return FileResponse(open(project_file.target_bilingualfile.path, 'rb'))
+        elif request.POST.get('task') == 'analyze':
+            entries = []
 
-    return render(request, 'project.html', {'files':project_files, 'project':project})
+            project_report = {}
+            project_total = {'Repetitions': 0,
+                             '100': 0, # TODO
+                             '95': 0,
+                             '85': 0,
+                             '75': 0,
+                             '50': 0,
+                             'New': 0,
+                             'Total': 0
+                            }
+
+            sm = difflib.SequenceMatcher()
+            for file_id in request.POST['file_ids'].split(';')[:-1]:
+                file_report = {'Repetitions': 0,
+                               '100': 0, # TODO
+                               '95': 0,
+                               '85': 0,
+                               '75': 0,
+                               '50': 0,
+                               'New': 0,
+                               'Total': 0
+                              }
+                project_file = ProjectFile.objects.get(id=file_id)
+                for tu in open_bilingualfile(project_file.source_bilingualfile.path).gen_translation_units():
+                    for segment in tu:
+                        if segment.tag.split('}')[-1] == 'ignorable':
+                            continue
+                        source_entry, _ = KDB.segment_to_entry(segment[0])
+                        word_count = len(source_entry.split())
+
+                        if source_entry in entries:
+                            file_report['Repetitions'] += word_count
+                        # elif entry in project_tm_entries TODO
+                        else:
+                            sm.set_seq2(source_entry)
+
+                            highest_match = 0.0
+                            for entry in entries:
+                                sm.set_seq1(entry)
+                                highest_match = max(sm.ratio(), highest_match)
+
+                            if highest_match >= 0.95:
+                                file_report['95'] += word_count
+                            elif highest_match >= 0.85:
+                                file_report['85'] += word_count
+                            elif highest_match >= 0.75:
+                                file_report['75'] += word_count
+                            elif highest_match >= 0.5:
+                                file_report['50'] += word_count
+                            else:
+                                file_report['New'] += word_count
+
+                            entries.append(source_entry)
+
+                        file_report['Total'] += word_count
+
+                project_total['Repetitions'] += file_report['Repetitions']
+                project_total['100'] += file_report['100']
+                project_total['95'] += file_report['95']
+                project_total['85'] += file_report['85']
+                project_total['75'] += file_report['75']
+                project_total['50'] += file_report['50']
+                project_total['New'] += file_report['New']
+                project_total['Total'] += file_report['Total']
+
+                project_report[project_file.name] = file_report
+
+            project_report['Total'] = project_total
+
+            project_report_instance = ProjectReport()
+            project_report_instance.project = project
+            project_report_instance.content = project_report
+            project_report_instance.save()
+
+            return JsonResponse({'id':project_report_instance.id})
+
+    return render(request,
+                  'project.html',
+                  {'files':project_files,
+                   'project':project,
+                   'reports':ProjectReport.objects.filter(project=project)
+                  })
 
 @login_required
 def editor(request, id):
@@ -184,6 +269,13 @@ def editor(request, id):
                 translation_units[segment_instance.tu_id][segment_instance.s_id] = segment_instance
 
             return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units})
+
+@login_required
+def report(request, id):
+    project_report = ProjectReport.objects.get(id=id).content
+    total_report = project_report['Total']
+    del(project_report['Total'])
+    return render(request, 'report.html', {'total':total_report, 'files':project_report})
 
 @login_required
 def translation_memories(request):

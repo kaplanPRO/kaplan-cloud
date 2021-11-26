@@ -27,6 +27,14 @@ window.onload = function() {
     contextMenu.style.display = 'none';
   }
 
+  document.getElementById('context-btn-analyze').onclick = function() {
+    let fileIds = '';
+    filesList.forEach((item, i) => {
+      fileIds += item[0] + ';'
+    });
+    analyzeFiles(this, fileIds);
+  }
+
   document.getElementById('context-btn-download-translation').onclick = function() {
     filesList.forEach((item, i) => {
       downloadTranslation(this, item[0], item[1]);
@@ -52,6 +60,29 @@ window.onload = function() {
 
     return list;
   }
+}
+function analyzeFiles(button, fileIds)
+{
+  fileFormData = new FormData();
+  fileFormData.append('task', 'analyze');
+  fileFormData.append('file_ids', fileIds);
+
+  fetch('',
+        {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: fileFormData
+        }
+    )
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+    })
+    .catch(error => {
+      console.error(error);
+    })
 }
 
 function downloadTranslation(button, fileId, fileName)

@@ -18,34 +18,46 @@
   </nav>
 </header>
 <div id="project">
-  <table>
-    <tr>
-      <th><input id="checkbox-main" type="checkbox"></th>
-      <th>Name</th>
-      <th>Source Language</th>
-      <th>Target Language</th>
-      <th>Due by</th>
-    </tr>
-    {% for file in files %}
-    <tr class="file" id="{{ file.id }}">
-      <th><input class="checkbox" type="checkbox"></th>
-      <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
-      <td>{{file.source_language}}</td>
-      <td>{{file.target_language}}</td>
-      <td>
-          {% if file.due_by %}
-            {{file.due_by}}
-          {% elif project.due_by %}
-            {{project.due_by}}
-          {% else %}
-            -
-          {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
+  <div>
+    <h4>Files</h4>
+    <table>
+      <tr>
+        <th><input id="checkbox-main" type="checkbox"></th>
+        <th>Name</th>
+        <th>Source Language</th>
+        <th>Target Language</th>
+        <th>Due by</th>
+      </tr>
+      {% for file in files %}
+      <tr class="file" id="{{ file.id }}">
+        <th><input class="checkbox" type="checkbox"></th>
+        <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
+        <td>{{file.source_language}}</td>
+        <td>{{file.target_language}}</td>
+        <td>
+            {% if file.due_by %}
+              {{file.due_by}}
+            {% elif project.due_by %}
+              {{project.due_by}}
+            {% else %}
+              -
+            {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div>
+    <h4>Reports</h4>
+    <ul>
+      {% for report in reports %}
+      <li><a href="{% url 'report' report.id %}" target="_blank">{{report.created_at}}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
 </div>
 <div id="context-menu">
+  <button id="context-btn-analyze" type="button">Analyze</button>
   <button id="context-btn-download-translation" type="button">Download Translation</button>
 </div>
 {% csrf_token %}

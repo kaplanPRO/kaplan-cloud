@@ -130,6 +130,12 @@ class ProjectFile(models.Model):
         return str(Path(self.project.directory) / self.target_language)
 
 
+class ProjectReport(models.Model):
+    project = models.ForeignKey(Project, models.CASCADE)
+    content = models.JSONField()
+    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
 class Segment(models.Model):
     tu_id = models.PositiveIntegerField()
     s_id = models.PositiveIntegerField()
