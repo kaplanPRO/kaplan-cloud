@@ -19,6 +19,24 @@ button:disabled {
 div.sidebar-icons span {
   display: block;
 }
+div#context-menu {
+  border-collapse: collapse;
+  display: none;
+  position: absolute;
+}
+div#context-menu button {
+  background-color: #2a2f33;
+  color: #f5f5f5;
+  display: block;
+  font-size: 1rem;
+  padding: 0.25em;
+  text-align: left;
+  width: 100%;
+}
+div#context-menu button:hover {
+  background-color: #f5f5f5;
+  color: #2a2f33;
+}
 div#tm-entries table {
   border-collapse: collapse;
   table-layout: fixed;

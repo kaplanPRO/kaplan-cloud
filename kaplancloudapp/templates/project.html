@@ -20,14 +20,15 @@
 <div id="project">
   <table>
     <tr>
+      <th><input id="checkbox-main" type="checkbox"></th>
       <th>Name</th>
       <th>Source Language</th>
       <th>Target Language</th>
       <th>Due by</th>
-      <th></th>
     </tr>
     {% for file in files %}
-    <tr id="{{ id }}">
+    <tr class="file" id="{{ file.id }}">
+      <th><input class="checkbox" type="checkbox"></th>
       <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
       <td>{{file.source_language}}</td>
       <td>{{file.target_language}}</td>
@@ -40,13 +41,12 @@
             -
           {% endif %}
       </td>
-      <td><span class="material-icons" onclick="toggleExpand(this)">expand_more</span></td>
-    </tr>
-    <tr hidden>
-      <td colspan="5"><button type="button" onclick="downloadTranslation(this, '{{ file.id }}', '{{ file.name }}')">Download Translation</button></td>
     </tr>
     {% endfor %}
   </table>
+</div>
+<div id="context-menu">
+  <button id="context-btn-download-translation" type="button">Download Translation</button>
 </div>
 {% csrf_token %}
 {% endblock %}
