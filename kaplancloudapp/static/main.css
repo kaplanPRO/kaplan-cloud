@@ -45,6 +45,9 @@ div#tm-entries table {
 div#tm-entries table td {
   padding: 0.25em;
 }
+form button:hover {
+  border: 1px solid #2a2f33;
+}
 header {
   background-color: #2a2f33;
 }
@@ -88,7 +91,7 @@ main#login div {
   border: 0.1em groove #2a2f33;
   padding: 0.25em;
 }
-nav a {
+nav a, form button {
   align-items: center;
   background-color: #2a2f33;
   border: 1px solid #f5f5f5;
@@ -102,7 +105,7 @@ nav a.disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
-nav a:hover:not(.disabled), nav a.selected:not(.disabled) {
+nav a:hover:not(.disabled), nav a.selected:not(.disabled), form button:hover {
   background-color: #f5f5f5;
   color: #2a2f33;
 }
