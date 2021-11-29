@@ -42,6 +42,14 @@ window.onload = function() {
 
   }
 
+  document.getElementById('context-btn-export').onclick = function() {
+    let fileIds = '';
+    filesList.forEach((item, i) => {
+      fileIds += item[0] + ';'
+    });
+    exportFiles(fileIds);
+  }
+
   function getSelectedFiles() {
     let list = [];
     [...document.getElementsByClassName('checkbox')].forEach((item, i) => {
@@ -106,6 +114,33 @@ function downloadTranslation(button, fileId, fileName)
       let link = document.createElement('a');
       link.href = file;
       link.download = fileName;
+      link.click();
+    })
+    .catch(error => {
+      console.error(error);
+    })
+}
+
+function exportFiles(fileIds) {
+  fileFormData = new FormData();
+  fileFormData.append('task', 'export');
+  fileFormData.append('file_ids', fileIds);
+
+  fetch('',
+        {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: fileFormData
+        }
+    )
+    .then(response => response.blob())
+    .then(blob => {
+      let file = window.URL.createObjectURL(blob);
+      let link = document.createElement('a');
+      link.href = file;
+      link.download = 'Project.kpp';
       link.click();
     })
     .catch(error => {

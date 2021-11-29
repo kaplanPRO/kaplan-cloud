@@ -4,7 +4,7 @@ from django.db import models
 
 from pathlib import Path
 
-from .utils import get_source_file_path, get_target_file_path
+from .utils import get_kpp_path, get_source_file_path, get_target_file_path
 # Create your models here.
 
 segment_statuses = (
@@ -106,6 +106,15 @@ class Project(models.Model):
     class Meta:
        ordering = ['-id']
 
+    def get_manifest(self):
+        manifest_dict = {'title':self.name,
+                         'directory': str(Path(self.directory).resolve()),
+                         'source_language':self.source_language,
+                         'target_language':self.target_language,
+                        }
+
+        return manifest_dict
+
 
 class ProjectFile(models.Model):
     name = models.TextField()
@@ -130,11 +139,25 @@ class ProjectFile(models.Model):
         return str(Path(self.project.directory) / self.target_language)
 
 
+class ProjectPackage(models.Model):
+    project = models.ForeignKey(Project, models.CASCADE)
+    package = models.FileField(upload_to=get_kpp_path, max_length=255)
+    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-id']
+
+
 class ProjectReport(models.Model):
     project = models.ForeignKey(Project, models.CASCADE)
     content = models.JSONField()
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+       ordering = ['-id']
+
 
 class Segment(models.Model):
     tu_id = models.PositiveIntegerField()

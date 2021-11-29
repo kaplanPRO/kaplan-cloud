@@ -7,7 +7,6 @@
 <header id="header-project">
   <nav>
     <!--<a class="disabled" href="#" title="Not yet implemented">Import</a> TODO-->
-    <!--<a class="disabled" href="#" title="Not yet implemented">Export</a> TODO-->
     <!--<a class="disabled" href="#" title="Not yet implemented">Settings</a> TODO-->
     <!--<a class="disabled" href="#" title="Not yet implemented">Archive</a> TODO-->
     {% if not user.is_authenticated %}
@@ -59,6 +58,7 @@
 <div id="context-menu">
   <button id="context-btn-analyze" type="button">Analyze</button>
   <button id="context-btn-download-translation" type="button">Download Translation</button>
+  <button id="context-btn-export" type="button">Export</button>
 </div>
 {% csrf_token %}
 {% endblock %}

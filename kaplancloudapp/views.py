@@ -5,7 +5,7 @@ from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
 from .forms import ProjectForm, TranslationMemoryForm
-from .models import ProjectFile, ProjectReport, Project, Segment, TranslationMemory, TMEntry
+from .models import ProjectFile, ProjectPackage, ProjectReport, Project, Segment, TranslationMemory, TMEntry
 
 from datetime import datetime
 import difflib
@@ -14,6 +14,7 @@ from pathlib import Path
 from lxml import etree
 from kaplan import open_bilingualfile
 from kaplan.kdb import KDB
+from kaplan.project import Project as KPP
 
 # Create your views here.
 
@@ -181,6 +182,44 @@ def project(request, id):
             project_report_instance.save()
 
             return JsonResponse({'id':project_report_instance.id})
+
+        elif request.POST.get('task') == 'export':
+            files_manifest = {}
+
+            project_manifest = project.get_manifest()
+            project_directory = Path(project_manifest['directory'])
+
+            for project_file_instance in ProjectFile.objects.filter(project=project):
+                file_manifest = {}
+                if project_file_instance.source_file is not None:
+                    file_manifest['source'] = project_file_instance.source_file.path
+                if project_file_instance.source_bilingualfile is not None:
+                    file_manifest['originalBF'] = project_file_instance.source_bilingualfile.path
+
+                file_manifest['targetBF'] = project_file_instance.target_bilingualfile.path
+
+                files_manifest[project_file_instance.id] = file_manifest
+
+            project_manifest['files'] = files_manifest
+
+            project_package = KPP(project_manifest)
+
+            project_package_instance = ProjectPackage()
+            project_package_instance.project = project
+
+            path_to_package = Path(project_package.directory) / 'packages' / (datetime.now().isoformat()+'.kpp')
+            path_to_package.parent.mkdir(parents=True, exist_ok=True)
+
+            print(str(path_to_package))
+
+            project_package.export(target_path=str(path_to_package),
+                                   files_to_export=[int(i) for i in request.POST['file_ids'].split(';')[:-1]])
+
+            project_package_instance.package.name = str(path_to_package)
+            project_package_instance.created_by = request.user
+            project_package_instance.save()
+
+            return FileResponse(open(path_to_package, 'rb'))
 
     return render(request,
                   'project.html',
