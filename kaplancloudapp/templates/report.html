@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}
+Kaplan Cloud
+{% endblock %}
+{% block body %}
+<main>
+  <table>
+    <tr>
+      <th>File</th>
+      <th>Repetitions</th>
+      <th>100%</th>
+      <th>95%-99%</th>
+      <th>85%-94%</th>
+      <th>75%-84%</th>
+      <th>50%-74%</th>
+      <th>New</th>
+      <th>Total</th>
+    </tr>
+    <tr>
+      <td>Total</td>
+      <td>{{ total.Repetitions }}</td>
+      <td>{{ total.100 }}</td>
+      <td>{{ total.95 }}</td>
+      <td>{{ total.85 }}</td>
+      <td>{{ total.75 }}</td>
+      <td>{{ total.50 }}</td>
+      <td>{{ total.New }}</td>
+      <td>{{ total.Total }}</td>
+    </tr>
+    {% for name, report in files.items %}
+    <tr>
+      <td>{{ name }}</td>
+      <td>{{ report.Repetitions }}</td>
+      <td>{{ report.100 }}</td>
+      <td>{{ report.95 }}</td>
+      <td>{{ report.85 }}</td>
+      <td>{{ report.75 }}</td>
+      <td>{{ report.50 }}</td>
+      <td>{{ report.New }}</td>
+      <td>{{ report.Total }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</main>
+{% endblock %}

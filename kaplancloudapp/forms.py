@@ -14,6 +14,10 @@ from kaplan import open_bilingualfile
 from kaplan.kxliff import KXLIFF
 
 
+class KPPUploadForm(forms.Form):
+    package = forms.FileField(widget=forms.ClearableFileInput(attrs={'accept': ','.join(['.kpp', '.krpp'])}))
+
+
 class ProjectForm(forms.Form):
     name = forms.CharField(max_length=64)
     source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')

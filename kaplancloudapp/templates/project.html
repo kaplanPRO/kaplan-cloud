@@ -4,10 +4,21 @@
 <script type="text/javascript" src="{% static 'project.js' %}"></script>
 {% endblock %}
 {% block div %}
+<div id="kpp-upload-form">
+  <form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <table>
+      {{form.as_table}}
+      <tr>
+        <th></th>
+        <td><button type="submit" name="button">Submit</button></td>
+      </tr>
+      <input type="hidden" name="task" value="import">
+    </table>
+  </form>
+</div>
 <header id="header-project">
   <nav>
-    <!--<a class="disabled" href="#" title="Not yet implemented">Import</a> TODO-->
-    <!--<a class="disabled" href="#" title="Not yet implemented">Export</a> TODO-->
     <!--<a class="disabled" href="#" title="Not yet implemented">Settings</a> TODO-->
     <!--<a class="disabled" href="#" title="Not yet implemented">Archive</a> TODO-->
     {% if not user.is_authenticated %}
@@ -18,35 +29,49 @@
   </nav>
 </header>
 <div id="project">
-  <table>
-    <tr>
-      <th>Name</th>
-      <th>Source Language</th>
-      <th>Target Language</th>
-      <th>Due by</th>
-      <th></th>
-    </tr>
-    {% for file in files %}
-    <tr id="{{ id }}">
-      <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
-      <td>{{file.source_language}}</td>
-      <td>{{file.target_language}}</td>
-      <td>
-          {% if file.due_by %}
-            {{file.due_by}}
-          {% elif project.due_by %}
-            {{project.due_by}}
-          {% else %}
-            -
-          {% endif %}
-      </td>
-      <td><span class="material-icons" onclick="toggleExpand(this)">expand_more</span></td>
-    </tr>
-    <tr hidden>
-      <td colspan="5"><button type="button" onclick="downloadTranslation(this, '{{ file.id }}', '{{ file.name }}')">Download Translation</button></td>
-    </tr>
-    {% endfor %}
-  </table>
+  <div>
+    <h4>Files</h4>
+    <table>
+      <tr>
+        <th><input id="checkbox-main" type="checkbox"></th>
+        <th>Name</th>
+        <th>Source Language</th>
+        <th>Target Language</th>
+        <th>Due by</th>
+      </tr>
+      {% for file in files %}
+      <tr class="file" id="{{ file.id }}">
+        <th><input class="checkbox" type="checkbox"></th>
+        <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
+        <td>{{file.source_language}}</td>
+        <td>{{file.target_language}}</td>
+        <td>
+            {% if file.due_by %}
+              {{file.due_by}}
+            {% elif project.due_by %}
+              {{project.due_by}}
+            {% else %}
+              -
+            {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div>
+    <h4>Reports</h4>
+    <ul>
+      {% for report in reports %}
+      <li><a href="{% url 'report' report.id %}" target="_blank">{{report.created_at}}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+<div id="context-menu">
+  <button id="context-btn-analyze" type="button">Analyze</button>
+  <button id="context-btn-download-translation" type="button">Download Translation</button>
+  <button id="context-btn-export" type="button">Export</button>
+  <button id="context-btn-import" type="button">Import</button>
 </div>
 {% csrf_token %}
 {% endblock %}

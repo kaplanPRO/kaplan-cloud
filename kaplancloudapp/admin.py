@@ -1,6 +1,9 @@
 from django.contrib import admin
 
-from .models import LanguageProfile, Termbase, TBEntry, TBEntryUpdate, TranslationMemory, TMEntry, TMEntryUpdate, Project, ProjectFile, Client, Segment, SegmentUpdate
+from .models import LanguageProfile, Termbase, TBEntry, TBEntryUpdate, \
+                    TranslationMemory, TMEntry, TMEntryUpdate, Project, \
+                    ProjectFile, ProjectPackage, ProjectReport, Client, \
+                    Segment, SegmentUpdate
 
 # Register your models here.
 
@@ -28,6 +31,10 @@ admin.site.register(TMEntryUpdate)
 admin.site.register(Project)
 
 admin.site.register(ProjectFile)
+
+admin.site.register(ProjectPackage)
+
+admin.site.register(ProjectReport)
 
 # admin.site.register(Client)
 
