@@ -37,6 +37,21 @@ div#context-menu button:hover {
   background-color: #f5f5f5;
   color: #2a2f33;
 }
+div#kpp-upload-form {
+  background-color: rgba(255, 255, 255, 0.5);
+  display: none;
+  grid-template: 1fr auto 2fr / 1fr auto 1fr;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+div#kpp-upload-form form {
+  background-color: white;
+  grid-column: 2;
+  grid-row: 2;
+  border: 0.15rem solid #2a2f33;
+  padding: 0.25rem;
+}
 div#project {
   display: grid;
   grid-template-rows: 2fr 1fr;

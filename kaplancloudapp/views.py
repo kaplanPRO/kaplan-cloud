@@ -4,17 +4,22 @@ from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
-from .forms import ProjectForm, TranslationMemoryForm
-from .models import ProjectFile, ProjectPackage, ProjectReport, Project, Segment, TranslationMemory, TMEntry
+from .forms import KPPUploadForm, ProjectForm, TranslationMemoryForm
+from .models import ProjectFile, ProjectPackage, ProjectReport, Project, \
+                    Segment, TranslationMemory, TMEntry
 
 from datetime import datetime
 import difflib
+import json
 from pathlib import Path
+import zipfile
 
 from lxml import etree
 from kaplan import open_bilingualfile
 from kaplan.kdb import KDB
 from kaplan.project import Project as KPP
+
+from .utils import trim_segment
 
 # Create your views here.
 
@@ -87,13 +92,15 @@ def projects(request):
     return render(request, 'projects.html', {'at_projects':True, 'projects':sorted(projects, key=lambda x: x.id, reverse=True)})
 
 @login_required
-def project(request, id):
+def project(request, id): # TODO: Check user priviledges for certain batch tasks (eg. Export, Import)
     project = Project.objects.get(id=id)
     project_files = ProjectFile.objects.filter(project=project)
     if project.created_by != request.user and request.user not in project.managed_by.all():
         project_files = project_files.filter(translator=request.user) | project_files.filter(reviewer=request.user)
         if len(project_files) == 0:
             return redirect('/accounts/login?next={0}'.format(request.path))
+
+    form = KPPUploadForm(request.POST or None, request.FILES or None)
 
     if request.method == 'POST':
         if request.POST.get('task') == 'download_translation':
@@ -210,8 +217,6 @@ def project(request, id):
             path_to_package = Path(project_package.directory) / 'packages' / (datetime.now().isoformat()+'.kpp')
             path_to_package.parent.mkdir(parents=True, exist_ok=True)
 
-            print(str(path_to_package))
-
             project_package.export(target_path=str(path_to_package),
                                    files_to_export=[int(i) for i in request.POST['file_ids'].split(';')[:-1]])
 
@@ -221,9 +226,45 @@ def project(request, id):
 
             return FileResponse(open(path_to_package, 'rb'))
 
+        elif request.POST.get('task') == 'import':
+            with zipfile.ZipFile(form.files.getlist('package')[0]) as kpp:
+                manifest = json.loads(kpp.read('manifest.json'))
+
+                for i, file in manifest['files'].items():
+                    project_file_instance = ProjectFile.objects.filter(project=project) \
+                                            .get(target_bilingualfile__endswith=file['targetBF'])
+
+                    project_file_segments = Segment.objects.filter(file=project_file_instance)
+
+                    tmp_path = Path('kaplancloudapp/.tmp/') / Path(file['targetBF']).name
+
+                    while tmp_path.exists():
+                        tmp_path = tmp_path.parent / (tmp_path.stem + '_' + tmp_path.suffix)
+
+                    with open(tmp_path, 'wb') as targetbf:
+                        targetbf.write(kpp.read(file['targetBF']))
+
+                    for package_tu in open_bilingualfile(str(tmp_path)).gen_translation_units():
+                        if package_tu.attrib.get('id') is None:
+                            continue
+                        relevant_segments = project_file_segments.filter(tu_id=package_tu.attrib['id'])
+                        for package_segment in package_tu:
+                            if package_segment.attrib.get('id') is None:
+                                continue
+
+                            package_target = trim_segment(package_segment[1])
+
+                            relevant_segment = relevant_segments.get(s_id=package_segment.attrib['id'])
+                            relevant_segment.target = package_target
+                            relevant_segment.updated_by = request.user
+                            relevant_segment.save()
+
+                    tmp_path.unlink()
+
     return render(request,
                   'project.html',
                   {'files':project_files,
+                   'form':form,
                    'project':project,
                    'reports':ProjectReport.objects.filter(project=project)
                   })

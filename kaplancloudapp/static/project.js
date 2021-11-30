@@ -27,6 +27,13 @@ window.onload = function() {
     contextMenu.style.display = 'none';
   }
 
+  document.getElementById('kpp-upload-form').onclick = function(e) {
+    if (e.target.id === 'kpp-upload-form')
+    {
+      this.style.display = 'none';
+    }
+  }
+
   document.getElementById('context-btn-analyze').onclick = function() {
     let fileIds = '';
     filesList.forEach((item, i) => {
@@ -48,6 +55,10 @@ window.onload = function() {
       fileIds += item[0] + ';'
     });
     exportFiles(fileIds);
+  }
+
+  document.getElementById('context-btn-import').onclick = function() {
+    document.getElementById('kpp-upload-form').style.display = 'grid';
   }
 
   function getSelectedFiles() {
