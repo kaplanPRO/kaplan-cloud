@@ -32,7 +32,7 @@
       {% for tu_id, translation_unit in translation_units.items %}
       <table id="{{tu_id}}" class="tu">
           {% for s_id, segment in translation_unit.items %}
-          <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}}">
+          <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}}" status="{{segment.get_status.lower}}">
               <th class="sid">{{s_id}}</th>
               <td class="source">{{segment.source | safe}}</td>
               <td class="target" contenteditable="true">{{segment.target | safe}}</td>
