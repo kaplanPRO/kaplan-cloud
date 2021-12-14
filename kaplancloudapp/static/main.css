@@ -56,6 +56,18 @@ div#project {
   display: grid;
   grid-template-rows: 2fr 1fr;
 }
+div#report-toast {
+  background-color: #2a2f33;
+  bottom: 2em;
+  color: #fafafa;
+  display: none;
+  left: 50%;
+  padding: 0.25em;
+  position: fixed;
+  text-align: center;
+  transform: translate(-50%, 0px);
+  transition: all 0.4s;
+}
 div#project div {
   overflow-y: auto;
 }

@@ -98,6 +98,7 @@ function analyzeFiles(button, fileIds)
     .then(response => response.json())
     .then(data => {
       console.log(data);
+      document.getElementById('report-toast').style.display = 'block';
     })
     .catch(error => {
       console.error(error);
