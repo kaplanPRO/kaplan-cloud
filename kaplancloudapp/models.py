@@ -69,6 +69,10 @@ class TranslationMemory(models.Model):
     class Meta:
         verbose_name_plural = "Translation memories"
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('tm', kwargs={'id' : self.id})
+
 
 class TMEntry(models.Model):
     source = models.TextField()
@@ -106,6 +110,10 @@ class Project(models.Model):
     class Meta:
        ordering = ['-id']
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('project', kwargs={'id' : self.id})
+
     def get_manifest(self):
         manifest_dict = {'title':self.name,
                          'directory': str(Path(self.directory).resolve()),
@@ -135,6 +143,10 @@ class ProjectFile(models.Model):
     class Meta:
        ordering = ['name']
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('editor', kwargs={'id' : self.id})
+
     def get_target_directory(self):
         return str(Path(self.project.directory) / self.target_language)
 
@@ -157,6 +169,10 @@ class ProjectReport(models.Model):
 
     class Meta:
        ordering = ['-id']
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('report', kwargs={'id' : self.id})
 
 
 class Segment(models.Model):
