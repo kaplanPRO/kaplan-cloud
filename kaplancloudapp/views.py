@@ -136,39 +136,40 @@ def project(request, id): # TODO: Check user priviledges for certain batch tasks
                                'New': 0,
                                'Total': 0
                               }
-                project_file = ProjectFile.objects.get(id=file_id)
-                for tu in open_bilingualfile(project_file.source_bilingualfile.path).gen_translation_units():
-                    for segment in tu:
-                        if segment.tag.split('}')[-1] == 'ignorable':
-                            continue
-                        source_entry, _ = KDB.segment_to_entry(segment[0])
-                        word_count = len(source_entry.split())
+                project_file = project_files.get(id=file_id)
+                for segment in Segment.objects.filter(file=project_file):
+                    source_segment = etree.fromstring('<source>' + segment.source + '</source>')
+                    source_entry, _ = KDB.segment_to_entry(source_segment)
+                    word_count = len(source_entry.split())
+                    char_count = len(source_entry)
 
-                        if source_entry in entries:
-                            file_report['Repetitions'] += word_count
-                        # elif entry in project_tm_entries TODO
-                        else:
-                            sm.set_seq2(source_entry)
+                    if source_entry in entries:
+                        file_report['Repetitions'] += word_count
+                    # elif entry in project_tm_entries TODO
+                    else:
+                        sm.set_seq2(source_entry)
 
-                            highest_match = 0.0
-                            for entry in entries:
-                                sm.set_seq1(entry)
-                                highest_match = max(sm.ratio(), highest_match)
-
+                        highest_match = 0.0
+                        for entry in filter(lambda x: len(x) >= char_count/2 and len(x) <= char_count*2, entries):
+                            sm.set_seq1(entry)
+                            highest_match = max(sm.ratio(), highest_match)
                             if highest_match >= 0.95:
-                                file_report['95'] += word_count
-                            elif highest_match >= 0.85:
-                                file_report['85'] += word_count
-                            elif highest_match >= 0.75:
-                                file_report['75'] += word_count
-                            elif highest_match >= 0.5:
-                                file_report['50'] += word_count
-                            else:
-                                file_report['New'] += word_count
+                                break
 
-                            entries.append(source_entry)
+                        if highest_match >= 0.95:
+                            file_report['95'] += word_count
+                        elif highest_match >= 0.85:
+                            file_report['85'] += word_count
+                        elif highest_match >= 0.75:
+                            file_report['75'] += word_count
+                        elif highest_match >= 0.5:
+                            file_report['50'] += word_count
+                        else:
+                            file_report['New'] += word_count
 
-                        file_report['Total'] += word_count
+                        entries.append(source_entry)
+
+                    file_report['Total'] += word_count
 
                 project_total['Repetitions'] += file_report['Repetitions']
                 project_total['100'] += file_report['100']
