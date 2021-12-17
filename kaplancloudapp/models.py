@@ -13,6 +13,13 @@ segment_statuses = (
     (2, 'Translated')
 )
 
+report_statuses = (
+    (0, 'Blank'),
+    (1, 'Not Ready'),
+    (2, 'Processing'),
+    (3, 'Ready')
+)
+
 
 class LanguageProfile(models.Model):
     name = models.CharField(max_length=64)
@@ -163,7 +170,9 @@ class ProjectPackage(models.Model):
 
 class ProjectReport(models.Model):
     project = models.ForeignKey(Project, models.CASCADE)
+    project_files = models.ManyToManyField(ProjectFile)
     content = models.JSONField()
+    status = models.IntegerField(choices=report_statuses, default=0)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

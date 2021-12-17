@@ -112,84 +112,18 @@ def project(request, id): # TODO: Check user priviledges for certain batch tasks
             else:
                 return FileResponse(open(project_file.target_bilingualfile.path, 'rb'))
         elif request.POST.get('task') == 'analyze':
-            entries = []
+            projectreport_instance = ProjectReport()
+            projectreport_instance.project = project
+            projectreport_instance.content = {'status':'processing'}
+            projectreport_instance.created_by = request.user
+            projectreport_instance.save()
 
-            project_report = {}
-            project_total = {'Repetitions': 0,
-                             '100': 0, # TODO
-                             '95': 0,
-                             '85': 0,
-                             '75': 0,
-                             '50': 0,
-                             'New': 0,
-                             'Total': 0
-                            }
-
-            sm = difflib.SequenceMatcher()
             for file_id in request.POST['file_ids'].split(';')[:-1]:
-                file_report = {'Repetitions': 0,
-                               '100': 0, # TODO
-                               '95': 0,
-                               '85': 0,
-                               '75': 0,
-                               '50': 0,
-                               'New': 0,
-                               'Total': 0
-                              }
-                project_file = project_files.get(id=file_id)
-                for segment in Segment.objects.filter(file=project_file):
-                    source_segment = etree.fromstring('<source>' + segment.source + '</source>')
-                    source_entry, _ = KDB.segment_to_entry(source_segment)
-                    word_count = len(source_entry.split())
-                    char_count = len(source_entry)
+                projectreport_instance.project_files.add(project_files.get(id=file_id))
+            projectreport_instance.status = 1
+            projectreport_instance.save()
 
-                    if source_entry in entries:
-                        file_report['Repetitions'] += word_count
-                    # elif entry in project_tm_entries TODO
-                    else:
-                        sm.set_seq2(source_entry)
-
-                        highest_match = 0.0
-                        for entry in filter(lambda x: len(x) >= char_count/2 and len(x) <= char_count*2, entries):
-                            sm.set_seq1(entry)
-                            highest_match = max(sm.ratio(), highest_match)
-                            if highest_match >= 0.95:
-                                break
-
-                        if highest_match >= 0.95:
-                            file_report['95'] += word_count
-                        elif highest_match >= 0.85:
-                            file_report['85'] += word_count
-                        elif highest_match >= 0.75:
-                            file_report['75'] += word_count
-                        elif highest_match >= 0.5:
-                            file_report['50'] += word_count
-                        else:
-                            file_report['New'] += word_count
-
-                        entries.append(source_entry)
-
-                    file_report['Total'] += word_count
-
-                project_total['Repetitions'] += file_report['Repetitions']
-                project_total['100'] += file_report['100']
-                project_total['95'] += file_report['95']
-                project_total['85'] += file_report['85']
-                project_total['75'] += file_report['75']
-                project_total['50'] += file_report['50']
-                project_total['New'] += file_report['New']
-                project_total['Total'] += file_report['Total']
-
-                project_report[project_file.name] = file_report
-
-            project_report['Total'] = project_total
-
-            project_report_instance = ProjectReport()
-            project_report_instance.project = project
-            project_report_instance.content = project_report
-            project_report_instance.save()
-
-            return JsonResponse({'id':project_report_instance.id})
+            return JsonResponse({'id':projectreport_instance.id})
 
         elif request.POST.get('task') == 'export':
             files_manifest = {}
@@ -267,7 +201,7 @@ def project(request, id): # TODO: Check user priviledges for certain batch tasks
                   {'files':project_files,
                    'form':form,
                    'project':project,
-                   'reports':ProjectReport.objects.filter(project=project)
+                   'reports':ProjectReport.objects.filter(project=project).filter(status=3)
                   })
 
 @login_required
@@ -353,7 +287,10 @@ def editor(request, id):
 
 @login_required
 def report(request, id):
-    project_report = ProjectReport.objects.get(id=id).content
+    project_report = ProjectReport.objects.get(id=id)
+    if request.GET.get('task') == 'get_status':
+        return JsonResponse({'status':project_report.status})
+    project_report = project_report.content
     total_report = project_report['Total']
     del(project_report['Total'])
     return render(request, 'report.html', {'total':total_report, 'files':project_report})

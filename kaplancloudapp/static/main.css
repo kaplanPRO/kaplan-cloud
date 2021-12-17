@@ -55,18 +55,22 @@ div#kpp-upload-form form {
 div#project {
   display: grid;
   grid-template-rows: 2fr 1fr;
+  overflow-y: hidden;
 }
 div#report-toast {
   background-color: #2a2f33;
   bottom: 2em;
   color: #fafafa;
-  display: none;
   left: 50%;
   padding: 0.25em;
   position: fixed;
   text-align: center;
   transform: translate(-50%, 0px);
-  transition: all 0.4s;
+  visibility: hidden;
+}
+div#report-toast.show {
+  animation: fadein 0.5s;
+  visibility: visible;
 }
 div#project div {
   overflow-y: auto;
@@ -173,3 +177,8 @@ tr.evenrow {
 /* Rules for using icons as white on a dark background. */
 .material-icons.md-light { color: rgba(255, 255, 255, 1); }
 .material-icons.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 2em; opacity: 1;}
+}

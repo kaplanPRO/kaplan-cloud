@@ -97,12 +97,33 @@ function analyzeFiles(button, fileIds)
     )
     .then(response => response.json())
     .then(data => {
-      console.log(data);
-      document.getElementById('report-toast').style.display = 'block';
+      checkReport(data['id']);
     })
     .catch(error => {
       console.error(error);
     })
+}
+
+function checkReport(reportId)
+{
+  var url = new URL(window.location.origin + '/report/' + reportId);
+  var params = {task:'get_status'};
+  url.search = new URLSearchParams(params).toString();
+
+  fetch(url)
+  .then(response => response.json())
+  .then(data =>
+    {
+      if (data['status'] == 1 || data['status'] == 2)
+      {
+        setTimeout(checkReport, 5000, reportId);
+      }
+      else
+      {
+        document.getElementById('report-toast').className = 'show'
+      }
+    }
+  )
 }
 
 function downloadTranslation(button, fileId, fileName)
