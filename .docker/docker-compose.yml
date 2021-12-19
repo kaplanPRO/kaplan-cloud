@@ -35,9 +35,6 @@ services:
     restart: unless-stopped
   nginx:
     image: nginx
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     environment:
       - VIRTUAL_HOST=${VIRTUAL_HOST}
       - VIRTUAL_PORT=8080
