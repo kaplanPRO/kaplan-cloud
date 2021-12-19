@@ -67,7 +67,7 @@ window.onload = function() {
     }
 
     targetCell.addEventListener('focusout', function() {
-      submitSegment(this, this.parentNode.getAttribute('status'));
+      submitSegment(this);
     })
 
     targetCell.onkeydown = function(e) {
@@ -77,8 +77,15 @@ window.onload = function() {
           insertInnerHTML(sourceCell, this);
         } else if (e.code === 'Enter') {
           this.parentNode.classList.remove('blank', 'error', 'draft', 'reviewed');
-          this.parentNode.classList.add('translated');
-          this.parentNode.setAttribute('status', 'translated');
+
+          if (this.innerHTML !== '') {
+            this.parentNode.classList.add('translated');
+            this.parentNode.setAttribute('status', 'translated');
+          } else {
+            this.parentNode.classList.add('blank');
+            this.parentNode.setAttribute('status', 'blank');
+          }
+
           if (!e.shiftKey)
           {
             targetList = [...document.getElementsByClassName('target')];
@@ -118,11 +125,9 @@ window.onload = function() {
     target.innerHTML = source.innerHTML;
   }
 
-  function submitSegment(targetCell, status) {
-    if (status==null)
-    {
-      status = 'blank';
-    }
+  function submitSegment(targetCell) {
+    let status = targetCell.parentNode.getAttribute('status');
+
     targetCell.parentNode.classList.remove(('blank', 'draft', 'translated', 'error'));
     targetCell.parentNode.classList.add(status);
 

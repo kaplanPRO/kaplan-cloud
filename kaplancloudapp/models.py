@@ -13,6 +13,13 @@ segment_statuses = (
     (2, 'Translated')
 )
 
+report_statuses = (
+    (0, 'Blank'),
+    (1, 'Not Ready'),
+    (2, 'Processing'),
+    (3, 'Ready')
+)
+
 
 class LanguageProfile(models.Model):
     name = models.CharField(max_length=64)
@@ -69,6 +76,10 @@ class TranslationMemory(models.Model):
     class Meta:
         verbose_name_plural = "Translation memories"
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('tm', kwargs={'id' : self.id})
+
 
 class TMEntry(models.Model):
     source = models.TextField()
@@ -106,6 +117,10 @@ class Project(models.Model):
     class Meta:
        ordering = ['-id']
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('project', kwargs={'id' : self.id})
+
     def get_manifest(self):
         manifest_dict = {'title':self.name,
                          'directory': str(Path(self.directory).resolve()),
@@ -135,6 +150,10 @@ class ProjectFile(models.Model):
     class Meta:
        ordering = ['name']
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('editor', kwargs={'id' : self.id})
+
     def get_target_directory(self):
         return str(Path(self.project.directory) / self.target_language)
 
@@ -151,12 +170,18 @@ class ProjectPackage(models.Model):
 
 class ProjectReport(models.Model):
     project = models.ForeignKey(Project, models.CASCADE)
+    project_files = models.ManyToManyField(ProjectFile)
     content = models.JSONField()
+    status = models.IntegerField(choices=report_statuses, default=0)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
        ordering = ['-id']
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('report', kwargs={'id' : self.id})
 
 
 class Segment(models.Model):
