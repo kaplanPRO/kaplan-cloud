@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.files import File
 from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
@@ -24,6 +24,7 @@ from .utils import trim_segment
 # Create your views here.
 
 @login_required
+@permission_required('kaplancloudapp.add_project')
 def newproject(request):
     form = ProjectForm(request.POST or None, request.FILES or None)
     form.fields['translation_memories'].choices = ((request.POST.get('translation_memories'),'-----'),)
@@ -61,6 +62,7 @@ def newproject(request):
     return render(request, 'newproject.html', {'form':form})
 
 @login_required
+@permission_required('kaplancloudapp.add_translationmemory')
 def newtm(request):
     form = TranslationMemoryForm(request.POST or None)
 

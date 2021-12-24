@@ -5,7 +5,7 @@ Translation Memories | Kaplan Cloud
 {% block div %}
 <header>
   <nav>
-    <a href="{% url 'newtm' %}">Create</a>
+    <a {% if perms.kaplancloudapp.add_translationmemory %}href="{% url 'newtm' %}"{% else %}class="disabled"{% endif %}>Create</a>
     {% if not user.is_authenticated %}
     <a id="logout" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
     {% else %}

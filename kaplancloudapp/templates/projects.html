@@ -3,7 +3,7 @@
 {% block div %}
 <header>
   <nav>
-    <a href="{% url 'newproject' %}">Create</a>
+    <a {% if perms.kaplancloudapp.add_project %}href="{% url 'newproject' %}"{% else %}class="disabled"{% endif %}>Create</a>
     <!--<a class="disabled" href="#" title="Not yet implemented">Import</a> TODO-->
     {% if not user.is_authenticated %}
     <a id="logout" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
