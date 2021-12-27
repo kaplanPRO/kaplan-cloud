@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from .models import LanguageProfile, TranslationMemory
+from .models import Client, LanguageProfile, TranslationMemory
 
 from datetime import datetime
 from io import BytesIO
@@ -23,6 +23,7 @@ class ProjectForm(forms.Form):
     source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     translation_memories = forms.ChoiceField(required=False)
+    client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
     project_files = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'accept': ','.join(['.docx', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
     reference_files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'multiple':True}))
     due_by = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))

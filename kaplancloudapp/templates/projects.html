@@ -19,6 +19,7 @@
       <th>Source Language</th>
       <th>Target Language</th>
       <th>Due By</th>
+      <th>Client</th>
       <!--<th></th>-->
     </tr>
     {% for project in projects %}
@@ -27,6 +28,7 @@
       <td>{{project.source_language}}</td>
       <td>{{project.target_language}}</td>
       <td>{{project.due_by}}</td>
+      <td>{{project.client.name}}</td>
       <!--<td><span class="material-icons">expand_more</span></td> TODO-->
     </tr>
     {% endfor %}

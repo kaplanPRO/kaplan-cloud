@@ -36,7 +36,7 @@ admin.site.register(ProjectPackage)
 
 admin.site.register(ProjectReport)
 
-# admin.site.register(Client)
+admin.site.register(Client)
 
 admin.site.register(Segment)
 

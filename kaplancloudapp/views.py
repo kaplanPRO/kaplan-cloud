@@ -35,6 +35,8 @@ def newproject(request):
         new_project.target_language = form.cleaned_data['target_language'].iso_code
         new_project.due_by = form.cleaned_data['due_by']
         new_project.created_by = request.user
+        if form.cleaned_data.get('client'):
+            new_project.client = form.cleaned_data['client']
         new_project.save()
 
         for tm in form.cleaned_data['translation_memories']:
