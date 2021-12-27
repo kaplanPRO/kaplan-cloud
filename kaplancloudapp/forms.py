@@ -79,6 +79,12 @@ class ProjectForm(forms.Form):
         return files
 
 
+class SearchForm(forms.Form):
+    source = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', required=False)
+    target = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', required=False)
+    client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
+
+
 class TranslationMemoryForm(forms.Form):
     name = forms.CharField(max_length=64)
     source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')

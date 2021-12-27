@@ -4,9 +4,9 @@ from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
-from .forms import KPPUploadForm, ProjectForm, TranslationMemoryForm
-from .models import ProjectFile, ProjectPackage, ProjectReport, Project, \
-                    Segment, TranslationMemory, TMEntry
+from .forms import KPPUploadForm, ProjectForm, SearchForm, TranslationMemoryForm
+from .models import Client, ProjectFile, ProjectPackage, ProjectReport, \
+                    Project, Segment, TranslationMemory, TMEntry
 
 from datetime import datetime
 import difflib
@@ -82,7 +82,25 @@ def newtm(request):
 
 @login_required
 def projects(request):
-    projects = list(Project.objects.filter(created_by=request.user) | Project.objects.filter(managed_by=request.user))
+    form = SearchForm(request.GET)
+    display_form = False
+
+    projects = Project.objects.all()
+
+    if request.GET.get('source'):
+        projects = projects.filter(source_language=request.GET['source'])
+        display_form = True
+
+    if request.GET.get('target'):
+        projects = projects.filter(target_language=request.GET['target'])
+        display_form = True
+
+    if request.GET.get('client'):
+        client = Client.objects.get(id=request.GET['client'])
+        projects = projects.filter(client=client)
+        display_form = True
+
+    projects = list(projects.filter(created_by=request.user) | projects.filter(managed_by=request.user))
 
     project_files = ProjectFile.objects.all()
     for project in projects:
@@ -93,7 +111,7 @@ def projects(request):
             if project_file.project not in projects:
                 projects.append(project_file.project)
 
-    return render(request, 'projects.html', {'at_projects':True, 'projects':sorted(projects, key=lambda x: x.id, reverse=True)})
+    return render(request, 'projects.html', {'at_projects':True, 'projects':projects, 'form':form, 'display_form':display_form})
 
 @login_required
 def project(request, id): # TODO: Check user priviledges for certain batch tasks (eg. Export, Import)

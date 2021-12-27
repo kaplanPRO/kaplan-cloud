@@ -1,5 +1,8 @@
 {% extends "index.html" %}
-
+{% load static %}
+{% block head %}
+<script type="text/javascript" src="{% static 'main.js' %}"></script>
+{% endblock %}
 {% block div %}
 <header>
   <nav>
@@ -13,6 +16,22 @@
   </nav>
 </header>
 <div id="projects">
+  <div id="search-form" {% if display_form %}class="show"{% endif %}>
+    <form method="get">
+      <table>
+        <tr>
+          <th><label for="{{ form.source.id }}">Source:</label></th>
+          <td>{{ form.source }}</td>
+          <th><label for="{{ form.target.id }}">Target:</label></th>
+          <td>{{ form.target }}</td>
+          <th><label for="{{ form.client.id }}">Client:</label></th>
+          <td>{{ form.client }}</td>
+          <td><button type="submit" name="button" class="material-icons">search</button></td>
+        </tr>
+      </table>
+    </form>
+    <span id="search-form-toggle" class="material-icons">search</span>
+  </div>
   <table>
     <tr>
       <th>Name</th>
