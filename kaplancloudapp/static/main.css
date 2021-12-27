@@ -57,16 +57,18 @@ div#project {
   grid-template-rows: 2fr 1fr;
   overflow-y: hidden;
 }
-div#report-toast {
+div#report-toast, span.helptext {
   background-color: #2a2f33;
-  bottom: 2em;
   color: #fafafa;
-  left: 50%;
   padding: 0.25em;
   position: fixed;
+  visibility: hidden;
+}
+div#report-toast {
+  bottom: 2em;
+  left: 50%;
   text-align: center;
   transform: translate(-50%, 0px);
-  visibility: hidden;
 }
 div#report-toast.show {
   animation: fadein 0.5s;
@@ -154,6 +156,9 @@ ec, g, sc, ph, x {
   cursor: pointer;
   padding: 0.1em;
   user-select: all;
+}
+td:hover span.helptext {
+  visibility: visible;
 }
 tr.error {
   background-color: rgb(256 0 0 / 15%);

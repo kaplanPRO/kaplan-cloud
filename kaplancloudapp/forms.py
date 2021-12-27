@@ -20,8 +20,8 @@ class KPPUploadForm(forms.Form):
 
 class ProjectForm(forms.Form):
     name = forms.CharField(max_length=64)
-    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
-    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
+    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
+    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     translation_memories = forms.ChoiceField(required=False)
     project_files = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'accept': ','.join(['.docx', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
     reference_files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'multiple':True}))
@@ -80,5 +80,5 @@ class ProjectForm(forms.Form):
 
 class TranslationMemoryForm(forms.Form):
     name = forms.CharField(max_length=64)
-    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
-    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
+    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
+    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
