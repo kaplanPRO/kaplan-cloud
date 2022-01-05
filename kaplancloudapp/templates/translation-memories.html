@@ -19,6 +19,7 @@ Translation Memories | Kaplan Cloud
       <th>Name</th>
       <th>Source Language</th>
       <th>Target Language</th>
+      <th>Client</th>
       <!--<th></th>-->
     </tr>
     {% for tm in tms %}
@@ -26,6 +27,7 @@ Translation Memories | Kaplan Cloud
       <td><a href="{% url 'tm' tm.id %}">{{tm.name}}</a></td>
       <td>{{tm.source_language}}</td>
       <td>{{tm.target_language}}</td>
+      <td>{{tm.client.name}}</td>
       <!--<td><span class="material-icons">expand_more</span></td> TODO-->
     </tr>
     {% endfor %}
