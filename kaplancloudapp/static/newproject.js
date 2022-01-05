@@ -14,16 +14,15 @@ window.onload = function() {
 
       var url = new URL(new URL(window.location.href).origin + document.forms[0]['tm_link'].value);
 
-      var params = {'source-language':sourceLanguage.value,
-                    'target-language':targetLanguage.value,
-                    format:'JSON'};
+      var params = {'source':sourceLanguage.value,
+                    'target':targetLanguage.value,
+                    'format':'JSON'};
       url.search = new URLSearchParams(params).toString();
 
       fetch(url)
       .then(response => response.json())
       .then(data => {
         Object.keys(data).forEach((key, i) => {
-          console.log(key);
           translationMemories.appendChild(new Option(data[key], key))
         });
 

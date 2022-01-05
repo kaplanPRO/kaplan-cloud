@@ -319,14 +319,23 @@ def report(request, id):
 
 @login_required
 def translation_memories(request):
-    source_language = request.GET.get('source-language')
-    target_language = request.GET.get('target-language')
+    form = SearchForm(request.GET)
+    display_form = False
 
-    translation_memories = TranslationMemory.objects.all()
-    if source_language:
-        translation_memories = translation_memories.filter(source_language=source_language)
-    if target_language:
-        translation_memories = translation_memories.filter(target_language=target_language)
+    translation_memories = Project.objects.all()
+
+    if request.GET.get('source'):
+        translation_memories = translation_memories.filter(source_language=request.GET['source'])
+        display_form = True
+
+    if request.GET.get('target'):
+        translation_memories = translation_memories.filter(target_language=request.GET['target'])
+        display_form = True
+
+    if request.GET.get('client'):
+        client = Client.objects.get(id=request.GET['client'])
+        translation_memories = translation_memories.filter(client=client)
+        display_form = True
 
     if request.GET.get('format') == 'JSON':
         tm_dict = {}
@@ -334,7 +343,7 @@ def translation_memories(request):
             tm_dict[tm.id] = tm.name
         return JsonResponse(tm_dict)
     else:
-        return render(request, 'translation-memories.html', {'at_tms':True, 'tms':translation_memories})
+        return render(request, 'translation-memories.html', {'at_tms':True, 'tms':translation_memories, 'form':form, 'display_form':display_form})
 
 @login_required
 def translation_memory(request, id):
