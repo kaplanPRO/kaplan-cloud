@@ -7,6 +7,8 @@ window.onload = function() {
   });
 
   const tMHits = document.getElementById('tm-hits');
+  const comments = document.getElementById('comments');
+  const commentForm = document.getElementById('comment-form');
 
   let currentSegment;
 
@@ -15,6 +17,13 @@ window.onload = function() {
     targetCell = targetCells[i];
 
     targetCell.onfocus = function(e) {
+      currentSegment = this.parentNode;
+      commentForm.style.display = 'block';
+
+      while (comments.children.length > 1) {
+        comments.removeChild(comments.children[1]);
+      }
+
       var url = new URL(window.location.href);
 
       var params = {task:'lookup',
@@ -27,26 +36,27 @@ window.onload = function() {
       .then(data => {
         tMHits.innerHTML = null;
 
-        Object.keys(data).forEach((key, i) => {
+        tm_data = data['tm'];
+        Object.keys(tm_data).forEach((key, i) => {
           hitSpan = document.createElement('span');
           hitSpan.className = 'tm-hit'
           sourceP = document.createElement('p');
-          sourceP.innerHTML = data[key]['source'];
+          sourceP.innerHTML = tm_data[key]['source'];
           hitSpan.appendChild(sourceP);
           //hitSpan.appendChild(document.createElement('hr'));
           targetP = document.createElement('p');
-          targetP.innerHTML = data[key]['target'];
+          targetP.innerHTML = tm_data[key]['target'];
           hitSpan.appendChild(targetP);
 
           hitDetailsSpan = document.createElement('span');
           hitDetailsSpan.className = 'details';
           userP = document.createElement('p');
           userP.className = 'detail';
-          userP.textContent = data[key]['updated_by'];
+          userP.textContent = tm_data[key]['updated_by'];
           hitDetailsSpan.appendChild(userP);
           datetimeP = document.createElement('p');
           datetimeP.className = 'detail';
-          datetimeP.textContent = new Date(data[key]['updated_at']).toLocaleString();
+          datetimeP.textContent = new Date(tm_data[key]['updated_at']).toLocaleString();
           hitDetailsSpan.appendChild(datetimeP);
           hitSpan.appendChild(hitDetailsSpan);
 
@@ -60,9 +70,34 @@ window.onload = function() {
           tMHits.appendChild(p);
         }
 
+        comments_data = data['comments'];
+        Object.keys(comments_data).forEach((key, i) => {
+          commentSpan = document.createElement('span');
+          commentSpan.className = 'comment';
+
+          commentP = document.createElement('p');
+          commentP.textContent = comments_data[key]['comment'];
+          commentSpan.appendChild(commentP);
+
+          commentDetailsSpan = document.createElement('span');
+          commentDetailsSpan.className = 'details';
+          userP = document.createElement('p');
+          userP.className = 'detail';
+          userP.textContent = comments_data[key]['created_by'];
+          commentDetailsSpan.appendChild(userP);
+          datetimeP = document.createElement('p');
+          datetimeP.className = 'detail';
+          datetimeP.textContent = new Date(comments_data[key]['created_at']).toLocaleString();
+          commentDetailsSpan.appendChild(datetimeP);
+          commentSpan.appendChild(commentDetailsSpan);
+
+          comments.appendChild(commentSpan);
+        });
+
       })
       .catch(error => {
         console.error('Could not look up segment #' + params['s_id'] + '.');
+        console.error(error);
       })
     }
 
@@ -115,6 +150,52 @@ window.onload = function() {
         this.parentNode.setAttribute('status', 'draft');
       }
     }
+  }
+
+  document.getElementById('comment-form').onsubmit = function(e) {
+    e.preventDefault();
+
+    commentFormData = new FormData();
+    commentFormData.append('task', 'add_comment');
+    commentFormData.append('comment', this['comment'].value);
+    commentFormData.append('segment_id', currentSegment.id);
+
+    fetch('',
+          {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCSRFToken()
+            },
+            body: commentFormData
+          }
+      )
+      .then(response => response.json())
+      .then(data => {
+        commentSpan = document.createElement('span');
+        commentSpan.className = 'comment';
+
+        commentP = document.createElement('p');
+        commentP.textContent = data['comment'];
+        commentSpan.appendChild(commentP);
+
+        commentDetailsSpan = document.createElement('span');
+        commentDetailsSpan.className = 'details';
+        userP = document.createElement('p');
+        userP.className = 'detail';
+        userP.textContent = data['created_by'];
+        commentDetailsSpan.appendChild(userP);
+        datetimeP = document.createElement('p');
+        datetimeP.className = 'detail';
+        datetimeP.textContent = new Date(data['created_at']).toLocaleString();
+        commentDetailsSpan.appendChild(datetimeP);
+        commentSpan.appendChild(commentDetailsSpan);
+
+        comments.appendChild(commentSpan);
+      })
+      .catch(error => {
+        console.error(error);
+        console.error('Could not add comment.');
+      })
   }
 
   function getCSRFToken() {

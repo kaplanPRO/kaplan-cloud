@@ -4,9 +4,10 @@ from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
-from .forms import KPPUploadForm, ProjectForm, SearchForm, TranslationMemoryForm
-from .models import Client, ProjectFile, ProjectPackage, ProjectReport, \
-                    Project, Segment, TranslationMemory, TMEntry
+from .forms import KPPUploadForm, ProjectForm, SearchForm, \
+                   SegmentCommentForm, TranslationMemoryForm
+from .models import Client, Comment, ProjectFile, ProjectPackage, \
+                    ProjectReport, Project, Segment, TranslationMemory, TMEntry
 
 from datetime import datetime
 import difflib
@@ -238,6 +239,8 @@ def editor(request, id):
     else:
         return redirect('/accounts/login?next={0}'.format(request.path))
 
+    form = SegmentCommentForm(request.POST or None)
+
     if request.method == 'POST':
         if request.POST.get('task') == 'update_segment':
             segment_dict = request.POST
@@ -279,14 +282,33 @@ def editor(request, id):
 
             return JsonResponse(request.POST)
 
+        elif request.POST.get('task') == 'add_comment':
+            comment = request.POST['comment']
+            segment_id = request.POST['segment_id']
+
+            comment_instance = Comment()
+            comment_instance.comment = comment
+            comment_instance.segment = Segment.objects.get(id=segment_id)
+            comment_instance.created_by = request.user
+            comment_instance.save()
+
+            comment_dict = {
+                'comment': comment_instance.comment,
+                'created_by': comment_instance.created_by.username,
+                'created_at': comment_instance.created_at
+            }
+
+            return JsonResponse(comment_dict)
+
     else:
         bilingualfile = open_bilingualfile(project_file.target_bilingualfile.path)
 
         if request.GET.get('task') == 'lookup':
             segment_dict = request.GET
-            segment_source = Segment.objects.filter(file=project_file) \
-                             .filter(tu_id=segment_dict['tu_id']) \
-                             .get(s_id=segment_dict['s_id']).source
+            segment = Segment.objects.filter(file=project_file) \
+                      .filter(tu_id=segment_dict['tu_id']) \
+                      .get(s_id=segment_dict['s_id'])
+            segment_source = segment.source
             tm_entries = []
 
             for tm in project_file.project.translationmemories.all():
@@ -297,7 +319,13 @@ def editor(request, id):
                                                                   'updated_by': relevant_tm_entry.updated_by.username,
                                                                   'updated_at': relevant_tm_entry.updated_at}))
 
-            return JsonResponse(dict(tm_entries))
+            comments = []
+            for comment in Comment.objects.filter(segment=segment):
+                comments.append((comment.id, {'comment':comment.comment,
+                                              'created_by':comment.created_by.username if comment.created_by else 'N/A',
+                                              'created_at':comment.created_at}))
+
+            return JsonResponse({'tm':dict(tm_entries), 'comments':dict(comments)})
         else:
             translation_units = {}
             for segment_instance in Segment.objects.filter(file=project_file).order_by('s_id'):
@@ -305,7 +333,7 @@ def editor(request, id):
                     translation_units[segment_instance.tu_id] = {}
                 translation_units[segment_instance.tu_id][segment_instance.s_id] = segment_instance
 
-            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units})
+            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form})
 
 @login_required
 def report(request, id):

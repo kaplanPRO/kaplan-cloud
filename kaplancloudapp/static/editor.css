@@ -5,6 +5,12 @@ body {
 div.sidebar div.toggle {
   width: 25ch;
 }
+form#comment-form {
+  display: none;
+}
+form#comment-form textarea {
+  max-width: 90%;
+}
 main#editor {
   display: grid;
   grid-template-columns: 1fr auto auto;
@@ -26,17 +32,22 @@ main#editor div.sidebar div {
 main#editor div.sidebar span.expand-icon {
   transform: rotate(90deg);
 }
+span.comment {
+  grid-template-rows: 1fr auto;
+}
 span.tm-hit {
+  grid-template-rows: 1fr 1fr auto;
+}
+span.tm-hit, span.comment {
   border: 0.1em solid #2a2f33;
   display: grid;
-  grid-template-rows: 1fr 1fr auto;
   padding: 0.1em;
 }
-span.tm-hit p.detail {
+span.tm-hit p.detail, span.comment p.detail {
   font-size: 0.5em;
   text-align: center;
 }
-span.tm-hit span.details {
+span.tm-hit span.details, span.comment span.details {
   display: grid;
   grid-template-columns: auto auto;
 }

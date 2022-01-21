@@ -85,6 +85,10 @@ class SearchForm(forms.Form):
     client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
 
 
+class SegmentCommentForm(forms.Form):
+    comment = forms.CharField(widget=forms.Textarea)
+
+
 class TranslationMemoryForm(forms.Form):
     name = forms.CharField(max_length=64)
     source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
