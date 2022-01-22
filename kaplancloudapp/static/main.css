@@ -93,6 +93,9 @@ div#search-form.show form {
 div#search-form.show span {
   display: none;
 }
+div#tm-entries {
+  overflow-y: auto;
+}
 div#tm-entries table {
   border-collapse: collapse;
   table-layout: fixed;
