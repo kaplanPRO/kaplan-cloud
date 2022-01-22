@@ -94,3 +94,16 @@ class TranslationMemoryForm(forms.Form):
     source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
+
+class TranslationMemoryImportForm(forms.Form):
+    source_language = forms.CharField(max_length=10, required=False, help_text='Language code')
+    target_language = forms.CharField(max_length=10, required=False, help_text='Language code')
+    tm_file = forms.FileField(label='TM file', widget=forms.ClearableFileInput(attrs={'accept': ','.join(['.kdb', '.tmx'])}))
+
+    def clean_tm_file(self):
+        tm_file = self.files['tm_file']
+
+        if Path(tm_file.name).suffix.lower() not in ['.kdb', '.tmx']:
+            raise ValidationError('This can only process .kdb or .tmx files.')
+
+        return self.cleaned_data['tm_file']

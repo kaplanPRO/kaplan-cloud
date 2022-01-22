@@ -5,9 +5,12 @@ from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
 from .forms import KPPUploadForm, ProjectForm, SearchForm, \
-                   SegmentCommentForm, TranslationMemoryForm
+                   SegmentCommentForm, TranslationMemoryForm, \
+                   TranslationMemoryImportForm
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
                     ProjectReport, Project, Segment, TranslationMemory, TMEntry
+
+from .thread_classes import TMImportThread
 
 from datetime import datetime
 import difflib
@@ -379,7 +382,84 @@ def translation_memory(request, id):
                 .filter(translationmemory=TranslationMemory.objects.get(id=id)) \
                 .exclude(target='')
 
-    return render(request, 'tm.html', {'tm_entries':tm_entries})
+    return render(request, 'tm.html', {'tm_entries':tm_entries, 'tm_id':id})
+
+@login_required
+@permission_required('kaplancloudapp.add_translationmemory')
+def translation_memory_import(request, id):
+    translation_memory = TranslationMemory.objects.get(id=id)
+    form = TranslationMemoryImportForm(request.POST or None,
+                                       request.FILES or None,
+                                       initial={'source_language':translation_memory.source_language,
+                                                'target_language':translation_memory.target_language}
+                                       )
+
+    if form.is_valid():
+        tm_file = form.cleaned_data['tm_file']
+
+        tmp_path = Path('kaplancloudapp/.tmp/') / tm_file.name
+
+        while tmp_path.exists():
+            tmp_path = tmp_path.parent / (tmp_path.stem + '_' + tmp_path.suffix)
+
+        with open(tmp_path, 'wb') as target:
+            target.write(tm_file.read())
+
+        entries = []
+
+        if tmp_path.suffix.lower() == '.kdb':
+            kdb = KDB(str(tmp_path),
+                      form.cleaned_data['source_language'],
+                      form.cleaned_data['target_language'])
+
+            entries = kdb.get_entries()
+
+            tmp_path.unlink()
+        elif tmp_path.suffix.lower() == '.tmx':
+            tmp_path2 = tmp_path.parent / (tmp_path.stem + '.kdb')
+
+            while tmp_path2.exists():
+                tmp_path2 = tmp_path2.parent / (tmp_path2.steam + '_' + '.kdb')
+
+            kdb = KDB.new(str(tmp_path2),
+                          form.cleaned_data['source_language'],
+                          form.cleaned_data['target_language'])
+
+            kdb.import_tmx(tmp_path)
+
+            entries = kdb.get_entries()
+
+            tmp_path.unlink()
+            tmp_path2.unlink()
+
+        relevant_tm_entries = TMEntry.objects.filter(translationmemory=translation_memory)
+
+        sliced_entries = []
+        while len(entries) > 500:
+            sliced_entries.append(entries[:500])
+            entries = entries[500:]
+
+        if len(entries) > 0:
+            sliced_entries.append(entries)
+
+        threads = []
+
+        for entries in sliced_entries:
+            new_thread = TMImportThread(entries,
+                                        TMEntry,
+                                        translation_memory,
+                                        relevant_tm_entries)
+            threads.append(new_thread)
+
+        for thread in threads:
+            thread.start()
+
+        while max([thread.is_alive() for thread in threads]):
+            None
+
+        return redirect('tm', id=translation_memory.id)
+
+    return render(request, 'tm-import.html', {'form':form})
 
 def login(request):
     from django.contrib.auth import login
