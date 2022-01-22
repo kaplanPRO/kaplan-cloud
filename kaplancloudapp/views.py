@@ -353,7 +353,7 @@ def translation_memories(request):
     form = SearchForm(request.GET)
     display_form = False
 
-    translation_memories = Project.objects.all()
+    translation_memories = TranslationMemory.objects.all()
 
     if request.GET.get('source'):
         translation_memories = translation_memories.filter(source_language=request.GET['source'])
