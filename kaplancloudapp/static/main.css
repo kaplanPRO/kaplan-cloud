@@ -77,7 +77,7 @@ div#report-toast.show {
 div#project div {
   overflow-y: auto;
 }
-div#projects table {
+div#projects table, div#project table, div#tms table {
   width: 100%;
 }
 div#search-form form {
