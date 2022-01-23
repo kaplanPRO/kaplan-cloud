@@ -104,6 +104,9 @@ div#tm-entries table {
 div#tm-entries table td {
   padding: 0.25em;
 }
+footer {
+  background-color: #2a2f33;
+}
 form button:hover {
   border: 1px solid #2a2f33;
 }
@@ -128,7 +131,7 @@ main#dashboard div#nav {
   grid-row: 1/3;
   grid-template-rows: 1fr auto 1fr auto;
 }
-main#dashboard div#nav div#version {
+main#dashboard div#nav div#version, main#login footer {
   grid-row: 4;
   font-size: 0.75em;
   font-weight: bold;
@@ -142,11 +145,15 @@ main#dashboard div#nav nav {
 }
 main#login {
   display: grid;
-  min-height: 50%;
-  max-height: 100%;
+  grid-template-rows: 1fr auto;
+  height: 100%;
+}
+main#login div#login-window {
+  display: grid;
+  height: 50%;
   place-items: center;
 }
-main#login div {
+main#login div#login-window div {
   border: 0.1em groove #2a2f33;
   padding: 0.25em;
 }
