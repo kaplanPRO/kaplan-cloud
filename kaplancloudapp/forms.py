@@ -2,7 +2,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from .models import LanguageProfile, TranslationMemory
+from .models import Client, LanguageProfile, TranslationMemory
 
 from datetime import datetime
 from io import BytesIO
@@ -20,9 +20,10 @@ class KPPUploadForm(forms.Form):
 
 class ProjectForm(forms.Form):
     name = forms.CharField(max_length=64)
-    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
-    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
+    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
+    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     translation_memories = forms.ChoiceField(required=False)
+    client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
     project_files = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'accept': ','.join(['.docx', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
     reference_files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'multiple':True}))
     due_by = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
@@ -78,7 +79,31 @@ class ProjectForm(forms.Form):
         return files
 
 
+class SearchForm(forms.Form):
+    source = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', required=False)
+    target = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', required=False)
+    client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
+
+
+class SegmentCommentForm(forms.Form):
+    comment = forms.CharField(widget=forms.Textarea)
+
+
 class TranslationMemoryForm(forms.Form):
     name = forms.CharField(max_length=64)
-    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
-    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code')
+    source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
+    target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
+    client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
+
+class TranslationMemoryImportForm(forms.Form):
+    source_language = forms.CharField(max_length=10, required=False, help_text='Language code')
+    target_language = forms.CharField(max_length=10, required=False, help_text='Language code')
+    tm_file = forms.FileField(label='TM file', widget=forms.ClearableFileInput(attrs={'accept': ','.join(['.kdb', '.tmx'])}))
+
+    def clean_tm_file(self):
+        tm_file = self.files['tm_file']
+
+        if Path(tm_file.name).suffix.lower() not in ['.kdb', '.tmx']:
+            raise ValidationError('This can only process .kdb or .tmx files.')
+
+        return self.cleaned_data['tm_file']

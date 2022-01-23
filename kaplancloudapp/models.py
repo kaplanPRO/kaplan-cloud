@@ -71,6 +71,7 @@ class TranslationMemory(models.Model):
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    client = models.ForeignKey(Client, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

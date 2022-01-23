@@ -1,24 +1,45 @@
 {% extends "index.html" %}
+{% load static %}
+{% block head %}
+<script type="text/javascript" src="{% static 'main.js' %}"></script>
+{% endblock %}
 {% block title %}
 Translation Memories | Kaplan Cloud
 {% endblock %}
 {% block div %}
 <header>
   <nav>
-    <a href="{% url 'newtm' %}">Create</a>
+    <a {% if perms.kaplancloudapp.add_translationmemory %}href="{% url 'newtm' %}"{% else %}class="disabled"{% endif %}>Create</a>
     {% if not user.is_authenticated %}
-    <a id="logout" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
+    <a id="login" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
     {% else %}
     <a id="logout" href="{% url 'logout' %}"><span class="material-icons" title="logout">logout</span></a>
     {% endif %}
   </nav>
 </header>
-<div id="projects">
+<div id="tms">
+  <div id="search-form" {% if display_form %}class="show"{% endif %}>
+    <form method="get">
+      <table>
+        <tr>
+          <th><label for="{{ form.source.id }}">Source:</label></th>
+          <td>{{ form.source }}</td>
+          <th><label for="{{ form.target.id }}">Target:</label></th>
+          <td>{{ form.target }}</td>
+          <th><label for="{{ form.client.id }}">Client:</label></th>
+          <td>{{ form.client }}</td>
+          <td><button type="submit" class="material-icons">search</button></td>
+        </tr>
+      </table>
+    </form>
+    <span id="search-form-toggle" class="material-icons">search</span>
+  </div>
   <table>
     <tr>
       <th>Name</th>
       <th>Source Language</th>
       <th>Target Language</th>
+      <th>Client</th>
       <!--<th></th>-->
     </tr>
     {% for tm in tms %}
@@ -26,6 +47,7 @@ Translation Memories | Kaplan Cloud
       <td><a href="{% url 'tm' tm.id %}">{{tm.name}}</a></td>
       <td>{{tm.source_language}}</td>
       <td>{{tm.target_language}}</td>
+      <td>{{tm.client.name}}</td>
       <!--<td><span class="material-icons">expand_more</span></td> TODO-->
     </tr>
     {% endfor %}

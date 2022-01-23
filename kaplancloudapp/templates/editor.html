@@ -45,10 +45,19 @@
   <div class="sidebar">
     <div class="sidebar-icons">
       <span class="material-icons expand-icon" onclick="toggleExpand(this)">expand_more</span>
-      <span class="material-icons">feedback</span>
+      <!--<span class="material-icons">feedback</span>-->
       <span class="material-icons">question_answer</span>
     </div>
     <div class="toggle" hidden>
+      <div id="comments">
+        <div>
+          <form id="comment-form" method="post">
+              <p><b><label for="{{ form.comment.id }}">Comment</label></b></p>
+              <p>{{ form.comment }}</p>
+              <button type="submit">Submit</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
   <div class="sidebar">

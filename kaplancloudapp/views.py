@@ -1,12 +1,16 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.core.files import File
 from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
-from .forms import KPPUploadForm, ProjectForm, TranslationMemoryForm
-from .models import ProjectFile, ProjectPackage, ProjectReport, Project, \
-                    Segment, TranslationMemory, TMEntry
+from .forms import KPPUploadForm, ProjectForm, SearchForm, \
+                   SegmentCommentForm, TranslationMemoryForm, \
+                   TranslationMemoryImportForm
+from .models import Client, Comment, ProjectFile, ProjectPackage, \
+                    ProjectReport, Project, Segment, TranslationMemory, TMEntry
+
+from .thread_classes import TMImportThread
 
 from datetime import datetime
 import difflib
@@ -24,6 +28,7 @@ from .utils import trim_segment
 # Create your views here.
 
 @login_required
+@permission_required('kaplancloudapp.add_project')
 def newproject(request):
     form = ProjectForm(request.POST or None, request.FILES or None)
     form.fields['translation_memories'].choices = ((request.POST.get('translation_memories'),'-----'),)
@@ -34,6 +39,8 @@ def newproject(request):
         new_project.target_language = form.cleaned_data['target_language'].iso_code
         new_project.due_by = form.cleaned_data['due_by']
         new_project.created_by = request.user
+        if form.cleaned_data.get('client'):
+            new_project.client = form.cleaned_data['client']
         new_project.save()
 
         for tm in form.cleaned_data['translation_memories']:
@@ -61,6 +68,7 @@ def newproject(request):
     return render(request, 'newproject.html', {'form':form})
 
 @login_required
+@permission_required('kaplancloudapp.add_translationmemory')
 def newtm(request):
     form = TranslationMemoryForm(request.POST or None)
 
@@ -78,7 +86,25 @@ def newtm(request):
 
 @login_required
 def projects(request):
-    projects = list(Project.objects.filter(created_by=request.user) | Project.objects.filter(managed_by=request.user))
+    form = SearchForm(request.GET)
+    display_form = False
+
+    projects = Project.objects.all()
+
+    if request.GET.get('source'):
+        projects = projects.filter(source_language=request.GET['source'])
+        display_form = True
+
+    if request.GET.get('target'):
+        projects = projects.filter(target_language=request.GET['target'])
+        display_form = True
+
+    if request.GET.get('client'):
+        client = Client.objects.get(id=request.GET['client'])
+        projects = projects.filter(client=client)
+        display_form = True
+
+    projects = list(projects.filter(created_by=request.user) | projects.filter(managed_by=request.user))
 
     project_files = ProjectFile.objects.all()
     for project in projects:
@@ -89,7 +115,7 @@ def projects(request):
             if project_file.project not in projects:
                 projects.append(project_file.project)
 
-    return render(request, 'projects.html', {'at_projects':True, 'projects':sorted(projects, key=lambda x: x.id, reverse=True)})
+    return render(request, 'projects.html', {'at_projects':True, 'projects':projects, 'form':form, 'display_form':display_form})
 
 @login_required
 def project(request, id): # TODO: Check user priviledges for certain batch tasks (eg. Export, Import)
@@ -216,6 +242,8 @@ def editor(request, id):
     else:
         return redirect('/accounts/login?next={0}'.format(request.path))
 
+    form = SegmentCommentForm(request.POST or None)
+
     if request.method == 'POST':
         if request.POST.get('task') == 'update_segment':
             segment_dict = request.POST
@@ -257,14 +285,33 @@ def editor(request, id):
 
             return JsonResponse(request.POST)
 
+        elif request.POST.get('task') == 'add_comment':
+            comment = request.POST['comment']
+            segment_id = request.POST['segment_id']
+
+            comment_instance = Comment()
+            comment_instance.comment = comment
+            comment_instance.segment = Segment.objects.get(id=segment_id)
+            comment_instance.created_by = request.user
+            comment_instance.save()
+
+            comment_dict = {
+                'comment': comment_instance.comment,
+                'created_by': comment_instance.created_by.username,
+                'created_at': comment_instance.created_at
+            }
+
+            return JsonResponse(comment_dict)
+
     else:
         bilingualfile = open_bilingualfile(project_file.target_bilingualfile.path)
 
         if request.GET.get('task') == 'lookup':
             segment_dict = request.GET
-            segment_source = Segment.objects.filter(file=project_file) \
-                             .filter(tu_id=segment_dict['tu_id']) \
-                             .get(s_id=segment_dict['s_id']).source
+            segment = Segment.objects.filter(file=project_file) \
+                      .filter(tu_id=segment_dict['tu_id']) \
+                      .get(s_id=segment_dict['s_id'])
+            segment_source = segment.source
             tm_entries = []
 
             for tm in project_file.project.translationmemories.all():
@@ -275,7 +322,13 @@ def editor(request, id):
                                                                   'updated_by': relevant_tm_entry.updated_by.username,
                                                                   'updated_at': relevant_tm_entry.updated_at}))
 
-            return JsonResponse(dict(tm_entries))
+            comments = []
+            for comment in Comment.objects.filter(segment=segment):
+                comments.append((comment.id, {'comment':comment.comment,
+                                              'created_by':comment.created_by.username if comment.created_by else 'N/A',
+                                              'created_at':comment.created_at}))
+
+            return JsonResponse({'tm':dict(tm_entries), 'comments':dict(comments)})
         else:
             translation_units = {}
             for segment_instance in Segment.objects.filter(file=project_file).order_by('s_id'):
@@ -283,7 +336,7 @@ def editor(request, id):
                     translation_units[segment_instance.tu_id] = {}
                 translation_units[segment_instance.tu_id][segment_instance.s_id] = segment_instance
 
-            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units})
+            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form})
 
 @login_required
 def report(request, id):
@@ -297,14 +350,23 @@ def report(request, id):
 
 @login_required
 def translation_memories(request):
-    source_language = request.GET.get('source-language')
-    target_language = request.GET.get('target-language')
+    form = SearchForm(request.GET)
+    display_form = False
 
     translation_memories = TranslationMemory.objects.all()
-    if source_language:
-        translation_memories = translation_memories.filter(source_language=source_language)
-    if target_language:
-        translation_memories = translation_memories.filter(target_language=target_language)
+
+    if request.GET.get('source'):
+        translation_memories = translation_memories.filter(source_language=request.GET['source'])
+        display_form = True
+
+    if request.GET.get('target'):
+        translation_memories = translation_memories.filter(target_language=request.GET['target'])
+        display_form = True
+
+    if request.GET.get('client'):
+        client = Client.objects.get(id=request.GET['client'])
+        translation_memories = translation_memories.filter(client=client)
+        display_form = True
 
     if request.GET.get('format') == 'JSON':
         tm_dict = {}
@@ -312,7 +374,7 @@ def translation_memories(request):
             tm_dict[tm.id] = tm.name
         return JsonResponse(tm_dict)
     else:
-        return render(request, 'translation-memories.html', {'at_tms':True, 'tms':translation_memories})
+        return render(request, 'translation-memories.html', {'at_tms':True, 'tms':translation_memories, 'form':form, 'display_form':display_form})
 
 @login_required
 def translation_memory(request, id):
@@ -320,7 +382,84 @@ def translation_memory(request, id):
                 .filter(translationmemory=TranslationMemory.objects.get(id=id)) \
                 .exclude(target='')
 
-    return render(request, 'tm.html', {'tm_entries':tm_entries})
+    return render(request, 'tm.html', {'tm_entries':tm_entries, 'tm_id':id})
+
+@login_required
+@permission_required('kaplancloudapp.add_translationmemory')
+def translation_memory_import(request, id):
+    translation_memory = TranslationMemory.objects.get(id=id)
+    form = TranslationMemoryImportForm(request.POST or None,
+                                       request.FILES or None,
+                                       initial={'source_language':translation_memory.source_language,
+                                                'target_language':translation_memory.target_language}
+                                       )
+
+    if form.is_valid():
+        tm_file = form.cleaned_data['tm_file']
+
+        tmp_path = Path('kaplancloudapp/.tmp/') / tm_file.name
+
+        while tmp_path.exists():
+            tmp_path = tmp_path.parent / (tmp_path.stem + '_' + tmp_path.suffix)
+
+        with open(tmp_path, 'wb') as target:
+            target.write(tm_file.read())
+
+        entries = []
+
+        if tmp_path.suffix.lower() == '.kdb':
+            kdb = KDB(str(tmp_path),
+                      form.cleaned_data['source_language'],
+                      form.cleaned_data['target_language'])
+
+            entries = kdb.get_entries()
+
+            tmp_path.unlink()
+        elif tmp_path.suffix.lower() == '.tmx':
+            tmp_path2 = tmp_path.parent / (tmp_path.stem + '.kdb')
+
+            while tmp_path2.exists():
+                tmp_path2 = tmp_path2.parent / (tmp_path2.steam + '_' + '.kdb')
+
+            kdb = KDB.new(str(tmp_path2),
+                          form.cleaned_data['source_language'],
+                          form.cleaned_data['target_language'])
+
+            kdb.import_tmx(tmp_path)
+
+            entries = kdb.get_entries()
+
+            tmp_path.unlink()
+            tmp_path2.unlink()
+
+        relevant_tm_entries = TMEntry.objects.filter(translationmemory=translation_memory)
+
+        sliced_entries = []
+        while len(entries) > 500:
+            sliced_entries.append(entries[:500])
+            entries = entries[500:]
+
+        if len(entries) > 0:
+            sliced_entries.append(entries)
+
+        threads = []
+
+        for entries in sliced_entries:
+            new_thread = TMImportThread(entries,
+                                        TMEntry,
+                                        translation_memory,
+                                        relevant_tm_entries)
+            threads.append(new_thread)
+
+        for thread in threads:
+            thread.start()
+
+        while max([thread.is_alive() for thread in threads]):
+            None
+
+        return redirect('tm', id=translation_memory.id)
+
+    return render(request, 'tm-import.html', {'form':form})
 
 def login(request):
     from django.contrib.auth import login

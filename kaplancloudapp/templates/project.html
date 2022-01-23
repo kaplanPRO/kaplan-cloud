@@ -22,7 +22,7 @@
     <!--<a class="disabled" href="#" title="Not yet implemented">Settings</a> TODO-->
     <!--<a class="disabled" href="#" title="Not yet implemented">Archive</a> TODO-->
     {% if not user.is_authenticated %}
-    <a id="logout" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
+    <a id="login" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
     {% else %}
     <a id="logout" href="{% url 'logout' %}"><span class="material-icons" title="logout">logout</span></a>
     {% endif %}

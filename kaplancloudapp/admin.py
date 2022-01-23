@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import LanguageProfile, Termbase, TBEntry, TBEntryUpdate, \
                     TranslationMemory, TMEntry, TMEntryUpdate, Project, \
                     ProjectFile, ProjectPackage, ProjectReport, Client, \
-                    Segment, SegmentUpdate
+                    Segment, SegmentUpdate, Comment
 
 # Register your models here.
 
@@ -36,8 +36,10 @@ admin.site.register(ProjectPackage)
 
 admin.site.register(ProjectReport)
 
-# admin.site.register(Client)
+admin.site.register(Client)
 
 admin.site.register(Segment)
 
 admin.site.register(SegmentUpdate)
+
+admin.site.register(Comment)
