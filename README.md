@@ -18,7 +18,7 @@ Now, let's start a [Kaplan Cloud container](https://hub.docker.com/r/kaplanpro/c
 docker run -d -p 8080:8080 --link kaplan-postgres -e POSTGRES_HOST=kaplan-postgres -e POSTGRES_PASSWORD=postgres -v kaplan-cloud:/code/kaplancloudapp/projects --restart always --name kaplan-cloud kaplanpro/cloud
 ```
 
-Finally, we need to create a superuser (admin):
+Finally, we need to create a superuser (admin) account for you:
 ```
 docker exec -it kaplan-cloud python manage.py createsuperuser
 ```
