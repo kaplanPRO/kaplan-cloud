@@ -8,6 +8,10 @@ python manage.py collectstatic --noinput
 echo "Apply database migrations"
 python manage.py migrate --noinput
 
+# Load PM group from fixtures
+echo "Load PM group from fixtures"
+python manage.py loaddata pm-group
+
 # Start server
 echo "Starting server"
 python manage.py runserver 0.0.0.0:8080

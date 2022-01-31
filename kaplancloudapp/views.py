@@ -460,28 +460,3 @@ def translation_memory_import(request, id):
         return redirect('tm', id=translation_memory.id)
 
     return render(request, 'tm-import.html', {'form':form})
-
-def login(request):
-    from django.contrib.auth import login
-    from django.contrib.auth.forms import AuthenticationForm
-
-    if request.method == 'POST':
-        form = AuthenticationForm(request, request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            if request.POST.get('next') != '':
-                return HttpResponseRedirect(request.POST['next'])
-            else:
-                return redirect('projects')
-        else:
-            return render(request, 'accounts/login.html', {'form':form})
-
-    else:
-        form = AuthenticationForm()
-        return render(request, 'accounts/login.html', {'form':form, 'next':request.GET.get('next', '')})
-
-def logout(request):
-    from django.contrib.auth import logout
-    logout(request)
-    return redirect('projects')
