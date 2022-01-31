@@ -63,6 +63,8 @@ class UserRegistrationForm(forms.ModelForm):
             token = self.cleaned_data['token']
             if token.user_type == 1:
                 user.groups.add(1)
+                user.is_staff = True
+                user.save()
             token.user = user
             token.save()
 
