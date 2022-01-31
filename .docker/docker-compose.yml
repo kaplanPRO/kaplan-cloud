@@ -20,14 +20,14 @@ services:
     restart: unless-stopped
   app:
     image: kaplanpro/cloud
-    command: bash -c "python manage.py migrate --no-input &&
-                      python manage.py collectstatic --no-input &&
-                      gunicorn kaplancloud.wsgi:application -b 0.0.0.0:8080 -w 2 -t 300"
     volumes:
       - ./app/projects:/code/kaplancloudapp/projects
       - staticfiles:/code/staticfiles
     env_file:
       - .env
+    environment:
+      - POSTGRES_HOST=db
+      - USE_GUNICORN=True
     depends_on:
       - db
     expose:

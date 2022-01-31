@@ -7,11 +7,8 @@ This example configuration assumes that you have [nginxproxy/nginx-proxy](https:
     POSTGRES_DB=postgres
     POSTGRES_USER=postgres
     POSTGRES_PASSWORD=postgres
-    POSTGRES_HOST=db
     VIRTUAL_HOST=deneme.com.tr
     NETWORK_NAME=deneme
-
-You should modify all fields except for POSTGRES_HOST.
 
 When you're done, all that is left to do is to run `docker-compose up -d` while in the same directory as docker-compose.yml
 
