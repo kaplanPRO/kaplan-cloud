@@ -9,7 +9,7 @@ If you would like help getting set up or try the demo available at [clouddemo.ka
 First, we need a [Postgres container](https://hub.docker.com/_/postgres) up and running:
 
 ```
-docker run -d --expose 5432 -e POSTGRES_PASSWORD=postgres -v kaplan-postgres/db:/var/lib/postgresql/data --restart always --name kaplan-postgres postgres
+docker run -d --expose 5432 -e POSTGRES_PASSWORD=postgres -v kaplan-postgres:/var/lib/postgresql/data --restart always --name kaplan-postgres postgres
 ```
 
 Now, let's start a [Kaplan Cloud container](https://hub.docker.com/r/kaplanpro/cloud):
