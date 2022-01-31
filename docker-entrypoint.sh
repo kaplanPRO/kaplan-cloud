@@ -14,4 +14,8 @@ python manage.py loaddata pm-group
 
 # Start server
 echo "Starting server"
-python manage.py runserver 0.0.0.0:8080
+if [[ -z "${USE_GUNICORN}" ]]; then
+  python manage.py runserver 0.0.0.0:${VIRTUAL_PORT-8080}
+else
+  gunicorn kaplancloud.wsgi:application -b 0.0.0.0:${VIRTUAL_PORT-8080} -w ${GUNICORN_WORKERS-2} -t ${GUNICORN_TIMEOUT-300}
+fi
