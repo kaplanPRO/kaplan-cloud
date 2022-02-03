@@ -1,9 +1,22 @@
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
 from .forms import UserRegistrationForm
+
+@login_required
+def change_password(request):
+    form = PasswordChangeForm(user=request.user, data = request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        update_session_auth_hash(request, form.user)
+        logout(request)
+        return redirect('projects')
+
+    return render(request, 'accounts/change-password.html', {'form':form})
 
 def signin(request):
     if request.method == 'POST':
