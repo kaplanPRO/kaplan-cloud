@@ -157,6 +157,12 @@ window.onload = function() {
     }
   }
 
+  document.body.onclick = function(e) {
+    if (['ec', 'g', 'sc', 'ph', 'x'].includes(e.target.tagName.toLowerCase()) && e.target.parentElement.tagName.toLowerCase() === 'td' && e.target.parentElement.className === 'source') {
+      e.target.parentElement.nextElementSibling.innerHTML += e.target.outerHTML;
+    }
+  }
+
   document.getElementById('comment-form').onsubmit = function(e) {
     e.preventDefault();
 
