@@ -12,6 +12,4 @@ urlpatterns = [
     path('translation-memory/<int:id>', views.translation_memory, name='tm'),
     path('translation-memory/<int:id>/import', views.translation_memory_import, name='tm-import'),
     path('translation-memory/new', views.newtm, name='newtm'),
-    path('accounts/login', views.login, name='login'),
-    path('accounts/logout', views.logout, name='logout')
 ]

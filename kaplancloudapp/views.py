@@ -118,7 +118,7 @@ def projects(request):
     return render(request, 'projects.html', {'at_projects':True, 'projects':projects, 'form':form, 'display_form':display_form})
 
 @login_required
-def project(request, id): # TODO: Check user priviledges for certain batch tasks (eg. Export, Import)
+def project(request, id):
     project = Project.objects.get(id=id)
     project_files = ProjectFile.objects.filter(project=project)
     if project.created_by != request.user and request.user not in project.managed_by.all():
@@ -137,6 +137,8 @@ def project(request, id): # TODO: Check user priviledges for certain batch tasks
                 return FileResponse(open(Path(project_file.get_target_directory()) / project_file.name, 'rb'))
             else:
                 return FileResponse(open(project_file.target_bilingualfile.path, 'rb'))
+        elif not request.user.has_perm('kaplancloudapp.change_project'):
+            return JsonResponse({'message':'forbidden'}, status=403)
         elif request.POST.get('task') == 'analyze':
             projectreport_instance = ProjectReport()
             projectreport_instance.project = project
@@ -267,18 +269,28 @@ def editor(request, id):
             segment.updated_by = request.user
             segment.save()
 
+            if segment.status != 'translated':
+                return JsonResponse(request.POST)
+
+            # Convert segment to segment entry format for better TM matches
+            source = etree.fromstring('<source>' + segment.source + '</source>')
+            source, _ = KDB.segment_to_entry(source)
+
+            target = etree.fromstring('<target>' + target + '</target>')
+            target, _ = KDB.segment_to_entry(target)
+
             for tm in project_file.project.translationmemories.all():
                 try:
-                    tm_entry = TMEntry.objects.filter(translationmemory=tm).get(source=segment.source)
+                    tm_entry = TMEntry.objects.filter(translationmemory=tm).get(source=source)
                     if tm_entry.target == target:
                         continue
                     tm_entry.target = target
                     tm_entry.updated_by = request.user
                     tm_entry.save()
-                except:
+                except TMEntry.DoesNotExist:
                     tm_entry = TMEntry()
-                    tm_entry.source = segment.source
-                    tm_entry.target = segment.target
+                    tm_entry.source = source
+                    tm_entry.target = target
                     tm_entry.translationmemory = tm
                     tm_entry.created_by = tm_entry.updated_by = request.user
                     tm_entry.save()
@@ -311,16 +323,40 @@ def editor(request, id):
             segment = Segment.objects.filter(file=project_file) \
                       .filter(tu_id=segment_dict['tu_id']) \
                       .get(s_id=segment_dict['s_id'])
-            segment_source = segment.source
-            tm_entries = []
+            segment_source = '<source>' + segment.source + '</source>'
+            segment_source = etree.fromstring(segment_source)
 
+
+            source_entry, tags = KDB.segment_to_entry(segment_source, {})
+            reversed_tags = {v: k for k, v in tags.items()}
+
+            sm = difflib.SequenceMatcher()
+            sm.set_seq2(source_entry)
+
+            tm_entries = []
             for tm in project_file.project.translationmemories.all():
                 for relevant_tm_entry in TMEntry.objects.filter(translationmemory=tm):
-                    if relevant_tm_entry.source == segment_source and relevant_tm_entry.target != '':
-                        tm_entries.append((relevant_tm_entry.id, {'source': relevant_tm_entry.source,
-                                                                  'target': relevant_tm_entry.target,
-                                                                  'updated_by': relevant_tm_entry.updated_by.username,
-                                                                  'updated_at': relevant_tm_entry.updated_at}))
+                    tm_entry_source = KDB.entry_to_segment(relevant_tm_entry.source, 'source', reversed_tags, segment_source)
+                    tm_entry_source = etree.tostring(tm_entry_source, encoding='UTF-8').decode()[8:-9]
+
+                    tm_entry_target = KDB.entry_to_segment(relevant_tm_entry.target, 'target', reversed_tags, segment_source)
+                    tm_entry_target = etree.tostring(tm_entry_target, encoding='UTF-8').decode()[8:-9]
+                    if relevant_tm_entry.source == source_entry and relevant_tm_entry.target != '':
+                        tm_entries.append((1.0, {'source': tm_entry_source,
+                                                 'target': tm_entry_target,
+                                                 'updated_by': relevant_tm_entry.updated_by.username,
+                                                 'updated_at': relevant_tm_entry.updated_at}))
+                        continue
+
+                    sm.set_seq1(tm_entry_source)
+                    diff = sm.ratio()
+                    if diff >= 0.5:
+                        tm_entries.append((diff, {'source': tm_entry_source,
+                                                  'target': tm_entry_target,
+                                                  'updated_by': relevant_tm_entry.updated_by.username,
+                                                  'updated_at': relevant_tm_entry.updated_at}))
+
+            tm_entries.sort(reverse=True)
 
             comments = []
             for comment in Comment.objects.filter(segment=segment):
@@ -328,7 +364,7 @@ def editor(request, id):
                                               'created_by':comment.created_by.username if comment.created_by else 'N/A',
                                               'created_at':comment.created_at}))
 
-            return JsonResponse({'tm':dict(tm_entries), 'comments':dict(comments)})
+            return JsonResponse({'tm':tm_entries, 'comments':dict(comments)})
         else:
             translation_units = {}
             for segment_instance in Segment.objects.filter(file=project_file).order_by('s_id'):
@@ -460,28 +496,3 @@ def translation_memory_import(request, id):
         return redirect('tm', id=translation_memory.id)
 
     return render(request, 'tm-import.html', {'form':form})
-
-def login(request):
-    from django.contrib.auth import login
-    from django.contrib.auth.forms import AuthenticationForm
-
-    if request.method == 'POST':
-        form = AuthenticationForm(request, request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            if request.POST.get('next') != '':
-                return HttpResponseRedirect(request.POST['next'])
-            else:
-                return redirect('projects')
-        else:
-            return render(request, 'accounts/login.html', {'form':form})
-
-    else:
-        form = AuthenticationForm()
-        return render(request, 'accounts/login.html', {'form':form, 'next':request.GET.get('next', '')})
-
-def logout(request):
-    from django.contrib.auth import logout
-    logout(request)
-    return redirect('projects')

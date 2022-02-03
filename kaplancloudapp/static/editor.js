@@ -37,26 +37,31 @@ window.onload = function() {
         tMHits.innerHTML = null;
 
         tm_data = data['tm'];
-        Object.keys(tm_data).forEach((key, i) => {
+
+        tm_data.forEach((tm_hit, i) => {
           hitSpan = document.createElement('span');
           hitSpan.className = 'tm-hit'
           sourceP = document.createElement('p');
-          sourceP.innerHTML = tm_data[key]['source'];
+          sourceP.innerHTML = tm_hit[1]['source'];
           hitSpan.appendChild(sourceP);
           //hitSpan.appendChild(document.createElement('hr'));
           targetP = document.createElement('p');
-          targetP.innerHTML = tm_data[key]['target'];
+          targetP.innerHTML = tm_hit[1]['target'];
           hitSpan.appendChild(targetP);
 
           hitDetailsSpan = document.createElement('span');
           hitDetailsSpan.className = 'details';
+          matchP = document.createElement('p');
+          matchP.className = 'detail';
+          matchP.textContent = new Intl.NumberFormat(undefined, {style:'percent'}).format(tm_hit[0]);
+          hitDetailsSpan.appendChild(matchP);
           userP = document.createElement('p');
           userP.className = 'detail';
-          userP.textContent = tm_data[key]['updated_by'];
+          userP.textContent = tm_hit[1]['updated_by'];
           hitDetailsSpan.appendChild(userP);
           datetimeP = document.createElement('p');
           datetimeP.className = 'detail';
-          datetimeP.textContent = new Date(tm_data[key]['updated_at']).toLocaleString();
+          datetimeP.textContent = new Date(tm_hit[1]['updated_at']).toLocaleString();
           hitDetailsSpan.appendChild(datetimeP);
           hitSpan.appendChild(hitDetailsSpan);
 
@@ -104,51 +109,61 @@ window.onload = function() {
     targetCell.addEventListener('focusout', function() {
       submitSegment(this);
     })
+  }
 
-    targetCell.onkeydown = function(e) {
-      if (e.ctrlKey || e.cmdKey) {
-        if (e.code === 'Insert') {
-          let sourceCell = this.parentNode.children[1];
-          insertInnerHTML(sourceCell, this);
-        } else if (e.code === 'Enter') {
-          this.parentNode.classList.remove('blank', 'error', 'draft', 'reviewed');
+  document.body.onkeydown = function(e) {
+    if (e.target.tagName.toLowerCase() !== 'td' || e.target.className !== 'target')
+    {
+      return;
+    }
+    if (e.ctrlKey || e.cmdKey) {
+      if (e.code === 'Insert') {
+        let sourceCell = e.target.parentElement.children[1];
+        insertInnerHTML(sourceCell, e.target);
+      } else if (e.code === 'Enter') {
+        e.target.parentElement.classList.remove('blank', 'error', 'draft', 'reviewed');
 
-          if (this.innerHTML !== '') {
-            this.parentNode.classList.add('translated');
-            this.parentNode.setAttribute('status', 'translated');
-          } else {
-            this.parentNode.classList.add('blank');
-            this.parentNode.setAttribute('status', 'blank');
-          }
+        if (e.target.innerHTML !== '') {
+          e.target.parentElement.classList.add('translated');
+          e.target.parentElement.setAttribute('status', 'translated');
+        } else {
+          e.target.parentElement.classList.add('blank');
+          e.target.parentElement.setAttribute('status', 'blank');
+        }
 
-          if (!e.shiftKey)
+        if (!e.shiftKey)
+        {
+          targetList = [...document.getElementsByClassName('target')];
+          let isNext = false;
+          for (i = 0; i < targetList.length; i++)
           {
-            targetList = [...document.getElementsByClassName('target')];
-            let isNext = false;
-            for (i = 0; i < targetList.length; i++)
-            {
-              nextTarget = targetList[i];
+            nextTarget = targetList[i];
 
-              if (nextTarget == this)
-              {
-                isNext = true;
-                continue;
-              }
-              if (isNext && !nextTarget.parentNode.classList.contains('translated'))
-              {
-                nextTarget.focus();
-                break;
-              }
+            if (nextTarget == e.target)
+            {
+              isNext = true;
+              continue;
+            }
+            if (isNext && !nextTarget.parentElement.classList.contains('translated'))
+            {
+              nextTarget.focus();
+              break;
             }
           }
-
         }
+
       }
-      else {
-        this.parentNode.classList.remove('blank', 'error', 'translated', 'reviewed');
-        this.parentNode.classList.add('draft');
-        this.parentNode.setAttribute('status', 'draft');
-      }
+    }
+    else {
+      e.target.parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
+      e.target.parentElement.classList.add('draft');
+      e.target.parentElement.setAttribute('status', 'draft');
+    }
+  }
+
+  document.body.onclick = function(e) {
+    if (['ec', 'g', 'sc', 'ph', 'x'].includes(e.target.tagName.toLowerCase()) && e.target.parentElement.tagName.toLowerCase() === 'td' && e.target.parentElement.className === 'source') {
+      e.target.parentElement.nextElementSibling.innerHTML += e.target.outerHTML;
     }
   }
 

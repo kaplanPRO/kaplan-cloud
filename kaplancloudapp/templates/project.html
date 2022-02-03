@@ -68,10 +68,10 @@
   </div>
 </div>
 <div id="context-menu">
-  <button id="context-btn-analyze" type="button">Analyze</button>
+  <button id="context-btn-analyze" type="button" {% if not perms.kaplancloudapp.change_project %}title="Forbidden for this account" disabled{% endif %}>Analyze</button>
   <button id="context-btn-download-translation" type="button">Download Translation</button>
-  <button id="context-btn-export" type="button">Export</button>
-  <button id="context-btn-import" type="button">Import</button>
+  <button id="context-btn-export" type="button" {% if not perms.kaplancloudapp.change_project %}title="Forbidden for this account" disabled{% endif %}>Export</button>
+  <button id="context-btn-import" type="button" {% if not perms.kaplancloudapp.change_project %}title="Forbidden for this account" disabled{% endif %}>Import</button>
 </div>
 <div id="report-toast">
   <p>Your report is ready. Please refresh this page to see it listed.</p>
