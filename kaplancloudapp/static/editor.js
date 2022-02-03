@@ -37,26 +37,31 @@ window.onload = function() {
         tMHits.innerHTML = null;
 
         tm_data = data['tm'];
-        Object.keys(tm_data).forEach((key, i) => {
+
+        tm_data.forEach((tm_hit, i) => {
           hitSpan = document.createElement('span');
           hitSpan.className = 'tm-hit'
           sourceP = document.createElement('p');
-          sourceP.innerHTML = tm_data[key]['source'];
+          sourceP.innerHTML = tm_hit[1]['source'];
           hitSpan.appendChild(sourceP);
           //hitSpan.appendChild(document.createElement('hr'));
           targetP = document.createElement('p');
-          targetP.innerHTML = tm_data[key]['target'];
+          targetP.innerHTML = tm_hit[1]['target'];
           hitSpan.appendChild(targetP);
 
           hitDetailsSpan = document.createElement('span');
           hitDetailsSpan.className = 'details';
+          matchP = document.createElement('p');
+          matchP.className = 'detail';
+          matchP.textContent = new Intl.NumberFormat(undefined, {style:'percent'}).format(tm_hit[0]);
+          hitDetailsSpan.appendChild(matchP);
           userP = document.createElement('p');
           userP.className = 'detail';
-          userP.textContent = tm_data[key]['updated_by'];
+          userP.textContent = tm_hit[1]['updated_by'];
           hitDetailsSpan.appendChild(userP);
           datetimeP = document.createElement('p');
           datetimeP.className = 'detail';
-          datetimeP.textContent = new Date(tm_data[key]['updated_at']).toLocaleString();
+          datetimeP.textContent = new Date(tm_hit[1]['updated_at']).toLocaleString();
           hitDetailsSpan.appendChild(datetimeP);
           hitSpan.appendChild(hitDetailsSpan);
 

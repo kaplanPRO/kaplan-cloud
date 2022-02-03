@@ -35,6 +35,10 @@ main#editor div.sidebar span.expand-icon {
 span.comment {
   grid-template-rows: 1fr auto;
 }
+span.comment span.details {
+  display: grid;
+  grid-template-columns: auto auto;
+}
 span.tm-hit {
   grid-template-rows: 1fr 1fr auto;
 }
@@ -47,9 +51,9 @@ span.tm-hit p.detail, span.comment p.detail {
   font-size: 0.5em;
   text-align: center;
 }
-span.tm-hit span.details, span.comment span.details {
+span.tm-hit span.details {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto 1fr auto;
 }
 table.tu {
   border-collapse: collapse;
