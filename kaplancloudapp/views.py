@@ -118,7 +118,7 @@ def projects(request):
     return render(request, 'projects.html', {'at_projects':True, 'projects':projects, 'form':form, 'display_form':display_form})
 
 @login_required
-def project(request, id): # TODO: Check user priviledges for certain batch tasks (eg. Export, Import)
+def project(request, id):
     project = Project.objects.get(id=id)
     project_files = ProjectFile.objects.filter(project=project)
     if project.created_by != request.user and request.user not in project.managed_by.all():
@@ -137,6 +137,8 @@ def project(request, id): # TODO: Check user priviledges for certain batch tasks
                 return FileResponse(open(Path(project_file.get_target_directory()) / project_file.name, 'rb'))
             else:
                 return FileResponse(open(project_file.target_bilingualfile.path, 'rb'))
+        elif not request.user.has_perm('kaplancloudapp.change_project'):
+            return JsonResponse({'message':'forbidden'}, status=403)
         elif request.POST.get('task') == 'analyze':
             projectreport_instance = ProjectReport()
             projectreport_instance.project = project
