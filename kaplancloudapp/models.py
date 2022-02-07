@@ -7,10 +7,16 @@ from pathlib import Path
 from .utils import get_kpp_path, get_source_file_path, get_target_file_path
 # Create your models here.
 
-segment_statuses = (
-    (0, 'Blank'),
-    (1, 'Draft'),
-    (2, 'Translated')
+file_statuses = project_statuses = (
+    (-1, 'Error'),
+    (0, 'Preparing'),
+    (1, 'Ready for Analysis'),
+    (2, 'Analyzing'),
+    (3, 'Ready for Translation'),
+    (4, 'In Translation'),
+    (5, 'In Review'),
+    (6, 'Completed'),
+    (7, 'Delivered')
 )
 
 report_statuses = (
@@ -18,6 +24,12 @@ report_statuses = (
     (1, 'Not Ready'),
     (2, 'Processing'),
     (3, 'Ready')
+)
+
+segment_statuses = (
+    (0, 'Blank'),
+    (1, 'Draft'),
+    (2, 'Translated')
 )
 
 
@@ -107,6 +119,7 @@ class Project(models.Model):
     managed_by = models.ManyToManyField(User, related_name='pm', blank=True)
     termbases = models.ManyToManyField(Termbase, blank=True)
     translationmemories = models.ManyToManyField(TranslationMemory, blank=True)
+    status = models.IntegerField(choices=project_statuses, default=0)
     client = models.ForeignKey(Client, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     directory = models.TextField()
@@ -140,6 +153,7 @@ class ProjectFile(models.Model):
     source_file = models.FileField(upload_to=get_source_file_path, blank=True, null=True)
     source_bilingualfile = models.FileField(upload_to=get_source_file_path, blank=True, null=True)
     target_bilingualfile = models.FileField(upload_to=get_target_file_path, blank=True)
+    status = models.IntegerField(choices=project_statuses, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     due_by = models.DateTimeField(blank=True, null=True)
     translator = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='translator')
@@ -157,6 +171,13 @@ class ProjectFile(models.Model):
 
     def get_target_directory(self):
         return str(Path(self.project.directory) / self.target_language)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.project:
+            earliest_status_in_project = min([project_file.status for project_file in self.__class__.objects.filter(project=self.project)])
+            self.project.status = earliest_status_in_project
+            self.project.save()
 
 
 class ProjectPackage(models.Model):
