@@ -144,6 +144,10 @@ class Project(models.Model):
 
         return manifest_dict
 
+    def get_status(self):
+        status_dict = dict(project_statuses)
+        return status_dict[self.status]
+
 
 class ProjectFile(models.Model):
     name = models.TextField()
@@ -168,6 +172,10 @@ class ProjectFile(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('editor', kwargs={'id' : self.id})
+
+    def get_status(self):
+        status_dict = dict(file_statuses)
+        return status_dict[self.status]
 
     def get_target_directory(self):
         return str(Path(self.project.directory) / self.target_language)

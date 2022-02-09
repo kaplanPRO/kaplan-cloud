@@ -35,16 +35,14 @@
       <tr>
         <th><input id="checkbox-main" type="checkbox"></th>
         <th>Name</th>
-        <th>Source Language</th>
-        <th>Target Language</th>
+        <th>Status</th>
         <th>Due by</th>
       </tr>
       {% for file in files %}
       <tr class="file" id="{{ file.id }}">
         <th><input class="checkbox" type="checkbox"></th>
         <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
-        <td>{{file.source_language}}</td>
-        <td>{{file.target_language}}</td>
+        <td>{{file.get_status}}</td>
         <td>
             {% if file.due_by %}
               {{file.due_by}}

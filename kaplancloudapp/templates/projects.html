@@ -37,6 +37,7 @@
       <th>Name</th>
       <th>Source Language</th>
       <th>Target Language</th>
+      <th>Status</th>
       <th>Due By</th>
       <th>Client</th>
       <!--<th></th>-->
@@ -46,6 +47,7 @@
       <td><a href="{% url 'project' project.id %}">{{project.name}}</a></td>
       <td>{{project.source_language}}</td>
       <td>{{project.target_language}}</td>
+      <td>{{project.get_status}}</td>
       <td>{{project.due_by}}</td>
       <td>{{project.client.name}}</td>
       <!--<td><span class="material-icons">expand_more</span></td> TODO-->
