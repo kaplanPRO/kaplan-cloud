@@ -110,10 +110,15 @@ def projects(request):
     for project in projects:
         project_files = project_files.exclude(project=project)
 
+    project_files = project_files.filter(translator=request.user) \
+                  | project_files.filter(reviewer=request.user)
+
+    project_files = project_files.filter(status__gte=4) \
+                  & project_files.filter(status__lte=6)
+
     for project_file in project_files:
-        if project_file.translator == request.user or project_file.reviewer == request.user:
-            if project_file.project not in projects:
-                projects.append(project_file.project)
+        if project_file.project not in projects:
+            projects.append(project_file.project)
 
     return render(request, 'projects.html', {'at_projects':True, 'projects':projects, 'form':form, 'display_form':display_form})
 
@@ -122,7 +127,12 @@ def project(request, id):
     project = Project.objects.get(id=id)
     project_files = ProjectFile.objects.filter(project=project)
     if project.created_by != request.user and request.user not in project.managed_by.all():
-        project_files = project_files.filter(translator=request.user) | project_files.filter(reviewer=request.user)
+        project_files = project_files.filter(translator=request.user) \
+                      | project_files.filter(reviewer=request.user)
+
+        project_files = project_files.filter(status__gte=4) \
+                      & project_files.filter(status__lte=6)
+
         if len(project_files) == 0:
             return redirect('/accounts/login?next={0}'.format(request.path))
 
@@ -236,11 +246,13 @@ def project(request, id):
 def editor(request, id):
     project_file = ProjectFile.objects.get(id=id)
 
-    if project_file.translator == request.user \
-        or project_file.reviewer == request.user \
-        or project_file.project.created_by == request.user \
+    if ((project_file.translator == request.user \
+        or project_file.reviewer == request.user) \
+        and project_file.status >= 4 and project_file.status <= 6):
+        pass
+    elif project_file.project.created_by == request.user \
         or request.user in project_file.project.managed_by.all():
-        None
+        pass
     else:
         return redirect('/accounts/login?next={0}'.format(request.path))
 
