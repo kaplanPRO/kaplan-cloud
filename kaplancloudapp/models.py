@@ -16,7 +16,7 @@ file_statuses = project_statuses = (
     (3, 'Ready for Translation'),
     (4, 'In Translation'),
     (5, 'In Review'),
-    (6, 'Completed'),
+    (6, 'Complete'),
     (7, 'Delivered')
 )
 
