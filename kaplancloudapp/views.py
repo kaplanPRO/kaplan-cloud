@@ -281,7 +281,7 @@ def editor(request, id):
             segment.updated_by = request.user
             segment.save()
 
-            if segment.status != 'translated':
+            if segment.status < 2:
                 return JsonResponse(request.POST)
 
             # Convert segment to segment entry format for better TM matches
