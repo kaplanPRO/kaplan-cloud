@@ -78,7 +78,10 @@ div#project div {
   overflow-y: auto;
 }
 div#projects table, div#project table, div#tms table {
-  width: 100%;
+  text-align: center;
+}
+div#projects table *, div#project table *, div#tms table * {
+  padding: .25rem .5rem;
 }
 div#search-form form {
   display: none;
