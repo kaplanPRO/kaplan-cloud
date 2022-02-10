@@ -4,6 +4,7 @@ from django.db import models
 
 from pathlib import Path
 
+from .thread_classes import NewFileThread
 from .utils import get_kpp_path, get_source_file_path, get_target_file_path
 # Create your models here.
 
@@ -181,8 +182,11 @@ class ProjectFile(models.Model):
         return str(Path(self.project.directory) / self.target_language)
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         super().save(*args, **kwargs)
-        if self.project:
+        if is_new:
+            NewFileThread(self).run()
+        elif self.project:
             earliest_status_in_project = min([project_file.status for project_file in self.__class__.objects.filter(project=self.project)])
             self.project.status = earliest_status_in_project
             self.project.save()
