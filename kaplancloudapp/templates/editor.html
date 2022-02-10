@@ -34,8 +34,8 @@
           {% for s_id, segment in translation_unit.items %}
           <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}}" status="{{segment.get_status.lower}}">
               <th class="sid">{{s_id}}</th>
-              <td class="source">{{segment.source | safe}}</td>
-              <td class="target" contenteditable="true">{{segment.target | safe}}</td>
+              <td class="source" lang="{{file.source_language}}">{{segment.source | safe}}</td>
+              <td class="target" contenteditable="true" lang="{{file.target_language}}">{{segment.target | safe}}</td>
           </tr>
           {% endfor %}
       </table>
