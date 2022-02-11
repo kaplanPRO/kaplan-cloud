@@ -36,6 +36,10 @@
         <th><input id="checkbox-main" type="checkbox"></th>
         <th>Name</th>
         <th>Status</th>
+        {% if perms.kaplancloudapp.change_project %}
+        <th>Translator</th>
+        <th>Reviewer</th>
+        {% endif %}
         <th>Due by</th>
       </tr>
       {% for file in files %}
@@ -43,6 +47,22 @@
         <th><input class="checkbox" type="checkbox"></th>
         <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
         <td>{{file.get_status}}</td>
+        {% if perms.kaplancloudapp.change_project %}
+        <td>
+          {% if file.translator %}
+            {{file.translator.username}}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if file.reviewer %}
+            {{file.reviewer.username}}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        {% endif %}
         <td>
             {% if file.due_by %}
               {{file.due_by}}
