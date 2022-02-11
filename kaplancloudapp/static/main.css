@@ -20,12 +20,13 @@ div.sidebar-icons span {
   display: block;
 }
 div#context-menu {
+  background-color: #2a2f33;
   border-collapse: collapse;
   display: none;
   position: absolute;
 }
 div#context-menu button {
-  background-color: #2a2f33;
+  background-color: inherit;
   color: #f5f5f5;
   display: block;
   font-size: 1rem;
@@ -37,15 +38,22 @@ div#context-menu button:hover {
   background-color: #f5f5f5;
   color: #2a2f33;
 }
-div#kpp-upload-form {
+div#context-menu hr {
+  border: 1px solid #f5f5f5;
+}
+div#kpp-upload-form, div#assign-linguist-form {
   background-color: rgba(255, 255, 255, 0.5);
   display: none;
   grid-template: 1fr auto 2fr / 1fr auto 1fr;
   height: 100%;
   position: absolute;
+  transition-duration: .4s;
   width: 100%;
 }
-div#kpp-upload-form form {
+div#kpp-upload-form.show, div#assign-linguist-form.show {
+  display: grid;
+}
+div#kpp-upload-form form, div#assign-linguist-form form {
   background-color: white;
   grid-column: 2;
   grid-row: 2;

@@ -89,7 +89,7 @@ class TranslationMemory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name_plural = "Translation memories"
+        verbose_name_plural = 'Translation memories'
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -209,6 +209,10 @@ class ProjectFile(models.Model):
         super().save(*args, **kwargs)
         if is_new:
             NewFileThread(self).run()
+            return
+        elif self.status == 3 and self.translator is not None:
+            self.status = 4
+            self.save()
         elif self.project:
             earliest_status_in_project = min([project_file.status for project_file in self.__class__.objects.filter(project=self.project)])
             if self.project.status != earliest_status_in_project:

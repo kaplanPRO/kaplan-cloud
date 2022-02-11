@@ -1,4 +1,5 @@
 window.onload = function() {
+  const assignLinguistForm = document.getElementById('assign-linguist-form').children[0];
   const checkboxMain = document.getElementById('checkbox-main');
   const contextMenu = document.getElementById('context-menu');
 
@@ -23,14 +24,12 @@ window.onload = function() {
     }
   }
 
-  document.onclick = function() {
+  document.onclick = function(e) {
     contextMenu.style.display = 'none';
-  }
 
-  document.getElementById('kpp-upload-form').onclick = function(e) {
-    if (e.target.id === 'kpp-upload-form')
+    if (e.target.id === 'kpp-upload-form' || e.target.id === 'assign-linguist-form')
     {
-      this.style.display = 'none';
+      e.target.classList.remove('show');
     }
   }
 
@@ -58,23 +57,60 @@ window.onload = function() {
   }
 
   document.getElementById('context-btn-import').onclick = function() {
-    document.getElementById('kpp-upload-form').style.display = 'grid';
+    document.getElementById('kpp-upload-form').className = "show";
   }
 
-  function getSelectedFiles() {
+  document.getElementById('context-btn-assign-reviewer').onclick = function() {
+    displayAssignLinguistForm(1);
+  }
+
+  document.getElementById('context-btn-assign-translator').onclick = function() {
+    displayAssignLinguistForm();
+  }
+
+  function displayAssignLinguistForm(role=0) {
+    document.getElementById('assign-linguist-form').className = "show";
+
+    assignLinguistForm['role'].value = role;
+
+    filesList = getSelectedFiles(true);
+    if (filesList.length === 0)
+    {
+      filesList = getAllFiles(true);
+    }
+    assignLinguistForm['file_ids'].value = filesList.join(';');
+
+    assignLinguistForm['task'].value = 'assign_linguist';
+  }
+
+  function getSelectedFiles(iDOnly=false) {
     let list = [];
     [...document.getElementsByClassName('checkbox')].forEach((item, i) => {
       if (item.checked)
       {
-        list.push([item.parentNode.parentNode.id, item.parentNode.parentNode.children[1].textContent]);
+        if (iDOnly)
+        {
+          list.push(item.parentElement.parentElement.id);
+        }
+        else
+        {
+          list.push([item.parentElement.parentElement.id, item.parentElement.parentElement.children[1].textContent]);
+        }
       }
     });
     return list;
   }
-  function getAllFiles() {
+  function getAllFiles(iDOnly=false) {
     let list = [];
     [...document.getElementsByClassName('file')].forEach((item, i) => {
-      list.push([item.id, item.children[1].textContent]);
+      if (iDOnly)
+      {
+        list.push(item.id);
+      }
+      else
+      {
+        list.push([item.id, item.children[1].textContent]);
+      }
     });
 
     return list;

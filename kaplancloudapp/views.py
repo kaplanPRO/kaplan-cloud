@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
-from .forms import KPPUploadForm, ProjectForm, SearchForm, \
+from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
                    SegmentCommentForm, TranslationMemoryForm, \
                    TranslationMemoryImportForm
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
@@ -136,7 +137,8 @@ def project(request, id):
         if len(project_files) == 0:
             return redirect('/accounts/login?next={0}'.format(request.path))
 
-    form = KPPUploadForm(request.POST or None, request.FILES or None)
+    form = KPPUploadForm()
+    form1 = AssignLinguistForm()
 
     if request.method == 'POST':
         if request.POST.get('task') == 'download_translation':
@@ -200,6 +202,8 @@ def project(request, id):
             return FileResponse(open(path_to_package, 'rb'))
 
         elif request.POST.get('task') == 'import':
+            form = KPPUploadForm(request.POST, request.FILES)
+
             with zipfile.ZipFile(form.files.getlist('package')[0]) as kpp:
                 manifest = json.loads(kpp.read('manifest.json'))
 
@@ -234,10 +238,28 @@ def project(request, id):
 
                     tmp_path.unlink()
 
+        elif request.POST.get('task') == 'assign_linguist':
+            form1 = AssignLinguistForm(request.POST)
+
+            if form1.is_valid():
+                for f_id in request.POST['file_ids'].split(';'):
+                    project_file = project_files.get(id=f_id)
+                    if int(request.POST['role']) == 0:
+                        if project_file.translator is not None and request.POST.get('override') is None:
+                            continue
+                        project_file.translator = User.objects.get(username=request.POST['username'])
+                        project_file.save()
+                    elif int(request.POST['role']) == 1:
+                        if project_file.reviewer is not None and request.POST.get('override') is None:
+                            continue
+                        project_file.reviewer = User.objects.get(username=request.POST['username'])
+                        project_file.save()
+
     return render(request,
                   'project.html',
                   {'files':project_files,
                    'form':form,
+                   'form1':form1,
                    'project':project,
                    'reports':ProjectReport.objects.filter(project=project).filter(status=3)
                   })
