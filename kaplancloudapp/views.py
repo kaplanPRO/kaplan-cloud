@@ -17,6 +17,7 @@ from datetime import datetime
 import difflib
 import json
 from pathlib import Path
+import tempfile
 import zipfile
 
 from lxml import etree
@@ -141,14 +142,27 @@ def project(request, id):
     form1 = AssignLinguistForm()
 
     if request.method == 'POST':
-        if request.POST.get('task') == 'download_translation':
-            project_file = project_files.get(id=int(request.POST['file_id']))
-            if project_file.source_file is not None:
-                bf = open_bilingualfile(project_file.target_bilingualfile.path)
-                bf.generate_target_translation(project_file.get_target_directory(), target_filename=project_file.name)
-                return FileResponse(open(Path(project_file.get_target_directory()) / project_file.name, 'rb'))
-            else:
-                return FileResponse(open(project_file.target_bilingualfile.path, 'rb'))
+        if request.POST.get('task') == 'download_translations':
+            with tempfile.TemporaryDirectory() as tempdir:
+                for pf_id in request.POST['file_ids'].split(';'):
+                    project_file = project_files.get(id=int(pf_id))
+                    if project_file.source_file is not None:
+                        bf = open_bilingualfile(project_file.target_bilingualfile.path)
+                        bf.generate_target_translation(tempdir, target_filename=project_file.name)
+                    else:
+                        with (Path(tempdir) / Path(project_file.target_bilingualfile.path).name).open() as tmpfile:
+                            with Path(project_file.target_bilingualfile.path).open() as target_bf:
+                                tmpfile.write_bytes(target_bf.read_bytes)
+
+                tempdir_files = list(Path(tempdir).iterdir())
+                if len(tempdir_files) > 1:
+                    tmpzip_path = Path(tempdir) / 'target.zip'
+                    with zipfile.ZipFile(tmpzip_path, 'w') as tmpzip:
+                        for tempdir_file in tempdir_files:
+                            tmpzip.write(tempdir_file, tempdir_file.name)
+                    return FileResponse(open(tmpzip_path, 'rb'))
+                else:
+                    return FileResponse(open(tempdir_files[0], 'rb'))
         elif not request.user.has_perm('kaplancloudapp.change_project'):
             return JsonResponse({'message':'forbidden'}, status=403)
         elif request.POST.get('task') == 'analyze':

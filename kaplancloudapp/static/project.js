@@ -42,10 +42,17 @@ window.onload = function() {
   }
 
   document.getElementById('context-btn-download-translation').onclick = function() {
+    fileIds = []
     filesList.forEach((item, i) => {
-      downloadTranslation(this, item[0], item[1]);
+      fileIds.push(item[0])
     });
-
+    if (filesList.length > 1) {
+      fileName = 'target.zip'
+    }
+    else {
+      fileName = filesList[0][1]
+    }
+    downloadTranslations(self, fileIds.join(';'), fileName)
   }
 
   document.getElementById('context-btn-export').onclick = function() {
@@ -162,11 +169,11 @@ function checkReport(reportId)
   )
 }
 
-function downloadTranslation(button, fileId, fileName)
+function downloadTranslations(button, fileIds, fileName)
 {
   fileFormData = new FormData();
-  fileFormData.append('task', 'download_translation');
-  fileFormData.append('file_id', fileId);
+  fileFormData.append('task', 'download_translations');
+  fileFormData.append('file_ids', fileIds);
 
   fetch('',
         {
