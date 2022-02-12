@@ -8,6 +8,7 @@ from .models import Client, LanguageProfile, TranslationMemory
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
+import tempfile
 
 from lxml import etree
 
@@ -66,28 +67,25 @@ class ProjectForm(forms.Form):
     def clean_project_files(self):
         files = self.files.getlist('project_files')
 
-        tmp_dir = settings.BASE_DIR / 'kaplancloudapp' / '.tmp'
-        if not tmp_dir.is_dir():
-            tmp_dir.mkdir()
-
         validationerrors = []
-        for i, file in enumerate(files):
-            path_to_file = tmp_dir / (datetime.now().isoformat() + Path(file.name).suffix)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir_path = Path(tmpdir)
 
-            with open(path_to_file, 'wb') as f:
-                f.write(file.read())
+            for i, file in enumerate(files):
+                path_to_file = tmpdir_path / file.name
 
-            try:
-                open_bilingualfile(str(path_to_file))
-                files[i].name = 'BF-' + file.name
-            except:
+                with open(path_to_file, 'wb') as f:
+                    f.write(file.read())
+
                 try:
-                    KXLIFF.new(str(path_to_file), 'xx', 'xx')
-                    files[i].name = 'MF-' + file.name
+                    open_bilingualfile(str(path_to_file))
+                    files[i].name = 'BF-' + file.name
                 except:
-                    validationerrors.append(ValidationError('{0} not compatible.'.format(file.name)))
-
-                path_to_file.unlink()
+                    try:
+                        KXLIFF.new(str(path_to_file), 'xx', 'xx')
+                        files[i].name = 'MF-' + file.name
+                    except:
+                        validationerrors.append(ValidationError('{0} not compatible.'.format(file.name)))
 
         if validationerrors != []:
             raise ValidationError(validationerrors)
