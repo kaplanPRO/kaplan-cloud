@@ -126,6 +126,7 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     directory = models.TextField()
     due_by = models.DateTimeField(blank=True, null=True)
+    _are_all_files_submitted = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id) + '-' + self.name
@@ -153,7 +154,7 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        if self.status == 1:
+        if self.status == 1 and self._are_all_files_submitted:
             ProjectFileModel = apps.get_model('kaplancloudapp', 'ProjectFile')
             project_files = ProjectFileModel.objects.filter(project=self)
             if min([self.status == pf.status for pf in project_files]):

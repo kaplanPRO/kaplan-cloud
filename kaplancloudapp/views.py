@@ -65,6 +65,9 @@ def newproject(request):
                 new_file.source_bilingualfile.save(new_file_name, file)
             new_file.save()
 
+        new_project._are_all_files_submitted = True
+        new_project.save()
+
         return redirect('projects')
 
     return render(request, 'newproject.html', {'form':form})
