@@ -131,7 +131,9 @@ def projects(request):
 def project(request, id):
     project = Project.objects.get(id=id)
     project_files = ProjectFile.objects.filter(project=project)
-    if project.created_by != request.user and request.user not in project.managed_by.all():
+    if not request.user.has_perm('kaplancloudapp.change_projectfile') \
+       and project.created_by != request.user \
+       and request.user not in project.managed_by.all():
         project_files = project_files.filter(translator=request.user) \
                       | project_files.filter(reviewer=request.user)
 
@@ -288,10 +290,16 @@ def editor(request, id):
     if ((project_file.translator == request.user \
         or project_file.reviewer == request.user) \
         and project_file.status >= 4 and project_file.status <= 6):
-        pass
-    elif project_file.project.created_by == request.user \
+        if project_file.translator == request.user and project_file.status == 4:
+            can_edit = True
+        elif project_file.reviewer == request.user and project_file.status == 5:
+            can_edit = True
+        else:
+            can_edit = False
+    elif request.user.has_perm('kaplancloudapp.change_projectfile') \
+        or request.user == project_file.project.created_by \
         or request.user in project_file.project.managed_by.all():
-        pass
+        can_edit = True
     else:
         return redirect('/accounts/login?next={0}'.format(request.path))
 
@@ -299,6 +307,8 @@ def editor(request, id):
 
     if request.method == 'POST':
         if request.POST.get('task') == 'update_segment':
+            if not can_edit:
+                return JsonResponse({'message':'forbidden'}, status=403)
             segment_dict = request.POST
 
             target = segment_dict['target'] \
@@ -423,7 +433,7 @@ def editor(request, id):
                     translation_units[segment_instance.tu_id] = {}
                 translation_units[segment_instance.tu_id][segment_instance.s_id] = segment_instance
 
-            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form})
+            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form, 'can_edit':can_edit})
 
 @login_required
 def report(request, id):
