@@ -2,6 +2,34 @@ body {
   display: grid;
   grid-template-rows: auto 1fr;
 }
+div#overlay-submit-translation {
+  background-color: rgba(255, 255, 255, 0.5);
+  display: none;
+  grid-template: minmax(5vh, 1fr) auto minmax(5vh, 2fr) / minmax(5vw, 1fr) auto minmax(5vw, 1fr);
+  height: 100%;
+  position: absolute;
+  transition-duration: .4s;
+  width: 100%;
+}
+div#overlay-submit-translation.visible {
+  display: grid;
+}
+div#overlay-submit-translation div {
+  background-color: white;
+  display: none;
+  grid-column: 2;
+  grid-row: 2;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: .25rem;
+}
+div#overlay-submit-translation div.visible {
+  display: block;
+}
+div#overlay-submit-translation div span {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
 div.sidebar div.toggle {
   width: 25ch;
 }
@@ -10,6 +38,13 @@ form#comment-form {
 }
 form#comment-form textarea {
   max-width: 90%;
+}
+header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+}
+header button {
+  grid-column: 3;
 }
 main#editor {
   display: grid;

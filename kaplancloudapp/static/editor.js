@@ -111,6 +111,42 @@ window.onload = function() {
     })
   }
 
+  document.getElementById('btn-submit-translation').onclick = function(e) {
+    const overlaySubmitTranslation = document.getElementById('overlay-submit-translation');
+    const untranslatedSegmentsTable = overlaySubmitTranslation.getElementsByTagName('table')[0];
+    overlaySubmitTranslation.classList.add('visible');
+    overlaySubmitTranslation.children[0].classList.add('visible');
+
+    let untranslatedSegmentFound = false;
+
+    let segmentRows = document.getElementsByClassName('segment');
+    let segmentRow;
+    for (let i = 0; i < segmentRows.length; i++)
+    {
+      segmentRow = segmentRows[i];
+
+      if (!segmentRow.classList.contains('translated'))
+      {
+        untranslatedSegmentFound = true;
+
+        let clonedSegmentRow = segmentRow.cloneNode(true);
+        clonedSegmentRow.children[2].removeAttribute('contentEditable');
+        clonedSegmentRow.children[2].removeAttribute('class');
+        let newRow = untranslatedSegmentsTable.insertRow();
+        newRow.innerHTML = clonedSegmentRow.innerHTML;
+      }
+    }
+    overlaySubmitTranslation.children[0].classList.remove('visible');
+    if (untranslatedSegmentFound)
+    {
+      overlaySubmitTranslation.children[2].classList.add('visible');
+    }
+    else
+    {
+      overlaySubmitTranslation.children[1].classList.add('visible');
+    }
+  }
+
   document.body.onkeydown = function(e) {
     if (e.target.tagName.toLowerCase() !== 'td' || e.target.className !== 'target')
     {
@@ -162,8 +198,19 @@ window.onload = function() {
   }
 
   document.body.onclick = function(e) {
-    if (['ec', 'g', 'sc', 'ph', 'x'].includes(e.target.tagName.toLowerCase()) && e.target.parentElement.tagName.toLowerCase() === 'td' && e.target.parentElement.className === 'source') {
+    if (['ec', 'g', 'sc', 'ph', 'x'].includes(e.target.tagName.toLowerCase())
+        && e.target.parentElement.tagName.toLowerCase() === 'td'
+        && e.target.parentElement.className === 'source')
+    {
       e.target.parentElement.nextElementSibling.innerHTML += e.target.outerHTML;
+    }
+    else if (e.target.tagName.toLowerCase() === 'button' && e.target.className === 'cancel')
+    {
+      closeOverlay();
+    }
+    else if (e.target.tagName.toLowerCase() === 'button' && e.target.className === 'advance-status')
+    {
+      advanceFileStatus();
     }
   }
 
@@ -211,6 +258,46 @@ window.onload = function() {
         console.error(error);
         console.error('Could not add comment.');
       })
+  }
+
+  function advanceFileStatus() {
+    let taskFormData = new FormData();
+    taskFormData.append('task', 'advance_file_status');
+
+    fetch('',
+          {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCSRFToken()
+            },
+            body: taskFormData
+          }
+      )
+      .then(response => {
+        if (!response.ok)
+        {
+          throw response;
+        }
+        else
+        {
+          location.reload();
+        }
+
+      })
+      .catch(error => {
+        console.error(error);
+      })
+
+  }
+
+  function closeOverlay() {
+    const overlaySubmitTranslation = document.getElementById('overlay-submit-translation');
+
+    overlaySubmitTranslation.classList.remove('visible');
+    overlaySubmitTranslation.children[0].classList.remove('visible');
+    overlaySubmitTranslation.children[1].classList.remove('visible');
+    overlaySubmitTranslation.children[2].classList.remove('visible');
+    overlaySubmitTranslation.children[2].getElementsByTagName('table')[0].innerHTML = null;
   }
 
   function getCSRFToken() {

@@ -287,7 +287,11 @@ def project(request, id):
 def editor(request, id):
     project_file = ProjectFile.objects.get(id=id)
 
-    if ((project_file.translator == request.user \
+    if request.user.has_perm('kaplancloudapp.change_projectfile') \
+        or request.user == project_file.project.created_by \
+        or request.user in project_file.project.managed_by.all():
+        can_edit = project_file.status < 7
+    elif ((project_file.translator == request.user \
         or project_file.reviewer == request.user) \
         and project_file.status >= 4 and project_file.status <= 6):
         if project_file.translator == request.user and project_file.status == 4:
@@ -296,10 +300,6 @@ def editor(request, id):
             can_edit = True
         else:
             can_edit = False
-    elif request.user.has_perm('kaplancloudapp.change_projectfile') \
-        or request.user == project_file.project.created_by \
-        or request.user in project_file.project.managed_by.all():
-        can_edit = True
     else:
         return redirect('/accounts/login?next={0}'.format(request.path))
 
@@ -375,6 +375,15 @@ def editor(request, id):
             }
 
             return JsonResponse(comment_dict)
+
+        elif request.POST.get('task') == 'advance_file_status':
+            if not can_edit:
+                return JsonResponse({'message':'forbidden'}, status=403)
+
+            project_file.status += 1
+            project_file.save()
+
+            return JsonResponse({'message':'success'})
 
     else:
         bilingualfile = open_bilingualfile(project_file.target_bilingualfile.path)

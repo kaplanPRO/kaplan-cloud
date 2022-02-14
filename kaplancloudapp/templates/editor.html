@@ -24,6 +24,15 @@
           </span>
         </a>
       </nav>
+      <button id="btn-submit-translation" {% if not can_edit %}disabled{% endif %}>
+        {% if file.status == 4 %}
+          Submit Translation
+        {% elif file.status == 5 %}
+          Submit Reviewed Translation
+        {% else %}
+          File Delivered
+        {% endif %}
+      </button>
     </header>
     <main id="editor">
         <div id="editor">
@@ -70,5 +79,27 @@
         </div>
       </div>
     </main>
+    <div id="overlay-submit-translation"> <!--TODO: Add QA steps-->
+      <div>
+        <p>Checking to see if all segments are translated...</p>
+      </div>
+      <div>
+        <p>No untranslated segments found.</p>
+        <p>Are you sure you wish to proceed? You won't be able to further edit the file.</p>
+        <span>
+          <button class="advance-status">Continue</button>
+          <button class="cancel">Return</button>
+        </span>
+      </div>
+      <div>
+        <p>The following segments are not translated:</p>
+        <table class="tu"></table>
+        <p>Are you sure you wish to proceed? You won't be able to further edit the file.</p>
+        <span>
+          <button class="advance-status">Continue</button>
+          <button class="cancel">Return</button>
+        </span>
+      </div>
+    </div>
   </body>
 </html>
