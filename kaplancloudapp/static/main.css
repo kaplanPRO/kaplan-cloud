@@ -194,6 +194,7 @@ ec, g, sc, ph, x {
   border-radius: 1em;
   color: #f5f5f5;
   cursor: pointer;
+  display: inline-block;
   padding: 0.1em;
   user-select: all;
 }
