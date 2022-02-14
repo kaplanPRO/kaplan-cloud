@@ -161,6 +161,12 @@ window.onload = function() {
     {
       return;
     }
+    [...e.target.getElementsByTagName('span')].forEach((item, i) => {
+      item.remove();
+    });
+    [...e.target.getElementsByTagName('br')].forEach((item, i) => {
+      item.remove();
+    });
     if (e.ctrlKey || e.cmdKey) {
       if (e.code === 'Insert') {
         let sourceCell = e.target.parentElement.children[1];
