@@ -10,9 +10,10 @@ window.onload = function() {
   const comments = document.getElementById('comments');
   const commentForm = document.getElementById('comment-form');
 
+  const targetCells = document.getElementsByClassName('target');
+
   let currentSegment;
 
-  const targetCells = document.getElementsByClassName('target');
   for (i = 0; i < targetCells.length; i++) {
     targetCell = targetCells[i];
 
@@ -43,10 +44,18 @@ window.onload = function() {
           hitSpan.className = 'tm-hit'
           sourceP = document.createElement('p');
           sourceP.innerHTML = tm_hit[1]['source'];
+          [...sourceP.children].forEach((child, i) => {
+            child.contentEditable = 'false';
+            child.draggable = 'true';
+          });
           hitSpan.appendChild(sourceP);
           //hitSpan.appendChild(document.createElement('hr'));
           targetP = document.createElement('p');
           targetP.innerHTML = tm_hit[1]['target'];
+          [...targetP.children].forEach((child, i) => {
+            child.contentEditable = 'false';
+            child.draggable = 'true';
+          });
           hitSpan.appendChild(targetP);
 
           hitDetailsSpan = document.createElement('span');
@@ -211,6 +220,18 @@ window.onload = function() {
     else if (e.target.tagName.toLowerCase() === 'button' && e.target.className === 'advance-status')
     {
       advanceFileStatus();
+    }
+    else if (e.target.className === 'tm-hit')
+    {
+      currentSegment.children[2].innerHTML = e.target.children[1].innerHTML;
+      currentSegment.children[2].parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
+      currentSegment.children[2].parentElement.classList.add('draft');
+    }
+    else if (e.target.parentElement.className === 'tm-hit')
+    {
+      currentSegment.children[2].innerHTML = e.target.parentElement.children[1].innerHTML;
+      currentSegment.children[2].parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
+      currentSegment.children[2].parentElement.classList.add('draft');
     }
   }
 
