@@ -362,9 +362,12 @@ def editor(request, id):
             comment = request.POST['comment']
             segment_id = request.POST['segment_id']
 
+            relevant_segment = Segment.objects.filter(file=project_file) \
+                                              .get(s_id=segment_id)
+
             comment_instance = Comment()
             comment_instance.comment = comment
-            comment_instance.segment = Segment.objects.get(id=segment_id)
+            comment_instance.segment = relevant_segment
             comment_instance.created_by = request.user
             comment_instance.save()
 
