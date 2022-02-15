@@ -1,23 +1,37 @@
+from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
 from pathlib import Path
 
+from .thread_classes import NewFileThread, NewProjectReportThread
 from .utils import get_kpp_path, get_source_file_path, get_target_file_path
 # Create your models here.
+
+file_statuses = project_statuses = (
+    (-1, 'Error'),
+    (0, 'Preparing'),
+    (1, 'Ready for Analysis'),
+    (2, 'Analyzing'),
+    (3, 'Ready for Translation'),
+    (4, 'In Translation'),
+    (5, 'In Review'),
+    (6, 'Complete'),
+    (7, 'Delivered')
+)
+
+report_statuses = (
+    (0, 'Blank'),
+    (1, 'Ready for Processing'),
+    (2, 'Processing'),
+    (3, 'Complete')
+)
 
 segment_statuses = (
     (0, 'Blank'),
     (1, 'Draft'),
     (2, 'Translated')
-)
-
-report_statuses = (
-    (0, 'Blank'),
-    (1, 'Not Ready'),
-    (2, 'Processing'),
-    (3, 'Ready')
 )
 
 
@@ -75,7 +89,7 @@ class TranslationMemory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name_plural = "Translation memories"
+        verbose_name_plural = 'Translation memories'
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -107,10 +121,12 @@ class Project(models.Model):
     managed_by = models.ManyToManyField(User, related_name='pm', blank=True)
     termbases = models.ManyToManyField(Termbase, blank=True)
     translationmemories = models.ManyToManyField(TranslationMemory, blank=True)
+    status = models.IntegerField(choices=project_statuses, default=0)
     client = models.ForeignKey(Client, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     directory = models.TextField()
     due_by = models.DateTimeField(blank=True, null=True)
+    _are_all_files_submitted = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id) + '-' + self.name
@@ -131,6 +147,32 @@ class Project(models.Model):
 
         return manifest_dict
 
+    def get_status(self):
+        status_dict = dict(project_statuses)
+        return status_dict[self.status]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if self.status == 1 and self._are_all_files_submitted:
+            ProjectFileModel = apps.get_model('kaplancloudapp', 'ProjectFile')
+            project_files = ProjectFileModel.objects.filter(project=self)
+            if min([self.status == pf.status for pf in project_files]):
+                ProjectReportModel = apps.get_model('kaplancloudapp',
+                                                    'ProjectReport')
+
+                new_report = ProjectReportModel()
+                new_report.content = {'waitingForFileAssignment':'True'}
+                #new_report.created_by = self.created_by
+                new_report.project = self
+                new_report.save()
+
+                for project_file in project_files:
+                    new_report.project_files.add(project_file)
+
+                new_report.status = 1
+                new_report.save()
+
 
 class ProjectFile(models.Model):
     name = models.TextField()
@@ -140,6 +182,7 @@ class ProjectFile(models.Model):
     source_file = models.FileField(upload_to=get_source_file_path, blank=True, null=True)
     source_bilingualfile = models.FileField(upload_to=get_source_file_path, blank=True, null=True)
     target_bilingualfile = models.FileField(upload_to=get_target_file_path, blank=True)
+    status = models.IntegerField(choices=project_statuses, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     due_by = models.DateTimeField(blank=True, null=True)
     translator = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='translator')
@@ -155,8 +198,27 @@ class ProjectFile(models.Model):
         from django.urls import reverse
         return reverse('editor', kwargs={'id' : self.id})
 
+    def get_status(self):
+        status_dict = dict(file_statuses)
+        return status_dict[self.status]
+
     def get_target_directory(self):
         return str(Path(self.project.directory) / self.target_language)
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        if is_new:
+            NewFileThread(self).run()
+            return
+        elif self.status == 3 and self.translator is not None:
+            self.status = 4
+            self.save()
+        elif self.project:
+            earliest_status_in_project = min([project_file.status for project_file in self.__class__.objects.filter(project=self.project)])
+            if self.project.status != earliest_status_in_project:
+                self.project.status = earliest_status_in_project
+                self.project.save()
 
 
 class ProjectPackage(models.Model):
@@ -183,6 +245,11 @@ class ProjectReport(models.Model):
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('report', kwargs={'id' : self.id})
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.status == 1:
+            NewProjectReportThread(self).run()
 
 
 class Segment(models.Model):

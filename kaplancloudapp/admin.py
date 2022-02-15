@@ -14,6 +14,10 @@ class LanguageProfileAdmin(admin.ModelAdmin):
         get_data['created_by'] = request.user.pk
         return get_data
 
+
+class ProjectAdmin(admin.ModelAdmin):
+    exclude = ('_are_all_files_submitted',)
+
 admin.site.register(LanguageProfile, LanguageProfileAdmin)
 
 admin.site.register(Termbase)
@@ -28,7 +32,7 @@ admin.site.register(TMEntry)
 
 admin.site.register(TMEntryUpdate)
 
-admin.site.register(Project)
+admin.site.register(Project, ProjectAdmin)
 
 admin.site.register(ProjectFile)
 

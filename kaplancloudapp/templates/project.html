@@ -4,7 +4,40 @@
 <script type="text/javascript" src="{% static 'project.js' %}"></script>
 {% endblock %}
 {% block div %}
-<div id="kpp-upload-form">
+{% if perms.kaplancloudapp.change_project %}
+<div id="assign-linguist-form" {% if form1.errors %}class="show"{% endif %}>
+  <form enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    <table>
+      {% if form1.username.errors %}
+      <tr>
+        <td colspan="2">{{form1.username.errors}}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th>{{form1.username.label_tag}}</th>
+        <td>{{form1.username}}</td>
+      </tr>
+      <tr>
+        <th></th>
+        <td>{{form1.override}}<label for="{{ form1.override.id_for_label }}">Override assignments for selected files.</label></td>
+      </tr>
+      <tr>
+        <th></th>
+        <td>
+          {{form1.role}}
+          {{form1.file_ids}}
+        </td>
+      </tr>
+      <tr>
+        <th></th>
+        <td><button type="submit" name="button">Assign</button></td>
+      </tr>
+      <input type="hidden" name="task">
+    </table>
+  </form>
+</div>
+<div id="kpp-upload-form" {% if form.errors %}class="show"{% endif %}>
   <form enctype="multipart/form-data" method="post">
     {% csrf_token %}
     <table>
@@ -17,6 +50,7 @@
     </table>
   </form>
 </div>
+{% endif %}
 <header id="header-project">
   <nav>
     <!--<a class="disabled" href="#" title="Not yet implemented">Settings</a> TODO-->
@@ -30,21 +64,39 @@
 </header>
 <div id="project">
   <div>
-    <h4>Files</h4>
+    <h3>Files</h3>
     <table>
       <tr>
         <th><input id="checkbox-main" type="checkbox"></th>
         <th>Name</th>
-        <th>Source Language</th>
-        <th>Target Language</th>
+        <th>Status</th>
+        {% if perms.kaplancloudapp.change_project %}
+        <th>Translator</th>
+        <th>Reviewer</th>
+        {% endif %}
         <th>Due by</th>
       </tr>
       {% for file in files %}
       <tr class="file" id="{{ file.id }}">
         <th><input class="checkbox" type="checkbox"></th>
         <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
-        <td>{{file.source_language}}</td>
-        <td>{{file.target_language}}</td>
+        <td>{{file.get_status}}</td>
+        {% if perms.kaplancloudapp.change_project %}
+        <td>
+          {% if file.translator %}
+            {{file.translator.username}}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>
+          {% if file.reviewer %}
+            {{file.reviewer.username}}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        {% endif %}
         <td>
             {% if file.due_by %}
               {{file.due_by}}
@@ -59,7 +111,7 @@
     </table>
   </div>
   <div>
-    <h4>Reports</h4>
+    <h3>Reports</h3>
     <ul>
       {% for report in reports %}
       <li><a href="{% url 'report' report.id %}" target="_blank">{{report.created_at}}</a></li>
@@ -68,10 +120,16 @@
   </div>
 </div>
 <div id="context-menu">
-  <button id="context-btn-analyze" type="button" {% if not perms.kaplancloudapp.change_project %}title="Forbidden for this account" disabled{% endif %}>Analyze</button>
   <button id="context-btn-download-translation" type="button">Download Translation</button>
-  <button id="context-btn-export" type="button" {% if not perms.kaplancloudapp.change_project %}title="Forbidden for this account" disabled{% endif %}>Export</button>
-  <button id="context-btn-import" type="button" {% if not perms.kaplancloudapp.change_project %}title="Forbidden for this account" disabled{% endif %}>Import</button>
+  {% if perms.kaplancloudapp.change_project %}
+  <hr/>
+  <button id="context-btn-analyze">Analyze</button>
+  <button id="context-btn-export">Export</button>
+  <button id="context-btn-import">Import</button>
+  <hr/>
+  <button id="context-btn-assign-reviewer">Assign Reviewer</button>
+  <button id="context-btn-assign-translator">Assign Translator</button>
+  {% endif %}
 </div>
 <div id="report-toast">
   <p>Your report is ready. Please refresh this page to see it listed.</p>

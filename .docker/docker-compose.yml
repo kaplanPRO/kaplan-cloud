@@ -7,24 +7,28 @@ networks:
 
 volumes:
   staticfiles:
+    name: ${PROJECT_NAME:-kaplan-cloud}_staticfiles
 
 services:
   db:
     image: postgres
+    container_name: ${PROJECT_NAME:-kaplan-cloud}_db
     volumes:
       - ./db/data/db:/var/lib/postgresql/data
     env_file:
-      - .env
+      - db.env
     expose:
       - 5432
     restart: unless-stopped
   app:
     image: kaplanpro/cloud
+    container_name: ${PROJECT_NAME:-kaplan-cloud}_app
     volumes:
       - ./app/projects:/code/kaplancloudapp/projects
       - staticfiles:/code/staticfiles
     env_file:
       - .env
+      - db.env
     environment:
       - POSTGRES_HOST=db
       - USE_GUNICORN=True
@@ -35,8 +39,8 @@ services:
     restart: unless-stopped
   nginx:
     image: nginx
+    container_name: ${PROJECT_NAME:-kaplan-cloud}_web
     environment:
-      - VIRTUAL_HOST=${VIRTUAL_HOST}
       - VIRTUAL_PORT=8080
     links:
       - app
@@ -44,8 +48,8 @@ services:
       - default
       - customnetwork
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - staticfiles:/staticfiles
+      - ./web/default.conf:/etc/nginx/conf.d/default.conf
+      - staticfiles:/staticfiles:ro
     expose:
       - 8080
     restart: unless-stopped

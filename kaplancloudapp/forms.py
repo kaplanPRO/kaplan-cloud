@@ -1,5 +1,6 @@
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
 from .models import Client, LanguageProfile, TranslationMemory
@@ -7,11 +8,27 @@ from .models import Client, LanguageProfile, TranslationMemory
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
+import tempfile
 
 from lxml import etree
 
 from kaplan import open_bilingualfile
 from kaplan.kxliff import KXLIFF
+
+
+class AssignLinguistForm(forms.Form):
+    username = forms.CharField(max_length=128)
+    override = forms.BooleanField(required=False)
+    role = forms.ChoiceField(choices=((0,'Translator'),(1,'Reviewer')), initial=0, widget=forms.HiddenInput())
+    file_ids = forms.CharField(widget=forms.HiddenInput())
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        try:
+            user = User.objects.get(username=username)
+            return username
+        except User.DoesNotExist:
+            raise ValidationError('No users found with that username')
 
 
 class KPPUploadForm(forms.Form):
@@ -50,28 +67,25 @@ class ProjectForm(forms.Form):
     def clean_project_files(self):
         files = self.files.getlist('project_files')
 
-        tmp_dir = settings.BASE_DIR / 'kaplancloudapp' / '.tmp'
-        if not tmp_dir.is_dir():
-            tmp_dir.mkdir()
-
         validationerrors = []
-        for i, file in enumerate(files):
-            path_to_file = tmp_dir / (datetime.now().isoformat() + Path(file.name).suffix)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir_path = Path(tmpdir)
 
-            with open(path_to_file, 'wb') as f:
-                f.write(file.read())
+            for i, file in enumerate(files):
+                path_to_file = tmpdir_path / file.name
 
-            try:
-                open_bilingualfile(str(path_to_file))
-                files[i].name = 'BF-' + file.name
-            except:
+                with open(path_to_file, 'wb') as f:
+                    f.write(file.read())
+
                 try:
-                    KXLIFF.new(str(path_to_file), 'xx', 'xx')
-                    files[i].name = 'MF-' + file.name
+                    open_bilingualfile(str(path_to_file))
+                    files[i].name = 'BF-' + file.name
                 except:
-                    validationerrors.append(ValidationError('{0} not compatible.'.format(file.name)))
-
-                path_to_file.unlink()
+                    try:
+                        KXLIFF.new(str(path_to_file), 'xx', 'xx')
+                        files[i].name = 'MF-' + file.name
+                    except:
+                        validationerrors.append(ValidationError('{0} not compatible.'.format(file.name)))
 
         if validationerrors != []:
             raise ValidationError(validationerrors)
@@ -94,6 +108,7 @@ class TranslationMemoryForm(forms.Form):
     source_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
+
 
 class TranslationMemoryImportForm(forms.Form):
     source_language = forms.CharField(max_length=10, required=False, help_text='Language code')

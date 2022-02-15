@@ -6,7 +6,5 @@ class AppConfig(AppConfig):
     name = 'kaplancloudapp'
 
     def ready(self):
-        from .signals import new_file_handler, \
-                             new_projectreport_handler, \
-                             segment_update_handler, \
+        from .signals import segment_update_handler, \
                              tmentry_update_handler

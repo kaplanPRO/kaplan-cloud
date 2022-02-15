@@ -26,8 +26,8 @@ class UserRegistrationForm(forms.ModelForm):
         model = User
         fields = ('username','first_name','last_name','email')
 
-    field_order = ['username', 'first_name', 'last_name', 'email',
-                   'password1','password2','token']
+        field_order = ['username', 'first_name', 'last_name', 'email',
+                       'password1','password2','token']
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -40,8 +40,9 @@ class UserRegistrationForm(forms.ModelForm):
         return password2
 
     def clean_token(self):
+        token = self.cleaned_data.get('token')
         try:
-            token = UserRegistrationToken.objects.get(token=self.cleaned_data.get('token'))
+            token = UserRegistrationToken.objects.get(token=token)
         except UserRegistrationToken.DoesNotExist as error:
             self.add_error('token', error)
 
@@ -52,7 +53,7 @@ class UserRegistrationForm(forms.ModelForm):
         password = self.cleaned_data['password2']
         try:
             password_validation.validate_password(password, self.instance)
-        except ValidationError as error:
+        except forms.ValidationError as error:
             self.add_error('password2', error)
 
     def save(self, commit=True):

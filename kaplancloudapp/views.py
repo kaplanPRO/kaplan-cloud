@@ -1,10 +1,11 @@
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 
-from .forms import KPPUploadForm, ProjectForm, SearchForm, \
+from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
                    SegmentCommentForm, TranslationMemoryForm, \
                    TranslationMemoryImportForm
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
@@ -16,6 +17,7 @@ from datetime import datetime
 import difflib
 import json
 from pathlib import Path
+import tempfile
 import zipfile
 
 from lxml import etree
@@ -62,6 +64,9 @@ def newproject(request):
             else:
                 new_file.source_bilingualfile.save(new_file_name, file)
             new_file.save()
+
+        new_project._are_all_files_submitted = True
+        new_project.save()
 
         return redirect('projects')
 
@@ -110,10 +115,15 @@ def projects(request):
     for project in projects:
         project_files = project_files.exclude(project=project)
 
+    project_files = project_files.filter(translator=request.user) \
+                  | project_files.filter(reviewer=request.user)
+
+    project_files = project_files.filter(status__gte=4) \
+                  & project_files.filter(status__lte=6)
+
     for project_file in project_files:
-        if project_file.translator == request.user or project_file.reviewer == request.user:
-            if project_file.project not in projects:
-                projects.append(project_file.project)
+        if project_file.project not in projects:
+            projects.append(project_file.project)
 
     return render(request, 'projects.html', {'at_projects':True, 'projects':projects, 'form':form, 'display_form':display_form})
 
@@ -121,22 +131,43 @@ def projects(request):
 def project(request, id):
     project = Project.objects.get(id=id)
     project_files = ProjectFile.objects.filter(project=project)
-    if project.created_by != request.user and request.user not in project.managed_by.all():
-        project_files = project_files.filter(translator=request.user) | project_files.filter(reviewer=request.user)
+    if not request.user.has_perm('kaplancloudapp.change_projectfile') \
+       and project.created_by != request.user \
+       and request.user not in project.managed_by.all():
+        project_files = project_files.filter(translator=request.user) \
+                      | project_files.filter(reviewer=request.user)
+
+        project_files = project_files.filter(status__gte=4) \
+                      & project_files.filter(status__lte=6)
+
         if len(project_files) == 0:
             return redirect('/accounts/login?next={0}'.format(request.path))
 
-    form = KPPUploadForm(request.POST or None, request.FILES or None)
+    form = KPPUploadForm()
+    form1 = AssignLinguistForm()
 
     if request.method == 'POST':
-        if request.POST.get('task') == 'download_translation':
-            project_file = project_files.get(id=int(request.POST['file_id']))
-            if project_file.source_file is not None:
-                bf = open_bilingualfile(project_file.target_bilingualfile.path)
-                bf.generate_target_translation(project_file.get_target_directory(), target_filename=project_file.name)
-                return FileResponse(open(Path(project_file.get_target_directory()) / project_file.name, 'rb'))
-            else:
-                return FileResponse(open(project_file.target_bilingualfile.path, 'rb'))
+        if request.POST.get('task') == 'download_translations':
+            with tempfile.TemporaryDirectory() as tempdir:
+                for pf_id in request.POST['file_ids'].split(';'):
+                    project_file = project_files.get(id=int(pf_id))
+                    if project_file.source_file is not None:
+                        bf = open_bilingualfile(project_file.target_bilingualfile.path)
+                        bf.generate_target_translation(tempdir, target_filename=project_file.name)
+                    else:
+                        with (Path(tempdir) / Path(project_file.target_bilingualfile.path).name).open() as tmpfile:
+                            with Path(project_file.target_bilingualfile.path).open() as target_bf:
+                                tmpfile.write_bytes(target_bf.read_bytes)
+
+                tempdir_files = list(Path(tempdir).iterdir())
+                if len(tempdir_files) > 1:
+                    tmpzip_path = Path(tempdir) / 'target.zip'
+                    with zipfile.ZipFile(tmpzip_path, 'w') as tmpzip:
+                        for tempdir_file in tempdir_files:
+                            tmpzip.write(tempdir_file, tempdir_file.name)
+                    return FileResponse(open(tmpzip_path, 'rb'))
+                else:
+                    return FileResponse(open(tempdir_files[0], 'rb'))
         elif not request.user.has_perm('kaplancloudapp.change_project'):
             return JsonResponse({'message':'forbidden'}, status=403)
         elif request.POST.get('task') == 'analyze':
@@ -190,6 +221,8 @@ def project(request, id):
             return FileResponse(open(path_to_package, 'rb'))
 
         elif request.POST.get('task') == 'import':
+            form = KPPUploadForm(request.POST, request.FILES)
+
             with zipfile.ZipFile(form.files.getlist('package')[0]) as kpp:
                 manifest = json.loads(kpp.read('manifest.json'))
 
@@ -224,10 +257,28 @@ def project(request, id):
 
                     tmp_path.unlink()
 
+        elif request.POST.get('task') == 'assign_linguist':
+            form1 = AssignLinguistForm(request.POST)
+
+            if form1.is_valid():
+                for f_id in request.POST['file_ids'].split(';'):
+                    project_file = project_files.get(id=f_id)
+                    if int(request.POST['role']) == 0:
+                        if project_file.translator is not None and request.POST.get('override') is None:
+                            continue
+                        project_file.translator = User.objects.get(username=request.POST['username'])
+                        project_file.save()
+                    elif int(request.POST['role']) == 1:
+                        if project_file.reviewer is not None and request.POST.get('override') is None:
+                            continue
+                        project_file.reviewer = User.objects.get(username=request.POST['username'])
+                        project_file.save()
+
     return render(request,
                   'project.html',
                   {'files':project_files,
                    'form':form,
+                   'form1':form1,
                    'project':project,
                    'reports':ProjectReport.objects.filter(project=project).filter(status=3)
                   })
@@ -236,11 +287,19 @@ def project(request, id):
 def editor(request, id):
     project_file = ProjectFile.objects.get(id=id)
 
-    if project_file.translator == request.user \
-        or project_file.reviewer == request.user \
-        or project_file.project.created_by == request.user \
+    if request.user.has_perm('kaplancloudapp.change_projectfile') \
+        or request.user == project_file.project.created_by \
         or request.user in project_file.project.managed_by.all():
-        None
+        can_edit = project_file.status < 7
+    elif ((project_file.translator == request.user \
+        or project_file.reviewer == request.user) \
+        and project_file.status >= 4 and project_file.status <= 6):
+        if project_file.translator == request.user and project_file.status == 4:
+            can_edit = True
+        elif project_file.reviewer == request.user and project_file.status == 5:
+            can_edit = True
+        else:
+            can_edit = False
     else:
         return redirect('/accounts/login?next={0}'.format(request.path))
 
@@ -248,6 +307,8 @@ def editor(request, id):
 
     if request.method == 'POST':
         if request.POST.get('task') == 'update_segment':
+            if not can_edit:
+                return JsonResponse({'message':'forbidden'}, status=403)
             segment_dict = request.POST
 
             target = segment_dict['target'] \
@@ -269,7 +330,7 @@ def editor(request, id):
             segment.updated_by = request.user
             segment.save()
 
-            if segment.status != 'translated':
+            if segment.status < 2:
                 return JsonResponse(request.POST)
 
             # Convert segment to segment entry format for better TM matches
@@ -301,9 +362,12 @@ def editor(request, id):
             comment = request.POST['comment']
             segment_id = request.POST['segment_id']
 
+            relevant_segment = Segment.objects.filter(file=project_file) \
+                                              .get(s_id=segment_id)
+
             comment_instance = Comment()
             comment_instance.comment = comment
-            comment_instance.segment = Segment.objects.get(id=segment_id)
+            comment_instance.segment = relevant_segment
             comment_instance.created_by = request.user
             comment_instance.save()
 
@@ -314,6 +378,15 @@ def editor(request, id):
             }
 
             return JsonResponse(comment_dict)
+
+        elif request.POST.get('task') == 'advance_file_status':
+            if not can_edit:
+                return JsonResponse({'message':'forbidden'}, status=403)
+
+            project_file.status += 1
+            project_file.save()
+
+            return JsonResponse({'message':'success'})
 
     else:
         bilingualfile = open_bilingualfile(project_file.target_bilingualfile.path)
@@ -372,7 +445,7 @@ def editor(request, id):
                     translation_units[segment_instance.tu_id] = {}
                 translation_units[segment_instance.tu_id][segment_instance.s_id] = segment_instance
 
-            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form})
+            return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form, 'can_edit':can_edit})
 
 @login_required
 def report(request, id):
