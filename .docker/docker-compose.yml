@@ -40,6 +40,8 @@ services:
   nginx:
     image: nginx
     container_name: ${PROJECT_NAME:-kaplan-cloud}_web
+    env_file:
+      - web.env
     environment:
       - VIRTUAL_PORT=8080
     links:
