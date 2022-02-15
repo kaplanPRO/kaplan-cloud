@@ -18,4 +18,6 @@ RUN chown -R kaplan /code/
 
 USER kaplan
 
+EXPOSE 8080
+
 STOPSIGNAL SIGINT
