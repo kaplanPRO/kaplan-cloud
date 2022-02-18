@@ -159,7 +159,7 @@ def project(request, id):
                             with Path(project_file.target_bilingualfile.path).open() as target_bf:
                                 tmpfile.write_bytes(target_bf.read_bytes)
 
-                tempdir_files = list(Path(tempdir).iterdir())
+                tempdir_files = [tempdir_file for tempdir_file in list(Path(tempdir).iterdir()) if not tempdir_file.is_dir()]
                 if len(tempdir_files) > 1:
                     tmpzip_path = Path(tempdir) / 'target.zip'
                     with zipfile.ZipFile(tmpzip_path, 'w') as tmpzip:
