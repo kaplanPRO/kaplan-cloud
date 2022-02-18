@@ -18,7 +18,7 @@ window.onload = function() {
     targetCell = targetCells[i];
 
     targetCell.onfocus = function(e) {
-      currentSegment = this.parentNode;
+      currentSegment = this.parentElement;
       commentForm.style.display = 'block';
 
       while (comments.children.length > 1) {
@@ -28,8 +28,8 @@ window.onload = function() {
       var url = new URL(window.location.href);
 
       var params = {task:'lookup',
-                    tu_id:this.parentNode.parentNode.parentNode.id,
-                    s_id:this.parentNode.id};
+                    tu_id:this.parentElement.parentElement.parentElement.id,
+                    s_id:this.parentElement.id};
       url.search = new URLSearchParams(params).toString();
 
       fetch(url)
@@ -336,16 +336,16 @@ window.onload = function() {
   }
 
   function submitSegment(targetCell) {
-    let status = targetCell.parentNode.getAttribute('status');
+    let status = targetCell.parentElement.getAttribute('status');
 
-    targetCell.parentNode.classList.remove(('blank', 'draft', 'translated', 'error'));
-    targetCell.parentNode.classList.add(status);
+    targetCell.parentElement.classList.remove(('blank', 'draft', 'translated', 'error'));
+    targetCell.parentElement.classList.add(status);
 
     segmentFormData = new FormData();
     segmentFormData.append('task', 'update_segment');
     segmentFormData.append('status', status);
-    segmentFormData.append('tu_id', targetCell.parentNode.parentNode.parentNode.id);
-    segmentFormData.append('s_id', targetCell.parentNode.id);
+    segmentFormData.append('tu_id', targetCell.parentElement.parentElement.parentElement.id);
+    segmentFormData.append('s_id', targetCell.parentElement.id);
     segmentFormData.append('target', targetCell.innerHTML);
 
     fetch('',
@@ -360,14 +360,14 @@ window.onload = function() {
       .then(response => {
         if (!response.ok)
         {
-          throw 'Could not update segment #' + targetCell.parentNode.id + '.';
+          throw 'Could not update segment #' + targetCell.parentElement.id + '.';
         }
-        targetCell.parentNode.classList.remove('error');
+        targetCell.parentElement.classList.remove('error');
       })
       .catch(error => {
         console.error(error);
-        targetCell.parentNode.classList.add('error');
-        targetCell.parentNode.classList.remove('blank', 'draft', 'translated');
+        targetCell.parentElement.classList.add('error');
+        targetCell.parentElement.classList.remove('blank', 'draft', 'translated');
       })
 
 
@@ -379,10 +379,10 @@ function toggleExpand(span)
   if (span.textContent === 'expand_more')
   {
     span.textContent = 'expand_less';
-    span.parentNode.nextSibling.nextElementSibling.hidden = false;
+    span.parentElement.nextSibling.nextElementSibling.hidden = false;
   } else
   {
     span.textContent = 'expand_more';
-    span.parentNode.nextSibling.nextElementSibling.hidden = true;
+    span.parentElement.nextSibling.nextElementSibling.hidden = true;
   }
 }
