@@ -5,9 +5,9 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /code
 COPY . /code/
 
-RUN pip install -U pip
-RUN pip install -r requirements.txt
-RUN pip install gunicorn
+RUN pip install -U pip && \
+    pip install -r requirements.txt && \
+    pip install gunicorn
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]

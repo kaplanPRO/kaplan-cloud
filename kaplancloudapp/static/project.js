@@ -234,10 +234,10 @@ function toggleExpand(span)
   if (span.textContent === 'expand_more')
   {
     span.textContent = 'expand_less';
-    span.parentNode.parentNode.nextSibling.nextElementSibling.hidden = false;
+    span.parentElement.parentElement.nextSibling.nextElementSibling.hidden = false;
   } else
   {
     span.textContent = 'expand_more';
-    span.parentNode.parentNode.nextSibling.nextElementSibling.hidden = true;
+    span.parentElement.parentElement.nextSibling.nextElementSibling.hidden = true;
   }
 }
