@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, Kaplan
+# This file is distributed under the same license as the Kaplan Cloud
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kaplan Cloud \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-23 20:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/projects.rst:2
+msgid "Projects"
+msgstr "Proje"
+
+#: ../../source/projects.rst:6
+msgid "Create a project"
+msgstr "Proje oluşturma"
+
+#: ../../source/projects.rst:8 ../../source/projects.rst:26
+msgid "Log in with your admin or PM account."
+msgstr "Yönetici ya da PM hesabınızla oturum açın."
+
+#: ../../source/projects.rst:10
+msgid "Go to the Projects tab and click Create."
+msgstr "Projects (Projeler) sekmesine girip Create (Oluştur) düğmesine tıklayın."
+
+#: ../../source/projects.rst
+msgid "Projects tab"
+msgstr "Projeler sekmesi"
+
+#: ../../source/projects.rst:15
+msgid "Fill out the form, select files, and submit."
+msgstr "Formu doldurun, ilgili dosyaları seçin ve gönderin."
+
+
+msgid "Project form"
+msgstr "Proje formu"
+
+#: ../../source/projects.rst:20
+msgid ""
+"Once all files are processed and if there are no errors, a project analysis "
+"will be run. When the analysis is ready, the project will be moved to the Ready"
+" for Translation stage. To move on, you'll need to assign team members as "
+"translator/reviewer for the files."
+msgstr ""
+"Tüm dosyalar işlendiğinde ve herhangi bir hata meydana gelmezse proje analizi "
+"başlatılır. Analiz tamamlandığında proje Çeviriye Hazır aşamasına geçer. "
+"Buradan devam etmek için ekip üyelerini dosyalara çevirmen/editör olarak "
+"atamanız gerekir."
+
+#: ../../source/projects.rst:24
+msgid "Assign team members"
+msgstr "Ekip üyesi atama"
+
+#: ../../source/projects.rst:28
+msgid ""
+"Open the project and tick the checkboxes for the file(s) you wish to assign to "
+"a team member. No ticks means all files."
+msgstr ""
+"Projeyi açıp ekip üyesi atamak istediğiniz dosyaların kutucuğunu işaretleyin. "
+"Hiçbir kutucuğu işaretlemediğinizde tüm dosyalar için işlem yapmak istediğiniz "
+"varsayılır."
+
+#: ../../source/projects.rst:30
+msgid ""
+"Right click anywhere on the page and select the appropriate function based on "
+"whether you wish to assign the team member as a translator or reviewer."
+msgstr ""
+"Sayfanın herhangi bir noktasında sağ tıklayıp açılan menüden çevirmen ya da "
+"editör atamayla ilgili işlevi seçin."
+
+#: ../../source/projects.rst
+msgid "Files context menu"
+msgstr "Dosya bağlam menüsü"
+
+#: ../../source/projects.rst:35
+msgid "Enter the username of the team member and submit the form."
+msgstr "Ekip üyesinin kullanıcı adını girip formu gönderin."
+
+#: ../../source/projects.rst
+msgid "Assign team member form"
+msgstr "Ekip üyesi atama formu"
+

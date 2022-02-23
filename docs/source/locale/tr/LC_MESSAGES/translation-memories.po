@@ -1,0 +1,58 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, Kaplan
+# This file is distributed under the same license as the Kaplan Cloud
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kaplan Cloud \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-23 20:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/translation-memories.rst:2
+msgid "Translation Memories"
+msgstr "Çeviri Belleği"
+
+#: ../../source/translation-memories.rst:6
+msgid "Create a translation memory"
+msgstr "Çeviri belleği oluşturma"
+
+#: ../../source/translation-memories.rst:8
+msgid "Log in with your admin or PM account."
+msgstr "Yönetici ya da PM hesabınızla oturum açın."
+
+#: ../../source/translation-memories.rst:10
+msgid "Go to the Translation Memories tab and click Create."
+msgstr ""
+"Translation Memories (Çeviri Bellekleri) sekmesine girip Create (Oluştur) "
+"düğmesine tıklayın."
+
+#: ../../source/translation-memories.rst
+msgid "Translation Memories tab"
+msgstr "Çeviri Bellekleri sekmesi"
+
+#: ../../source/translation-memories.rst:15
+msgid "Fill out the form and submit."
+msgstr "Formu doldurup gönderin."
+
+
+msgid "Translation Memory form"
+msgstr "Çeviri Belleği formu"
+
+#: ../../source/translation-memories.rst:20
+msgid ""
+"If you do not see the languages you want to create the translation memory for, "
+"please see the section on Language Profiles for how to add them."
+msgstr ""
+"Çeviri belleği oluşturmak istediğiniz dilleri bulamazsanız bu dilleri nasıl "
+"ekleyebileceğinizi Dil Profili bölümünden öğrenebilirsiniz."
+

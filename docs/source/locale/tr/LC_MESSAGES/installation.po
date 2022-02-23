@@ -1,0 +1,154 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, Kaplan
+# This file is distributed under the same license as the Kaplan Cloud
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kaplan Cloud \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-23 20:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/installation.rst:2
+msgid "Installation"
+msgstr "Kurulum"
+
+#: ../../source/installation.rst:6
+msgid "Local installation with Docker"
+msgstr "Docker ile yerel kurulum"
+
+#: ../../source/installation.rst:7 ../../source/installation.rst:51
+msgid ""
+"Follow `these instructions <https://docs.docker.com/get-docker>`_ to install "
+"Docker."
+msgstr ""
+"`Buradaki talimatları <https://docs.docker.com/get-docker>`_ izleyerek Docker "
+"kurulumunu tamamlayın."
+
+#: ../../source/installation.rst:9
+msgid "Deploy a `Postgres container <https://hub.docker.com/_/postgres>`_:"
+msgstr "Bir `Postgres konteyneri <https://hub.docker.com/_/postgres>`_ başlatın:"
+
+#: ../../source/installation.rst:21
+msgid ""
+"\"postgres\" is your password for the Postgres instance. It'd be best to change"
+" it."
+msgstr "Burada \"postgres\" Postgres örneğinizin şifresidir. Değiştirseniz iyi olur."
+
+#: ../../source/installation.rst:23
+msgid "Deploy a `Kaplan Cloud container <https://hub.docker.com/r/kaplanpro/cloud>`_:"
+msgstr ""
+"Bir `Kaplan Bulut konteyneri <https://hub.docker.com/r/kaplanpro/cloud>`_ "
+"başlatın:"
+
+#: ../../source/installation.rst:37
+msgid "Change \"postgres\" to the password you input in the previous step."
+msgstr "Burada \"postgres\" yerine bir önceki adımda girdiğiniz değeri yazın."
+
+#: ../../source/installation.rst:39
+msgid "Create an admin (superuser) account:"
+msgstr "Yönetici (süper kullanıcı) hesabı oluşturun:"
+
+#: ../../source/installation.rst:45
+msgid "We're done! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud."
+msgstr ""
+"İşlem tamam! http://0.0.0.0:8080'i açıp Kaplan Bulut'u keşfetmeye "
+"başlayabilirsiniz."
+
+#: ../../source/installation.rst:49
+msgid "Production installation with Docker Compose"
+msgstr "Docker Compose ile üretim ortamında kurulum"
+
+#: ../../source/installation.rst:53
+msgid ""
+"Follow `these instructions <https://docs.docker.com/compose/install>`_ to "
+"install Docker Compose."
+msgstr ""
+"`Buradaki talimatları <https://docs.docker.com/compose/install>`_ izleyerek "
+"Docker Compose kurulumunu tamamlayın."
+
+#: ../../source/installation.rst:55
+msgid "If you have not set a dedicated Docker network for your proxy tier, create one:"
+msgstr "Proxy katmanınız için ayrı bir Docker ağınız mevcut değilse oluşturun:"
+
+#: ../../source/installation.rst:61
+msgid "Replace \"network-name\" with an arbitrary name of your choosing."
+msgstr "\"network-name\" yerine istediğiniz herhangi bir ismi girin."
+
+#: ../../source/installation.rst:63
+msgid ""
+"If you do not already have one, deploy an `nginxproxy/nginx-proxy container "
+"<https://hub.docker.com/r/nginxproxy/nginx-proxy>`_:"
+msgstr ""
+"Halihazırda yoksa bir `nginxproxy/nginx-proxy konteyneri "
+"<https://hub.docker.com/r/nginxproxy/nginx-proxy>`_ başlatın:"
+
+#: ../../source/installation.rst:79
+msgid "This container will be routing traffic to your Kaplan Cloud instance."
+msgstr "Bu konteyner gelen trafiği Kaplan Bulut örneğinize yönlendirecek."
+
+#: ../../source/installation.rst:81
+msgid ""
+"If you do not already have one, deploy an `nginxproxy/acme-companion container "
+"<https://hub.docker.com/r/nginxproxy/acme-companion>`_:"
+msgstr ""
+"Halihazırda yoksa bir `nginxproxy/acme-companion konteyneri "
+"<https://hub.docker.com/r/nginxproxy/acme-companion>`_ konteyneri başlatın:"
+
+#: ../../source/installation.rst:94
+msgid ""
+"This container will be provisioning free SSL certificates for your Kaplan Cloud"
+" instance."
+msgstr ""
+"Bu konteyner, Kaplan Bulut örneğiniz için ücretsiz SSL sertifikaları "
+"hazırlayacak."
+
+#: ../../source/installation.rst:96
+msgid "Download the repository from here and enter the .docker directory."
+msgstr "Kod deposunu buradan indirip .docker dizinize girin."
+
+#: ../../source/installation.rst:98
+msgid ""
+"You will find three \\*.env.template files. Create .env, db.env and web.env "
+"files following the guidance on the templates."
+msgstr ""
+"Burada adı \\*.env.template ile sonlanan 3 şablon göreceksiniz. İçlerindeki "
+"yönergeleri izleyerek .env, db.env ve web.env dosyalarını hazırlayın."
+
+#: ../../source/installation.rst:100
+msgid "Use docker-compose to run the containers::"
+msgstr "docker-compose kullanarak konteynerleri başlatın::"
+
+#: ../../source/installation.rst:104
+msgid ""
+"If, for some reason, this step fails, run this command without the -d flag to "
+"see what went wrong::"
+msgstr ""
+"Olur da bu adımda hata alırsanız aynı komutu -d işareti olmadan çalıştırarak "
+"sorunlu kısmı tespit edebilirsiniz::"
+
+#: ../../source/installation.rst:108
+msgid "Create an admin (superuser) account::"
+msgstr "Yönetici (süper kullanıcı) hesabı oluşturun::"
+
+#: ../../source/installation.rst:114
+msgid "Additional steps for Cloudflare users"
+msgstr "Cloudflare kullanıcıları için ek adımlar"
+
+#: ../../source/installation.rst:116
+msgid "Add the following page rule:"
+msgstr "Aşağıdaki sayfa kuralını ekleyin:"
+
+#: ../../source/installation.rst:123
+msgid "It might take a minute or two for the SSL certificate to kick in."
+msgstr "SSL sertifikanızın devreye girmesi birkaç dakika alabilir."
+

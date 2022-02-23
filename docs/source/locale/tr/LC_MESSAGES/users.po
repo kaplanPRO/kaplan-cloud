@@ -1,0 +1,74 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, Kaplan
+# This file is distributed under the same license as the Kaplan Cloud
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kaplan Cloud \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-02-23 20:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/users.rst:2
+msgid "Users"
+msgstr "Kullanıcı"
+
+#: ../../source/users.rst:6
+msgid "Add a user"
+msgstr "Kullanıcı ekleme"
+
+#: ../../source/users.rst:8
+msgid ""
+"Log in with your admin account at yourdomain.tld/admin, find User registration "
+"tokens from the left side bar and click ADD USER REGISTRATION TOKEN:"
+msgstr ""
+"Yönetici hesabınızla yönetici sayfasında (ör. yourdomain.tld/admin) oturum "
+"açın. Sol tarafta User registration tokens (Kullanıcı kayıt jetonları) şıkkını "
+"seçip ADD USER REGISTRATION TOKEN (KULLANICI KAYIT JETONU EKLE) düğmesini "
+"tıklayın:"
+
+#: ../../source/users.rst
+msgid "User Registration Token"
+msgstr "Kullanıcı Kayıt Jetonu"
+
+#: ../../source/users.rst:13
+msgid "Select the type of user account and click SAVE:"
+msgstr "Kullanıcı türünü seçip Save (Kaydet) düğmesini tıklayın:"
+
+#: ../../source/users.rst
+msgid "User Registration Token form"
+msgstr "Kullanıcı Kayıt Jetonu formu"
+
+#: ../../source/users.rst:18
+msgid ""
+"Provide the new team member with the token and the link to the registration "
+"page (yourdomain.tld/accounts/register)."
+msgstr ""
+"Jetonu ve kayıt sayfasının bağlantısını (yourdomain.tld/accounts/register) yeni"
+" ekip üyesine iletin."
+
+#: ../../source/users.rst:22
+msgid "Registration"
+msgstr "Kayıt"
+
+#: ../../source/users.rst:24
+msgid "Go to the registration page (eg. yourdomain.tld/accounts/register)."
+msgstr "Kayıt sayfasını açın (ör. yourdomain.tld/accounts/register)."
+
+#: ../../source/users.rst:26
+msgid "Enter your details and the token you were provided with."
+msgstr "Bilgilerinizi ve size iletilen jetonu girin."
+
+#: ../../source/users.rst
+msgid "User registration form"
+msgstr "Kullanıcı kayıt formu"
+
