@@ -1,5 +1,3 @@
-import os
-import re
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -24,7 +22,7 @@ copyright = '2022, Kaplan'
 author = 'Kaplan'
 
 # The full version, including alpha/beta/rc tags
-release = re.sub('^v', '', os.popen('git describe --tags').read().strip())
+release = '0.2.2'
 
 
 # -- General configuration ---------------------------------------------------
