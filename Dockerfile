@@ -5,6 +5,9 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /code
 COPY . /code/
 
+RUN apt-get update && \
+    apt-get install -y postgresql-client
+
 RUN pip install -U pip && \
     pip install -r requirements.txt && \
     pip install gunicorn
