@@ -8,6 +8,7 @@ import difflib
 from pathlib import Path
 import regex
 import string
+import tempfile
 import threading
 
 
@@ -26,45 +27,35 @@ class NewFileThread(threading.Thread):
             and not instance.source_bilingualfile \
             and not instance.target_bilingualfile:
 
-                source_directory = project_directory / instance.source_language
-                target_directory = project_directory / instance.target_language
-                if not source_directory.is_dir():
-                    source_directory.mkdir()
-                if not target_directory.is_dir():
-                    target_directory.mkdir()
-
                 bilingualfile = KXLIFF.new(instance.source_file.path,
                                            instance.source_language,
                                            instance.target_language)
 
+                with tempfile.TemporaryDirectory() as tempdir:
+                    bilingualfile.save(tempdir)
+                    with open(Path(tempdir, bilingualfile.name)) as bf:
+                        instance.source_bilingualfile.save(bilingualfile.name,
+                                                           bf)
+                        instance.target_bilingualfile.save(bilingualfile.name,
+                                                           bf)
 
-                source_name = Path(instance.source_file.name).name
-                bf_name =  source_name + '.kxliff'
-                while (source_directory / bf_name).exists() or (target_directory / bf_name).exists():
-                    bf_name = ''.join(random.choices(string.ascii_uppercase, k=5)) \
-                             + source_name \
-                             + '.kxliff'
-
-                bilingualfile.name = bf_name
-                bilingualfile.save(str(source_directory))
-                instance.source_bilingualfile.name = str(source_directory / bilingualfile.name)
-                bilingualfile.save(str(target_directory))
-                instance.target_bilingualfile.name = str(target_directory / bilingualfile.name)
                 instance.save()
 
             elif (instance.source_bilingualfile
             and not instance.target_bilingualfile):
-                target_directory = project_directory / instance.target_language
-                if not target_directory.is_dir():
-                    target_directory.mkdir()
 
                 bilingualfile = open_bilingualfile(instance.source_bilingualfile.path)
-                bilingualfile.save(str(target_directory))
-                instance.target_bilingualfile.name = str(target_directory / bilingualfile.name)
+
+                with tempfile.TemporaryDirectory() as tempdir:
+                    bilingualfile.save(tempdir)
+
+                    with open(Path(tempdir, bilingualfile.name)) as bf:
+                        instance.target_bilingualfile.save(bilingualfile.name,
+                                                           bf)
+
                 instance.save()
 
-            else:
-                bilingualfile = open_bilingualfile(instance.target_bilingualfile.path)
+            bilingualfile = open_bilingualfile(instance.target_bilingualfile.path)
 
             SegmentModel = apps.get_model('kaplancloudapp', 'Segment')
 
