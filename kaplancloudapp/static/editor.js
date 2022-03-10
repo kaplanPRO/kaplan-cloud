@@ -211,7 +211,11 @@ window.onload = function() {
 
       }
     }
-    else {
+    else if (e.key !== 'Tab'
+             && e.key !== 'Shift'
+             && e.key !== 'Alt'
+             && e.key.match('F[0-9]+') == null)
+    {
       e.target.parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
       e.target.parentElement.classList.add('draft');
       e.target.parentElement.setAttribute('status', 'draft');
