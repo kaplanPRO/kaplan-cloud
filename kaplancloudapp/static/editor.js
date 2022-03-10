@@ -13,6 +13,7 @@ window.onload = function() {
   const targetCells = document.getElementsByClassName('target');
 
   let currentSegment;
+  let concordanceSearchTimeout;
 
   for (i = 0; i < targetCells.length; i++) {
     targetCell = targetCells[i];
@@ -35,54 +36,7 @@ window.onload = function() {
       fetch(url)
       .then(response => response.json())
       .then(data => {
-        tMHits.innerHTML = null;
-
-        tm_data = data['tm'];
-
-        tm_data.forEach((tm_hit, i) => {
-          hitSpan = document.createElement('span');
-          hitSpan.className = 'tm-hit'
-          sourceP = document.createElement('p');
-          sourceP.innerHTML = tm_hit[1]['source'];
-          [...sourceP.children].forEach((child, i) => {
-            child.contentEditable = 'false';
-            child.draggable = 'true';
-          });
-          hitSpan.appendChild(sourceP);
-          //hitSpan.appendChild(document.createElement('hr'));
-          targetP = document.createElement('p');
-          targetP.innerHTML = tm_hit[1]['target'];
-          [...targetP.children].forEach((child, i) => {
-            child.contentEditable = 'false';
-            child.draggable = 'true';
-          });
-          hitSpan.appendChild(targetP);
-
-          hitDetailsSpan = document.createElement('span');
-          hitDetailsSpan.className = 'details';
-          matchP = document.createElement('p');
-          matchP.className = 'detail';
-          matchP.textContent = new Intl.NumberFormat(undefined, {style:'percent'}).format(tm_hit[0]);
-          hitDetailsSpan.appendChild(matchP);
-          userP = document.createElement('p');
-          userP.className = 'detail';
-          userP.textContent = tm_hit[1]['updated_by'];
-          hitDetailsSpan.appendChild(userP);
-          datetimeP = document.createElement('p');
-          datetimeP.className = 'detail';
-          datetimeP.textContent = new Date(tm_hit[1]['updated_at']).toLocaleString();
-          hitDetailsSpan.appendChild(datetimeP);
-          hitSpan.appendChild(hitDetailsSpan);
-
-          tMHits.appendChild(hitSpan);
-        });
-
-        if (tMHits.innerHTML == '')
-        {
-          p = document.createElement('p');
-          p.textContent = 'n/a';
-          tMHits.appendChild(p);
-        }
+        populateTMHits(data['tm']);
 
         comments_data = data['comments'];
         Object.keys(comments_data).forEach((key, i) => {
@@ -163,6 +117,12 @@ window.onload = function() {
   }
 
   document.body.onkeydown = function(e) {
+    if (e.code === 'F3') {
+      e.preventDefault();
+      document.getElementById('concordance').value = window.getSelection().toString().replace(/<[^<>]*>/g, '');
+      document.getElementById('concordance').oninput();
+      return;
+    }
     if (e.target.tagName.toLowerCase() !== 'td' || e.target.className !== 'target')
     {
       return;
@@ -219,6 +179,17 @@ window.onload = function() {
       e.target.parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
       e.target.parentElement.classList.add('draft');
       e.target.parentElement.setAttribute('status', 'draft');
+    }
+  }
+
+  document.getElementById('concordance').oninput = function(e) {
+    let string = this.value;
+
+    clearTimeout(concordanceSearchTimeout);
+
+    if (this.value.length >= 3)
+    {
+      concordanceSearchTimeout = setTimeout(concordanceSearch, 250, string);
     }
   }
 
@@ -337,12 +308,73 @@ window.onload = function() {
     overlaySubmitTranslation.children[2].getElementsByTagName('table')[0].innerHTML = null;
   }
 
+  function concordanceSearch(string) {
+    var url = new URL(window.location.href);
+
+    var params = {task: 'concordance',
+                  query: string};
+    url.search = new URLSearchParams(params).toString();
+
+    fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      populateTMHits(data['concordance'], false);
+    })
+  }
+
   function getCSRFToken() {
     return document.getElementsByTagName('input')[0].value;
   }
 
   function insertInnerHTML(source, target) {
     target.innerHTML = source.innerHTML;
+  }
+
+  function populateTMHits(tm_data, display_diff=true) {
+    while (tMHits.children.length > 1)
+    {
+      tMHits.removeChild(tMHits.children[1]);
+    }
+
+    tm_data.forEach((tm_hit, i) => {
+      hitSpan = document.createElement('span');
+      hitSpan.className = 'tm-hit'
+      sourceP = document.createElement('p');
+      sourceP.innerHTML = tm_hit[1]['source'];
+      [...sourceP.children].forEach((child, i) => {
+        child.contentEditable = 'false';
+        child.draggable = 'true';
+      });
+      hitSpan.appendChild(sourceP);
+      //hitSpan.appendChild(document.createElement('hr'));
+      targetP = document.createElement('p');
+      targetP.innerHTML = tm_hit[1]['target'];
+      [...targetP.children].forEach((child, i) => {
+        child.contentEditable = 'false';
+        child.draggable = 'true';
+      });
+      hitSpan.appendChild(targetP);
+
+      hitDetailsSpan = document.createElement('span');
+      hitDetailsSpan.className = 'details';
+      matchP = document.createElement('p');
+      matchP.className = 'detail';
+      if (display_diff) {
+        matchP.textContent = new Intl.NumberFormat(undefined, {style:'percent'}).format(tm_hit[0]);
+      }
+      hitDetailsSpan.appendChild(matchP);
+      userP = document.createElement('p');
+      userP.className = 'detail';
+      userP.textContent = tm_hit[1]['updated_by'];
+      hitDetailsSpan.appendChild(userP);
+      datetimeP = document.createElement('p');
+      datetimeP.className = 'detail';
+      datetimeP.textContent = new Date(tm_hit[1]['updated_at']).toLocaleString();
+      hitDetailsSpan.appendChild(datetimeP);
+      hitSpan.appendChild(hitDetailsSpan);
+
+      tMHits.appendChild(hitSpan);
+    });
   }
 
   function submitSegment(targetCell) {

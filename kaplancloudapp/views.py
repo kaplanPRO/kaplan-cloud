@@ -438,6 +438,40 @@ def editor(request, id):
                                               'created_at':comment.created_at}))
 
             return JsonResponse({'tm':tm_entries, 'comments':dict(comments)})
+        elif request.GET.get('task') == 'concordance':
+            query = request.GET['query']
+
+            tm_entries = []
+            for tm in project_file.project.translationmemories.all():
+                relevant_tm_entries = TMEntry.objects.filter(translationmemory=tm)
+                relevant_tm_entries = relevant_tm_entries.filter(source__contains=query) \
+                                    | relevant_tm_entries.filter(target__contains=query)
+
+                for relevant_tm_entry in relevant_tm_entries:
+                    tm_entry_source = KDB.entry_to_segment(relevant_tm_entry.source, 'source')
+                    tm_entry_source = etree.tostring(tm_entry_source, encoding='UTF-8').decode()[8:-9]
+
+                    tm_entry_target = KDB.entry_to_segment(relevant_tm_entry.target, 'target')
+                    tm_entry_target = etree.tostring(tm_entry_target, encoding='UTF-8').decode()[8:-9]
+
+                    if query in tm_entry_source and query not in tm_entry_target:
+                        len_diff = abs(len(query) - len(tm_entry_source))
+                    elif query not in tm_entry_source and query in tm_entry_target:
+                        len_diff =  abs(len(query) - len(tm_entry_target))
+                    else:
+                        len_diff = abs(len(query) - ((len(tm_entry_source) + len(tm_entry_target))/2))
+
+                    tm_entries.append((len_diff,
+                                       {'source': tm_entry_source,
+                                        'target': tm_entry_target,
+                                        'updated_by': relevant_tm_entry.updated_by.username,
+                                        'updated_at': relevant_tm_entry.updated_at
+                                       }))
+
+                    tm_entries.sort()
+
+            return JsonResponse({'concordance': tm_entries})
+
         else:
             translation_units = {}
             for segment_instance in Segment.objects.filter(file=project_file).order_by('s_id'):
