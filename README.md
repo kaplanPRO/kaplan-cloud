@@ -1,30 +1,32 @@
 # Kaplan Cloud
 
-Hello and thank you for giving Kaplan Cloud a try!
+Kaplan Cloud is a cloud-based translation management system.
 
-If you would like help getting set up or try the demo available at [clouddemo.kaplan.pro](https://clouddemo.kaplan.pro), please reach out to contact@kaplan.pro.
+The official documentation is available at https://docs.kaplan.pro/projects/kaplan-cloud
 
-## Deploy with Docker locally
+## Local installation with Docker
 
-First, we need a [Postgres container](https://hub.docker.com/_/postgres) up and running:
-
-```
-docker run -d --expose 5432 -e POSTGRES_PASSWORD=postgres -v kaplan-postgres:/var/lib/postgresql/data --restart always --name kaplan-postgres postgres
-```
-
-Now, let's start a [Kaplan Cloud container](https://hub.docker.com/r/kaplanpro/cloud):
+Please see [here](https://docs.kaplan.pro/projects/kaplan-cloud/en/latest/installation.html#local-installation-with-docker)
+for instructions; however, for testing purposes, all you need to do is first
+start a [Kaplan Cloud container](https://hub.docker.com/r/kaplanpro/cloud):
 
 ```
-docker run -d -p 8080:8080 --link kaplan-postgres -e POSTGRES_HOST=kaplan-postgres -e POSTGRES_PASSWORD=postgres -v kaplan-cloud:/code/kaplancloudapp/projects --restart always --name kaplan-cloud kaplanpro/cloud
+docker run -d /
+-p 8080:8080 /
+--restart always /
+--name kaplan-cloud /
+kaplanpro/cloud
 ```
 
-Finally, we need to create a superuser (admin) account for you:
+And then create a superuser account:
+
 ```
 docker exec -it kaplan-cloud python manage.py createsuperuser
 ```
 
-We're done! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud.
+That's it! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud.
 
-## Deploy with Docker Compose in a production environment
+## Production installation with Docker Compose
 
-There is a sample Docker Compose configuration available [here](https://github.com/kaplanPRO/kaplan-cloud/tree/main/.docker).
+Please see [here](https://docs.kaplan.pro/projects/kaplan-cloud/en/latest/installation.html#production-installation-with-docker-compose)
+for instructions.
