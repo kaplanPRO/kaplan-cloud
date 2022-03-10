@@ -156,6 +156,12 @@ window.onload = function() {
     }
   }
 
+  document.body.oncopy = function(e) {
+    let selectedText = window.getSelection().toString().replace(/<[^<>]*>/g, '');
+
+    navigator.clipboard.writeText(selectedText);
+  }
+
   document.body.onkeydown = function(e) {
     if (e.target.tagName.toLowerCase() !== 'td' || e.target.className !== 'target')
     {
