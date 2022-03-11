@@ -137,6 +137,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-PROJECTS_DIR = BASE_DIR / 'kaplancloudapp' / 'projects'
+PROJECTS_DIR = 'kaplancloudapp/projects'
 
 LOGIN_URL = '/accounts/login'

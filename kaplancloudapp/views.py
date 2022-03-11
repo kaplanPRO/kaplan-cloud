@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.files import File
 from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
@@ -47,9 +48,9 @@ def newproject(request):
 
         for tm in form.cleaned_data['translation_memories']:
             new_project.translationmemories.add(tm)
-        new_project_directory = Path('./kaplancloudapp/projects') / str(new_project.created_by.id) / str(new_project.id)
-        new_project_directory.mkdir(parents=True)
-        new_project.directory = str(new_project_directory)
+
+        new_project.directory = str(Path(settings.PROJECTS_DIR,
+                                         str(new_project.id)))
         new_project.save()
 
         for file in form.files.getlist('project_files'):
