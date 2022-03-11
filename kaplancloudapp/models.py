@@ -139,7 +139,7 @@ class Project(models.Model):
     status = models.IntegerField(choices=project_statuses, default=0)
     client = models.ForeignKey(Client, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    directory = models.TextField()
+    directory = models.CharField(max_length=100)
     due_by = models.DateTimeField(blank=True, null=True)
     _are_all_files_submitted = models.BooleanField(default=False)
 
