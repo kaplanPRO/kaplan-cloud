@@ -213,12 +213,17 @@ class ProjectFile(models.Model):
         from django.urls import reverse
         return reverse('editor', kwargs={'id' : self.id})
 
+    def get_source_directory(self):
+        return Path(self.project.directory,
+                    self.target_language)
+
     def get_status(self):
         status_dict = dict(file_statuses)
         return status_dict[self.status]
 
     def get_target_directory(self):
-        return str(Path(self.project.directory) / self.target_language)
+        return Path(self.project.directory,
+                    self.target_language)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
