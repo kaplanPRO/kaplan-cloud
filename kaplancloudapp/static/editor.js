@@ -147,6 +147,7 @@ window.onload = function() {
           e.target.parentElement.classList.add('blank');
           e.target.parentElement.setAttribute('status', 'blank');
         }
+        e.target.blur();
 
         if (!e.shiftKey)
         {
