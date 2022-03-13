@@ -316,13 +316,6 @@ def editor(request, id):
                      .replace(' contenteditable="false" draggable="true">', '>') \
                      .replace('&nbsp;', ' ')
 
-            bf = open_bilingualfile(project_file.target_bilingualfile.path)
-            bf.update_segment('<target>' + target + '</target>',
-                              segment_dict['tu_id'],
-                              segment_dict['s_id'],
-                              segment_dict['status'])
-            bf.save(project_file.get_target_directory())
-
             segment = Segment.objects.filter(file=project_file) \
                       .filter(tu_id=segment_dict['tu_id']) \
                       .get(s_id=segment_dict['s_id'])

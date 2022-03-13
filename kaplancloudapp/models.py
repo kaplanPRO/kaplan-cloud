@@ -286,28 +286,35 @@ class Segment(models.Model):
     def get_status(self):
         return segment_statuses[self.status][1]
 
-    def save(self, *args, **kwargs):
+    def save(self, no_override=False, *args, **kwargs):
         prev_target = self.target
+        prev_updated_by = self.updated_by
         super().save(*args, **kwargs)
-        if self.target != '' and self.target != prev_target:
-            segment_update = apps.get_model('kaplancloudapp', 'SegmentUpdate')()
-            segment_update.source = self.source
-            segment_update.target = self.target
-            segment_update.status = self.status
-            segment_update.segment = self
-            if self.updated_by:
-                segment_update.submitted_by = self.updated_by
-            elif self.created_by:
-                segment_update.submitted_by = self.created_by
-            segment_update.save()
-
-            target_segment = '<target>' + self.target + '</target>'
-            bf = open_bilingualfile(self.file.target_bilingualfile.path)
-            bf.update_segment(target_segment,
-                              self.tu_id,
-                              self.s_id,
-                              segment_state=('blank', 'draft','translated')[int(self.status)])
-            bf.save(self.file.get_target_directory())
+        if no_override:
+            return
+        elif self.target != '' and self.target != prev_target:
+            try:
+                bf = open_bilingualfile(self.file.target_bilingualfile.url)
+                bf.update_segment(target_segment,
+                                  self.tu_id,
+                                  self.s_id,
+                                  segment_state=('blank', 'draft','translated')[int(self.status)])
+            except:
+                self.target = prev_target
+                self.updated_by = prev_updated_by
+                self.save(no_override=True)
+                raise ValueError('''Can't update the segment''')
+            finally:
+                segment_update = apps.get_model('kaplancloudapp', 'SegmentUpdate')()
+                segment_update.source = self.source
+                segment_update.target = self.target
+                segment_update.status = self.status
+                segment_update.segment = self
+                if self.updated_by:
+                    segment_update.submitted_by = self.updated_by
+                elif self.created_by:
+                    segment_update.submitted_by = self.created_by
+                segment_update.save()
 
 
 class SegmentUpdate(models.Model):
