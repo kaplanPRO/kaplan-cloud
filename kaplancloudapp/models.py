@@ -215,7 +215,7 @@ class ProjectFile(models.Model):
 
     def get_source_directory(self):
         return Path(self.project.directory,
-                    self.target_language)
+                    self.source_language)
 
     def get_status(self):
         status_dict = dict(file_statuses)
