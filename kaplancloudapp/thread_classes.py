@@ -12,6 +12,41 @@ import tempfile
 import threading
 
 
+class GenerateTargetTranslationThread(threading.Thread):
+    def __init__(self, file_instance, target_dir, **kwargs):
+        super().__init__(**kwargs)
+        self.file_instance = file_instance
+        self.target_dir = target_dir
+
+    def run(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            target_bf_path = Path(tmpdir, Path(self.file_instance.target_bilingualfile.url).name)
+            target_bf_path.write_bytes(self.file_instance.target_bilingualfile.read())
+
+            bf = open_bilingualfile(target_bf_path)
+
+        relevant_segments = apps.get_model('kaplancloudapp', 'Segment') \
+                            .objects.filter(file=self.file_instance)
+
+        for relevant_segment in relevant_segments:
+            bf.update_segment('<target>' + relevant_segment.target + '</target>',
+            relevant_segment.tu_id,
+            relevant_segment.s_id,
+            segment_state=('blank', 'draft','translated')[int(relevant_segment.status)])
+
+        if self.file_instance.source_file:
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                path_source = Path(tmpdir, Path(self.file_instance.source_file.url).name)
+                path_source.write_bytes(self.file_instance.source_file.read())
+
+                bf.generate_target_translation(self.target_dir,
+                                               path_to_source_file=path_source,
+                                               target_filename=self.file_instance.name)
+        else:
+            bf.save(self.target_dir)
+
+
 class NewFileThread(threading.Thread):
     def __init__(self, file_instance, **kwargs):
         self.file_instance = file_instance

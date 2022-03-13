@@ -12,7 +12,7 @@ from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
                     ProjectReport, Project, Segment, TranslationMemory, TMEntry
 
-from .thread_classes import TMImportThread
+from .thread_classes import GenerateTargetTranslationThread, TMImportThread
 
 from datetime import datetime
 import difflib
@@ -149,18 +149,18 @@ def project(request, id):
 
     if request.method == 'POST':
         if request.POST.get('task') == 'download_translations':
+            threads = []
             with tempfile.TemporaryDirectory() as tempdir:
                 for pf_id in request.POST['file_ids'].split(';'):
                     project_file = project_files.get(id=int(pf_id))
-                    if project_file.source_file is not None:
-                        bf = open_bilingualfile(project_file.target_bilingualfile.path)
-                        bf.generate_target_translation(tempdir, target_filename=project_file.name)
-                    else:
-                        with (Path(tempdir) / Path(project_file.target_bilingualfile.path).name).open() as tmpfile:
-                            with Path(project_file.target_bilingualfile.path).open() as target_bf:
-                                tmpfile.write_bytes(target_bf.read_bytes)
+                    threads.append(GenerateTargetTranslationThread(project_file,
+                                                                   tempdir))
+
+                for thread in threads: thread.start()
+                for thread in threads: thread.join()
 
                 tempdir_files = [tempdir_file for tempdir_file in list(Path(tempdir).iterdir()) if not tempdir_file.is_dir()]
+
                 if len(tempdir_files) > 1:
                     tmpzip_path = Path(tempdir) / 'target.zip'
                     with zipfile.ZipFile(tmpzip_path, 'w') as tmpzip:
