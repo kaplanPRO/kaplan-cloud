@@ -68,7 +68,8 @@ class ProjectForm(forms.Form):
         files = self.files.getlist('project_files')
 
         validationerrors = []
-        with tempfile.TemporaryDirectory() as tmpdir:
+        Path('.tmp').mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
             tmpdir_path = Path(tmpdir)
 
             for i, file in enumerate(files):

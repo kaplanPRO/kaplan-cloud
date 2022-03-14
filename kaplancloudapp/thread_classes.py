@@ -11,6 +11,40 @@ import string
 import tempfile
 import threading
 
+from .utils import trim_segment
+
+
+class CreateTargetBilingualFileThread(threading.Thread):
+    def __init__(self, file_instance, target_dir, path_bf, **kwargs):
+        super().__init__(**kwargs)
+        self.file_instance = file_instance
+        self.target_dir = target_dir
+        self.path_bf = path_bf
+
+    def run(self):
+        Path('.tmp').mkdir(exist_ok=True)
+
+        bf = open_bilingualfile(self.path_bf)
+
+        relevant_segments = apps.get_model('kaplancloudapp', 'Segment') \
+                            .objects.filter(file=self.file_instance)
+
+        for relevant_segment in relevant_segments:
+            if relevant_segment.updated_by:
+                updated_by = relevant_segment.updated_by.username
+            elif relevant_segment.created_by:
+                updated_by = relevant_segment.created_by.username
+            else:
+                updated_by = 'N/A'
+
+            bf.update_segment('<target>' + relevant_segment.target + '</target>',
+                              relevant_segment.tu_id,
+                              relevant_segment.s_id,
+                              segment_state=relevant_segment.get_status(),
+                              submitted_by=updated_by)
+
+        bf.save(self.target_dir)
+
 
 class GenerateTargetTranslationThread(threading.Thread):
     def __init__(self, file_instance, target_dir, **kwargs):
@@ -19,11 +53,13 @@ class GenerateTargetTranslationThread(threading.Thread):
         self.target_dir = target_dir
 
     def run(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            target_bf_path = Path(tmpdir, Path(self.file_instance.target_bilingualfile.url).name)
-            target_bf_path.write_bytes(self.file_instance.target_bilingualfile.read())
+        Path('.tmp').mkdir(exist_ok=True)
 
-            bf = open_bilingualfile(target_bf_path)
+        with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
+            path_bf = Path(tmpdir, Path(self.file_instance.bilingual_file.name).name)
+            path_bf.write_bytes(self.file_instance.bilingual_file.read())
+
+            bf = open_bilingualfile(path_bf)
 
         relevant_segments = apps.get_model('kaplancloudapp', 'Segment') \
                             .objects.filter(file=self.file_instance)
@@ -32,12 +68,12 @@ class GenerateTargetTranslationThread(threading.Thread):
             bf.update_segment('<target>' + relevant_segment.target + '</target>',
             relevant_segment.tu_id,
             relevant_segment.s_id,
-            segment_state=('blank', 'draft','translated')[int(relevant_segment.status)])
+            segment_state=relevant_segment.get_status())
 
         if self.file_instance.source_file:
 
-            with tempfile.TemporaryDirectory() as tmpdir:
-                path_source = Path(tmpdir, Path(self.file_instance.source_file.url).name)
+            with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
+                path_source = Path(tmpdir, Path(self.file_instance.source_file.name).name)
                 path_source.write_bytes(self.file_instance.source_file.read())
 
                 bf.generate_target_translation(self.target_dir,
@@ -47,56 +83,84 @@ class GenerateTargetTranslationThread(threading.Thread):
             bf.save(self.target_dir)
 
 
+class ImportTargetBilingualFile(threading.Thread):
+    def __init__(self, file_instance, target_bf, **kwargs):
+        super().__init__(**kwargs)
+        self.file_instance = file_instance
+        self.target_bf = target_bf
+
+    def run(self):
+        project_file_segments = apps.get_model('kaplancloudapp', 'Segment') \
+                                .objects.filter(file=self.file_instance)
+
+        bf = open_bilingualfile(self.target_bf)
+
+        for tu in bf.gen_translation_units():
+            for segment in tu:
+                if not segment.tag.endswith('}segment'):
+                    continue
+                s_id = int(segment.attrib['id'])
+                s_state = segment.attrib.get('state', 'blank').lower()
+
+                target = segment.find('target', bf.nsmap)
+                if target is not None:
+                    s_target = trim_segment(target)
+                else:
+                    s_target = ''
+
+                segment_instance = project_file_segments.get(s_id=s_id)
+                if segment_instance.target == s_target:
+                    continue
+                segment_instance.target = s_target
+                segment_instance.status = ('blank','draft','translated').index(s_state)
+                segment_instance.save()
+
+
 class NewFileThread(threading.Thread):
     def __init__(self, file_instance, **kwargs):
         self.file_instance = file_instance
         super(NewFileThread, self).__init__(**kwargs)
 
     def run(self):
+        Path('.tmp').mkdir(exist_ok=True)
+
         instance = self.file_instance
 
         try:
             project_directory = Path(instance.project.directory)
 
             if instance.source_file \
-            and not instance.source_bilingualfile \
-            and not instance.target_bilingualfile:
+            and not instance.bilingual_file:
 
-                bilingualfile = KXLIFF.new(instance.source_file.path,
-                                           instance.source_language,
-                                           instance.target_language)
+                with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
+                    print(tmpdir)
+                    path_source = Path(tmpdir, Path(self.file_instance.source_file.name).name)
+                    path_source.write_bytes(self.file_instance.source_file.read())
 
-                with tempfile.TemporaryDirectory() as tempdir:
-                    bilingualfile.save(tempdir)
-                    with open(Path(tempdir, bilingualfile.name)) as bf:
-                        instance.source_bilingualfile.save(bilingualfile.name,
-                                                           bf)
-                        instance.target_bilingualfile.save(bilingualfile.name,
-                                                           bf)
+                    bf = KXLIFF.new(path_source,
+                                    instance.source_language,
+                                    instance.target_language)
 
-                instance.save()
 
-            elif (instance.source_bilingualfile
-            and not instance.target_bilingualfile):
+                    bf.save(tmpdir)
 
-                bilingualfile = open_bilingualfile(instance.source_bilingualfile.path)
+                    with open(Path(tmpdir, bf.name)) as bilingualfile:
+                        instance.bilingual_file.save(bf.name,
+                                                     bilingualfile)
 
-                with tempfile.TemporaryDirectory() as tempdir:
-                    bilingualfile.save(tempdir)
+            elif instance.bilingual_file:
 
-                    with open(Path(tempdir, bilingualfile.name)) as bf:
-                        instance.target_bilingualfile.save(bilingualfile.name,
-                                                           bf)
+                with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
+                    path_bf = Path(tmpdir, Path(self.file_instance.bilingual_file.name).name)
+                    path_bf.write_bytes(self.file_instance.bilingual_file.read())
 
-                instance.save()
-
-            bilingualfile = open_bilingualfile(instance.target_bilingualfile.path)
+                    bf = open_bilingualfile(path_bf)
 
             SegmentModel = apps.get_model('kaplancloudapp', 'Segment')
 
             _regex_source = regex.compile('<source[^<>]*?>(.*)</source>')
             _regex_target = regex.compile('<target[^<>]*?>(.*)</target>')
-            for xml_translation_unit in bilingualfile.gen_translation_units():
+            for xml_translation_unit in bf.gen_translation_units():
                 for xml_segment in xml_translation_unit:
                     if xml_segment.tag.split('}')[-1] == 'ignorable':
                         continue

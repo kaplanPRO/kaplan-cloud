@@ -6,6 +6,7 @@ from django.db import models
 from kaplan import open_bilingualfile
 
 from pathlib import Path
+import tempfile
 
 from .thread_classes import NewFileThread, NewProjectReportThread
 from .utils import get_kpp_path, get_source_file_path, get_target_file_path
@@ -281,7 +282,6 @@ class Segment(models.Model):
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_create')
     updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_update')
 
-    @property
     def get_status(self):
         return segment_statuses[self.status][1]
 
@@ -293,11 +293,17 @@ class Segment(models.Model):
             return
         elif self.target != '' and self.target != prev_target:
             try:
-                bf = open_bilingualfile(self.file.target_bilingualfile.url)
+                Path('.tmp').mkdir(exist_ok=True)
+                with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
+                    path_bf = Path(tmpdir, Path(self.file_instance.bilingual_file.name).name)
+                    path_bf.write_bytes(self.file_instance.bilingual_file.read())
+
+                    bf = open_bilingualfile(path_bf)
+
                 bf.update_segment(target_segment,
                                   self.tu_id,
                                   self.s_id,
-                                  segment_state=('blank', 'draft','translated')[int(self.status)])
+                                  segment_state=('blank','draft','translated')[int(self.status)])
             except:
                 self.target = prev_target
                 self.updated_by = prev_updated_by
