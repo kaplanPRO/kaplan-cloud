@@ -216,7 +216,7 @@ def project(request, id):
                     if project_file_instance.source_file:
                         path_source = p_s_tmpdir / Path(project_file_instance.source_file.name).name
                         path_source.write_bytes(project_file_instance.source_file.read())
-                        file_manifest['source'] = str(project_file_instance.source_file)
+                        file_manifest['source'] = str(path_source)
                     if project_file_instance.bilingual_file:
                         path_source_bf = p_s_tmpdir / Path(project_file_instance.bilingual_file.name).name
                         path_source_bf.write_bytes(project_file_instance.bilingual_file.read())
