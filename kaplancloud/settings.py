@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'storages',
     'kaplancloudaccounts',
     'kaplancloudapp'
 ]
@@ -132,11 +133,26 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATICFILES_STORAGE = os.environ.get('STATICFILES_STORAGE', 'django.contrib.staticfiles.storage.StaticFilesStorage')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = '/accounts/login'
+
 PROJECTS_DIR = 'kaplancloudapp/projects'
 
-LOGIN_URL = '/accounts/login'
+DEFAULT_FILE_STORAGE = os.environ.get('FILE_STORAGE', 'django.core.files.storage.FileSystemStorage')
+
+AWS_S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
+AWS_S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
+AWS_S3_REGION_NAME = os.environ.get('S3_REGION_NAME')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_PUBLIC_BUCKET')
+S3_PRIVATE_BUCKET_NAME = os.environ.get('S3_PRIVATE_BUCKET')
+AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
+AWS_S3_CUSTOM_DOMAIN = os.environ.get('S3_CUSTOM_DOMAIN')
+AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', True)
+AWS_LOCATION = os.environ.get('S3_PUBLIC_BUCKET_LOCATION', 'static')
+S3_PRIVATE_BUCKET_LOCATION = os.environ.get('S3_PRIVATE_BUCKET_LOCATION', '')

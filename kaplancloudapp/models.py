@@ -8,6 +8,7 @@ from kaplan import open_bilingualfile
 from pathlib import Path
 import tempfile
 
+from .custom_storage import get_private_storage
 from .thread_classes import NewFileThread, NewProjectReportThread
 from .utils import get_kpp_path, get_source_file_path, get_target_file_path
 # Create your models here.
@@ -195,8 +196,8 @@ class ProjectFile(models.Model):
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
     project = models.ForeignKey(Project, models.CASCADE)
-    source_file = models.FileField(upload_to=get_source_file_path, blank=True, null=True, max_length=256)
-    bilingual_file = models.FileField(upload_to=get_source_file_path, blank=True, null=True, max_length=256)
+    source_file = models.FileField(storage=get_private_storage, upload_to=get_source_file_path, blank=True, null=True, max_length=256)
+    bilingual_file = models.FileField(storage=get_private_storage, upload_to=get_source_file_path, blank=True, null=True, max_length=256)
     status = models.IntegerField(choices=project_statuses, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     due_by = models.DateTimeField(blank=True, null=True)
@@ -243,7 +244,7 @@ class ProjectFile(models.Model):
 
 class ProjectPackage(models.Model):
     project = models.ForeignKey(Project, models.CASCADE)
-    package = models.FileField(upload_to=get_kpp_path, max_length=255)
+    package = models.FileField(storage=get_private_storage, upload_to=get_kpp_path, max_length=256)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

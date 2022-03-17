@@ -31,7 +31,7 @@ def prepare_target_bilingualfile(apps, schema_editor):
                                         )
             target_bf.save(tmpdir)
 
-            with open(path_target_bf) as target_bf:
+            with open(path_target_bf, 'rb') as target_bf:
                 project_file.target_bilingualfile.save(path_target_bf.name,
                                                        target_bf)
 

@@ -144,7 +144,7 @@ class NewFileThread(threading.Thread):
 
                     bf.save(tmpdir)
 
-                    with open(Path(tmpdir, bf.name)) as bilingualfile:
+                    with open(Path(tmpdir, bf.name), 'rb') as bilingualfile:
                         instance.bilingual_file.save(bf.name,
                                                      bilingualfile)
 
