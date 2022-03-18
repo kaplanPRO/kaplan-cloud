@@ -24,9 +24,10 @@ Local installation with Docker
         --name kaplan-cloud \
         kaplanpro/cloud
 
-    However, if you'd like your data to persist, you'll first need to create
-    some directories and files, which we will attach (or bind) to the container:
-
+    However, if you'd like your locally stored data to persist, you'll first
+    need to create some directories and files, which we will attach (or bind)
+    to the container:
+    
     .. code-block::
 
         mkdir kaplan-cloud && \

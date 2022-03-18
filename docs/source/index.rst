@@ -9,6 +9,7 @@ Kaplan Cloud
 .. toctree::
    :maxdepth: 3
 
+   try-for-free-online
    pre-installation-configuration
    installation
    users
