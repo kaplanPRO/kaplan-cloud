@@ -133,7 +133,6 @@ class NewFileThread(threading.Thread):
             and not instance.bilingual_file:
 
                 with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
-                    print(tmpdir)
                     path_source = Path(tmpdir, Path(self.file_instance.source_file.name).name)
                     path_source.write_bytes(self.file_instance.source_file.read())
 
