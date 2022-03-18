@@ -28,9 +28,8 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-# For Django 4.0.x
-CSRF_TRUSTED_ORIGINS = ['https://{0}'.format(allowed_host) for allowed_host in ALLOWED_HOSTS] \
-                     + ['http://{0}'.format(allowed_host) for allowed_host in ALLOWED_HOSTS]
+# https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
 
 # Application definition
 
