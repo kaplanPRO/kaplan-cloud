@@ -10,7 +10,9 @@ import tempfile
 
 from .custom_storage import get_private_storage
 from .thread_classes import NewFileThread, NewProjectReportThread
-from .utils import get_kpp_path, get_source_file_path, get_target_file_path
+from .utils import get_kpp_path, get_source_file_path, \
+                   get_reference_file_path, get_target_file_path
+
 # Create your models here.
 
 file_statuses = project_statuses = (
@@ -250,6 +252,16 @@ class ProjectPackage(models.Model):
 
     class Meta:
         ordering = ['-id']
+
+
+class ProjectReferenceFile(models.Model):
+    name = models.TextField()
+    project = models.ForeignKey(Project, models.CASCADE)
+    reference_file = models.FileField(storage=get_private_storage, upload_to=get_reference_file_path, max_length=256)
+
+    def delete(self, *args, **kwargs):
+        self.reference_file.delete()
+        super().delete()
 
 
 class ProjectReport(models.Model):

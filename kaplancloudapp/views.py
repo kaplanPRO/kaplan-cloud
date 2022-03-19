@@ -10,7 +10,8 @@ from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
                    SegmentCommentForm, TranslationMemoryForm, \
                    TranslationMemoryImportForm
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
-                    ProjectReport, Project, Segment, TranslationMemory, TMEntry
+                    ProjectReferenceFile, ProjectReport, Project, Segment, \
+                    TranslationMemory, TMEntry
 
 from .thread_classes import CreateTargetBilingualFileThread, \
                             GenerateTargetTranslationThread, \
@@ -67,6 +68,13 @@ def newproject(request):
             else:
                 new_file.bilingual_file.save(new_file_name, file)
             new_file.save()
+
+        for file in form.files.getlist('reference_files'):
+            new_ref_file = ProjectReferenceFile()
+            new_ref_file.name = file.name
+            new_ref_file.project = new_project
+            new_ref_file.reference_file.save(file.name, file)
+            new_ref_file.save()
 
         new_project._are_all_files_submitted = True
         new_project.save()
@@ -299,6 +307,7 @@ def project(request, id):
     return render(request,
                   'project.html',
                   {'files':project_files,
+                   'reference':ProjectReferenceFile.objects.filter(project=project),
                    'form':form,
                    'form1':form1,
                    'project':project,
@@ -493,6 +502,26 @@ def editor(request, id):
                 translation_units[segment_instance.tu_id][segment_instance.s_id] = segment_instance
 
             return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form, 'can_edit':can_edit})
+
+@login_required
+def reference_file(request, id):
+    reference_file_instance = ProjectReferenceFile.objects.get(id=id)
+
+    is_relevant = True
+    if not not request.user.has_perm('kaplancloudapp.view_projectreferencefile') \
+    and request.user not in reference_file_instance.project.managed_by.all() \
+    and request.user != reference_file_instance.project.created_by:
+        is_relevant = False
+        for project_file_instance in ProjectFile.objects.filter(project=reference_file_instance.project):
+            if request.user == project_file_instance.translator \
+            or request.user == project_file_instance.reviewer:
+                is_relevant = True
+                break
+
+    if is_relevant:
+        return FileResponse(reference_file_instance.reference_file.open())
+    else:
+        return redirect('/accounts/login?next={0}'.format(request.path))
 
 @login_required
 def report(request, id):

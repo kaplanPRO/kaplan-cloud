@@ -111,6 +111,19 @@
     </table>
   </div>
   <div>
+    <h3>Reference</h3>
+    <table>
+      <tr>
+        <th>File</th>
+      </tr>
+      {% for ref in reference %}
+      <tr>
+        <td><a href="{% url 'reference-file' ref.id %}" target="_blank">{{ ref.name }}</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div>
     <h3>Reports</h3>
     <ul>
       {% for report in reports %}

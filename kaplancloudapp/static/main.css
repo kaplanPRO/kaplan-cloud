@@ -80,6 +80,7 @@ div#kpp-upload-form form, div#assign-linguist-form form {
 }
 div#project {
   display: grid;
+  grid-template-columns: 2fr 1fr;
   grid-template-rows: 2fr 1fr;
   overflow-y: hidden;
 }
