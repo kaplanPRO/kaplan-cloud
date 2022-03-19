@@ -51,4 +51,4 @@ Shell** at top right corner and wait for your Cloud Shell machine to be provisio
 6. Log in with your credentials and give Kaplan Cloud a try!
 
   .. image:: ./_static/img/gcp-cloud-shell-preview-homepage.png
-    :alt: Web Preview homepage page
+    :alt: Web Preview homepage
