@@ -1,0 +1,92 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2022, Kaplan
+# This file is distributed under the same license as the Kaplan Cloud
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Kaplan Cloud \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-03-18 15:53+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../source/try-for-free-online.rst:2
+msgid "Try for Free Online"
+msgstr "Çevrim İçi Ücretsiz Deneme"
+
+#: ../../source/try-for-free-online.rst:6
+msgid "Google Cloud Console Cloud Shell"
+msgstr "Google Cloud Console Cloud Shell"
+
+#: ../../source/try-for-free-online.rst:9
+msgid ""
+"You may need to set up a project for this to work; however, you won't be "
+"asked for billing information, or charged. You will be using your weekly "
+"GCP Cloud Shell quota."
+msgstr ""
+"Öncelikle proje oluşturmanız gerekebilir. Ödeme belgeleri istenmez ve ücret "
+"kesilmez. Haftalık ücretsiz GCP Cloud Shell kotanızdan kullanacaksınız."
+
+#: ../../source/try-for-free-online.rst:13
+msgid ""
+"1. Head on over to https://console.cloud.google.com/ and click **Activate"
+" Cloud Shell** at top right corner and wait for your Cloud Shell machine "
+"to be provisioned."
+msgstr ""
+"1\. https://console.cloud.google.com/ adresine girip sağ üstten **Activate "
+"Cloud Shell** düğmesini tıklayın. Cloud Shell makinenizin hazırlanmasını "
+"bekleyin."
+
+#: ../../source/try-for-free-online.rst
+msgid "Activate GCP Cloud Shell"
+msgstr "GCP Cloud Shell etkinleştirme"
+
+#: ../../source/try-for-free-online.rst:19
+msgid "Run a Kaplan Cloud container:"
+msgstr "Kaplan Bulut konteyneri çalıştırın:"
+
+#: ../../source/try-for-free-online.rst
+msgid "Run a Kaplan Cloud container"
+msgstr "Kaplan Bulut konteyneri çalıştırma"
+
+#: ../../source/try-for-free-online.rst:32
+msgid "Create a superuser account:"
+msgstr "Süper kullanıcı hesabı oluşturun:"
+
+#: ../../source/try-for-free-online.rst
+msgid "Create a superuser account"
+msgstr "Süper kullanıcı hesabı oluşturma"
+
+#: ../../source/try-for-free-online.rst:41
+msgid "Click **Web Preview** and then **Preview on port 8080**"
+msgstr ""
+"**Web Preview** düğmesini tıklayıp **Preview on port 8080** şıkkını "
+"seçin."
+
+#: ../../source/try-for-free-online.rst
+msgid "Web Preview button"
+msgstr "Web Preview düğmesi"
+
+#: ../../source/try-for-free-online.rst:46
+msgid "You should see the login page. You might need to give it a moment."
+msgstr "Oturum açma sayfasını göreceksiniz. Biraz beklemeniz gerekebilir."
+
+#: ../../source/try-for-free-online.rst
+msgid "Web Preview login page"
+msgstr "Web Preview oturum açma sayfası"
+
+#: ../../source/try-for-free-online.rst:51
+msgid "Log in with your credentials and give Kaplan Cloud a try!"
+msgstr "Oturum açıp Kaplan Bulut'u deneyin!"
+
+#: ../../source/try-for-free-online.rst
+msgid "Web Preview homepage"
+msgstr "Web Preview ana sayfa"

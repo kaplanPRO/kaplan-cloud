@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kaplan Cloud \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-09 17:14+0300\n"
+"POT-Creation-Date: 2022-03-18 15:53+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr "Kurulum"
 msgid "Local installation with Docker"
 msgstr "Docker ile yerel kurulum"
 
-#: ../../source/installation.rst:7 ../../source/installation.rst:60
+#: ../../source/installation.rst:7 ../../source/installation.rst:61
 msgid ""
 "Follow `these instructions <https://docs.docker.com/get-docker>`_ to "
 "install Docker."
@@ -58,35 +58,36 @@ msgstr ""
 "kurcalamak ise aşağıdaki komutu kullanmanız yeterli:"
 
 #: ../../source/installation.rst:27
+#, fuzzy
 msgid ""
-"However, if you'd like your data to persist, you'll first need to create "
-"some directories and files, which we will attach (or bind) to the "
-"container:"
+"However, if you'd like your locally stored data to persist, you'll first "
+"need to create some directories and files, which we will attach (or bind)"
+" to the container:"
 msgstr ""
-"Ancak verilerinizi kaybetmemek istiyorsanız birkaç dizin ve dosya oluşturup "
-"konteynere bağlamanız gerekiyor:"
+"Ancak, yerelde depolanan verilerinizi kaybetmemek istiyorsanız birkaç dizin ve "
+"dosya oluşturup konteynere bağlamanız gerekiyor:"
 
-#: ../../source/installation.rst:36
+#: ../../source/installation.rst:37
 msgid "Now, let's start the container with them attached:"
 msgstr ""
-"Konteyneri az önce oluşturduğumuz dosya ve dizinler "
-"bağlı şekilde başlatalım:"
+"Konteyneri az önce oluşturduğumuz dosya ve dizinler bağlı şekilde "
+"başlatalım:"
 
-#: ../../source/installation.rst:48
+#: ../../source/installation.rst:49
 msgid "Create an admin (superuser) account:"
 msgstr "Yönetici (süper kullanıcı) hesabı oluşturun:"
 
-#: ../../source/installation.rst:54
+#: ../../source/installation.rst:55
 msgid "We're done! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud."
 msgstr ""
 "İşlem tamam! http://0.0.0.0:8080'i açıp Kaplan Bulut'u keşfetmeye "
 "başlayabilirsiniz."
 
-#: ../../source/installation.rst:58
+#: ../../source/installation.rst:59
 msgid "Production installation with Docker Compose"
 msgstr "Docker Compose ile üretim ortamında kurulum"
 
-#: ../../source/installation.rst:62
+#: ../../source/installation.rst:63
 msgid ""
 "Follow `these instructions <https://docs.docker.com/compose/install>`_ to"
 " install Docker Compose."
@@ -94,17 +95,17 @@ msgstr ""
 "`Buradaki talimatları <https://docs.docker.com/compose/install>`_ "
 "izleyerek Docker Compose kurulumunu tamamlayın."
 
-#: ../../source/installation.rst:64
+#: ../../source/installation.rst:65
 msgid ""
 "If you have not set a dedicated Docker network for your proxy tier, "
 "create one:"
 msgstr "Proxy katmanınız için ayrı bir Docker ağınız mevcut değilse oluşturun:"
 
-#: ../../source/installation.rst:70
+#: ../../source/installation.rst:71
 msgid "Replace \"network-name\" with an arbitrary name of your choosing."
 msgstr "\"network-name\" yerine istediğiniz herhangi bir ismi girin."
 
-#: ../../source/installation.rst:72
+#: ../../source/installation.rst:73
 msgid ""
 "If you do not already have one, deploy an `nginxproxy/nginx-proxy "
 "container <https://hub.docker.com/r/nginxproxy/nginx-proxy>`_:"
@@ -112,11 +113,11 @@ msgstr ""
 "Halihazırda yoksa bir `nginxproxy/nginx-proxy konteyneri "
 "<https://hub.docker.com/r/nginxproxy/nginx-proxy>`_ başlatın:"
 
-#: ../../source/installation.rst:88
+#: ../../source/installation.rst:89
 msgid "This container will be routing traffic to your Kaplan Cloud instance."
 msgstr "Bu konteyner gelen trafiği Kaplan Bulut örneğinize yönlendirecek."
 
-#: ../../source/installation.rst:90
+#: ../../source/installation.rst:91
 msgid ""
 "If you do not already have one, deploy an `nginxproxy/acme-companion "
 "container <https://hub.docker.com/r/nginxproxy/acme-companion>`_:"
@@ -125,7 +126,7 @@ msgstr ""
 "<https://hub.docker.com/r/nginxproxy/acme-companion>`_ konteyneri "
 "başlatın:"
 
-#: ../../source/installation.rst:103
+#: ../../source/installation.rst:104
 msgid ""
 "This container will be provisioning free SSL certificates for your Kaplan"
 " Cloud instance."
@@ -133,11 +134,11 @@ msgstr ""
 "Bu konteyner, Kaplan Bulut örneğiniz için ücretsiz SSL sertifikaları "
 "hazırlayacak."
 
-#: ../../source/installation.rst:105
+#: ../../source/installation.rst:106
 msgid "Download the repository from here and enter the .docker directory."
 msgstr "Kod deposunu buradan indirip .docker dizinize girin."
 
-#: ../../source/installation.rst:107
+#: ../../source/installation.rst:108
 msgid ""
 "You will find three \\*.env.template files. Create .env, db.env and "
 "web.env files following the guidance on the templates."
@@ -146,11 +147,11 @@ msgstr ""
 "İçlerindeki yönergeleri izleyerek .env, db.env ve web.env dosyalarını "
 "hazırlayın."
 
-#: ../../source/installation.rst:109
+#: ../../source/installation.rst:110
 msgid "Use docker-compose to run the containers::"
 msgstr "docker-compose kullanarak konteynerleri başlatın::"
 
-#: ../../source/installation.rst:113
+#: ../../source/installation.rst:114
 msgid ""
 "If, for some reason, this step fails, run this command without the -d "
 "flag to see what went wrong::"
@@ -158,19 +159,19 @@ msgstr ""
 "Olur da bu adımda hata alırsanız aynı komutu -d işareti olmadan "
 "çalıştırarak sorunlu kısmı tespit edebilirsiniz::"
 
-#: ../../source/installation.rst:117
+#: ../../source/installation.rst:118
 msgid "Create an admin (superuser) account::"
 msgstr "Yönetici (süper kullanıcı) hesabı oluşturun::"
 
-#: ../../source/installation.rst:123
+#: ../../source/installation.rst:124
 msgid "Additional steps for Cloudflare users"
 msgstr "Cloudflare kullanıcıları için ek adımlar"
 
-#: ../../source/installation.rst:125
+#: ../../source/installation.rst:126
 msgid "Add the following page rule:"
 msgstr "Aşağıdaki sayfa kuralını ekleyin:"
 
-#: ../../source/installation.rst:132
+#: ../../source/installation.rst:133
 msgid "It might take a minute or two for the SSL certificate to kick in."
 msgstr "SSL sertifikanızın devreye girmesi birkaç dakika alabilir."
 
