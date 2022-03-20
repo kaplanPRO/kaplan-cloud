@@ -11,10 +11,10 @@ for instructions; however, for testing purposes, all you need to do is first
 start a [Kaplan Cloud container](https://hub.docker.com/r/kaplanpro/cloud):
 
 ```
-docker run -d /
--p 8080:8080 /
---restart always /
---name kaplan-cloud /
+docker run -d \
+-p 8080:8080 \
+--restart always \
+--name kaplan-cloud \
 kaplanpro/cloud
 ```
 
