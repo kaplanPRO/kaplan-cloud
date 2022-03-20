@@ -3,7 +3,7 @@ version: "3.9"
 networks:
   customnetwork:
     external: true
-    name: ${NETWORK_NAME}
+    name: ${NETWORK_NAME:-nginx-proxy}
 
 volumes:
   staticfiles:
@@ -15,8 +15,10 @@ services:
     container_name: ${PROJECT_NAME:-kaplan-cloud}_db
     volumes:
       - ./db/data/db:/var/lib/postgresql/data
-    env_file:
-      - db.env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
     expose:
       - 5432
     restart: unless-stopped
@@ -28,9 +30,10 @@ services:
       - staticfiles:/code/staticfiles
     env_file:
       - .env
-      - db.env
     environment:
-      - POSTGRES_HOST=db
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_HOST=db
+      - DB_POST=5432
       - USE_GUNICORN=True
     depends_on:
       - db
@@ -41,10 +44,10 @@ services:
     image: nginx
     container_name: ${PROJECT_NAME:-kaplan-cloud}_web
     env_file:
-      - web.env
+      - .env.web
     environment:
       - VIRTUAL_PORT=8080
-    links:
+    depends_on:
       - app
     networks:
       - default

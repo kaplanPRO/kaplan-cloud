@@ -28,6 +28,8 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
+# https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-trusted-origins
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://*').split(',')
 
 # Application definition
 
@@ -39,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'storages',
     'kaplancloudaccounts',
     'kaplancloudapp'
 ]
@@ -79,12 +82,12 @@ WSGI_APPLICATION = 'kaplancloud.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_NAME', 'postgres'),
-        'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-        'HOST': os.environ.get('POSTGRES_HOST', '127.0.0.1'),
-        'PORT': os.environ.get('POSTGRES_PORT', '5432')
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT')
     }
 }
 
@@ -129,11 +132,26 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATICFILES_STORAGE = os.environ.get('STATICFILES_STORAGE', 'django.contrib.staticfiles.storage.StaticFilesStorage')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-PROJECTS_DIR = BASE_DIR / 'kaplancloudapp' / 'projects'
-
 LOGIN_URL = '/accounts/login'
+
+PROJECTS_DIR = 'kaplancloudapp/projects'
+
+DEFAULT_FILE_STORAGE = os.environ.get('FILE_STORAGE', 'django.core.files.storage.FileSystemStorage')
+
+AWS_S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
+AWS_S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
+AWS_S3_REGION_NAME = os.environ.get('S3_REGION_NAME')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_PUBLIC_BUCKET')
+S3_PRIVATE_BUCKET_NAME = os.environ.get('S3_PRIVATE_BUCKET')
+AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
+AWS_S3_CUSTOM_DOMAIN = os.environ.get('S3_CUSTOM_DOMAIN')
+AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', True)
+AWS_LOCATION = os.environ.get('S3_PUBLIC_BUCKET_LOCATION', 'static')
+S3_PRIVATE_BUCKET_LOCATION = os.environ.get('S3_PRIVATE_BUCKET_LOCATION', '')

@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.files import File
 from django.core.serializers import serialize
 from django.http import FileResponse, JsonResponse, HttpResponseRedirect
@@ -9,9 +10,12 @@ from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
                    SegmentCommentForm, TranslationMemoryForm, \
                    TranslationMemoryImportForm
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
-                    ProjectReport, Project, Segment, TranslationMemory, TMEntry
+                    ProjectReferenceFile, ProjectReport, Project, Segment, \
+                    TranslationMemory, TMEntry
 
-from .thread_classes import TMImportThread
+from .thread_classes import CreateTargetBilingualFileThread, \
+                            GenerateTargetTranslationThread, \
+                            ImportTargetBilingualFile, TMImportThread
 
 from datetime import datetime
 import difflib
@@ -47,9 +51,9 @@ def newproject(request):
 
         for tm in form.cleaned_data['translation_memories']:
             new_project.translationmemories.add(tm)
-        new_project_directory = Path('./kaplancloudapp/projects') / str(new_project.created_by.id) / str(new_project.id)
-        new_project_directory.mkdir(parents=True)
-        new_project.directory = str(new_project_directory)
+
+        new_project.directory = str(Path(settings.PROJECTS_DIR,
+                                         str(new_project.id)))
         new_project.save()
 
         for file in form.files.getlist('project_files'):
@@ -62,8 +66,15 @@ def newproject(request):
             if file.name[:3] == 'MF-':
                 new_file.source_file.save(new_file_name, file)
             else:
-                new_file.source_bilingualfile.save(new_file_name, file)
+                new_file.bilingual_file.save(new_file_name, file)
             new_file.save()
+
+        for file in form.files.getlist('reference_files'):
+            new_ref_file = ProjectReferenceFile()
+            new_ref_file.name = file.name
+            new_ref_file.project = new_project
+            new_ref_file.reference_file.save(file.name, file)
+            new_ref_file.save()
 
         new_project._are_all_files_submitted = True
         new_project.save()
@@ -148,26 +159,27 @@ def project(request, id):
 
     if request.method == 'POST':
         if request.POST.get('task') == 'download_translations':
-            with tempfile.TemporaryDirectory() as tempdir:
+            threads = []
+            Path('.tmp').mkdir(exist_ok=True)
+            with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
                 for pf_id in request.POST['file_ids'].split(';'):
                     project_file = project_files.get(id=int(pf_id))
-                    if project_file.source_file is not None:
-                        bf = open_bilingualfile(project_file.target_bilingualfile.path)
-                        bf.generate_target_translation(tempdir, target_filename=project_file.name)
-                    else:
-                        with (Path(tempdir) / Path(project_file.target_bilingualfile.path).name).open() as tmpfile:
-                            with Path(project_file.target_bilingualfile.path).open() as target_bf:
-                                tmpfile.write_bytes(target_bf.read_bytes)
+                    threads.append(GenerateTargetTranslationThread(project_file,
+                                                                   tmpdir))
 
-                tempdir_files = [tempdir_file for tempdir_file in list(Path(tempdir).iterdir()) if not tempdir_file.is_dir()]
-                if len(tempdir_files) > 1:
-                    tmpzip_path = Path(tempdir) / 'target.zip'
+                for thread in threads: thread.start()
+                for thread in threads: thread.join()
+
+                tmpdir_files = [tmpdir_file for tmpdir_file in list(Path(tmpdir).iterdir()) if not tmpdir_file.is_dir()]
+
+                if len(tmpdir_files) > 1:
+                    tmpzip_path = Path(tmpdir) / 'target.zip'
                     with zipfile.ZipFile(tmpzip_path, 'w') as tmpzip:
-                        for tempdir_file in tempdir_files:
-                            tmpzip.write(tempdir_file, tempdir_file.name)
+                        for tmpdir_file in tmpdir_files:
+                            tmpzip.write(tmpdir_file, tmpdir_file.name)
                     return FileResponse(open(tmpzip_path, 'rb'))
                 else:
-                    return FileResponse(open(tempdir_files[0], 'rb'))
+                    return FileResponse(open(tmpdir_files[0], 'rb'))
         elif not request.user.has_perm('kaplancloudapp.change_project'):
             return JsonResponse({'message':'forbidden'}, status=403)
         elif request.POST.get('task') == 'analyze':
@@ -187,75 +199,93 @@ def project(request, id):
         elif request.POST.get('task') == 'export':
             files_manifest = {}
 
+            files_to_export = [int(i) for i in request.POST['file_ids'].split(';') if i != '']
+
+            if len(files_to_export) == 0:
+                return JsonResponse({'error':'No files selected'}, status=500)
+
             project_manifest = project.get_manifest()
-            project_directory = Path(project_manifest['directory'])
 
-            for project_file_instance in ProjectFile.objects.filter(project=project):
-                file_manifest = {}
-                if project_file_instance.source_file is not None:
-                    file_manifest['source'] = project_file_instance.source_file.path
-                if project_file_instance.source_bilingualfile is not None:
-                    file_manifest['originalBF'] = project_file_instance.source_bilingualfile.path
+            threads = []
 
-                file_manifest['targetBF'] = project_file_instance.target_bilingualfile.path
+            Path('.tmp').mkdir(exist_ok=True)
+            with tempfile.TemporaryDirectory(dir='.tmp') as p_tmpdir:
+                project_manifest['directory'] = p_tmpdir
 
-                files_manifest[project_file_instance.id] = file_manifest
+                p_s_tmpdir = Path(p_tmpdir, project.source_language)
+                p_s_tmpdir.mkdir()
 
-            project_manifest['files'] = files_manifest
+                p_t_tmpdir = Path(p_tmpdir, project.target_language)
+                p_t_tmpdir.mkdir()
 
-            project_package = KPP(project_manifest)
 
-            project_package_instance = ProjectPackage()
-            project_package_instance.project = project
+                for project_file_instance in ProjectFile.objects.filter(project=project):
+                    file_manifest = {}
+                    if project_file_instance.source_file:
+                        path_source = p_s_tmpdir / Path(project_file_instance.source_file.name).name
+                        path_source.write_bytes(project_file_instance.source_file.read())
+                        file_manifest['source'] = str(path_source)
+                    if project_file_instance.bilingual_file:
+                        path_source_bf = p_s_tmpdir / Path(project_file_instance.bilingual_file.name).name
+                        path_source_bf.write_bytes(project_file_instance.bilingual_file.read())
+                        file_manifest['originalBF'] = str(path_source_bf)
 
-            path_to_package = Path(project_package.directory) / 'packages' / (datetime.now().isoformat()+'.kpp')
-            path_to_package.parent.mkdir(parents=True, exist_ok=True)
+                        path_target_bf = p_t_tmpdir / Path(project_file_instance.bilingual_file.name).name
+                        threads.append(CreateTargetBilingualFileThread(project_file_instance,
+                                                                       p_t_tmpdir,
+                                                                       path_source_bf))
 
-            project_package.export(target_path=str(path_to_package),
-                                   files_to_export=[int(i) for i in request.POST['file_ids'].split(';')[:-1]])
+                        file_manifest['targetBF'] = str(path_target_bf)
 
-            project_package_instance.package.name = str(path_to_package)
-            project_package_instance.created_by = request.user
-            project_package_instance.save()
+                    files_manifest[project_file_instance.id] = file_manifest
 
-            return FileResponse(open(path_to_package, 'rb'))
+                for thread in threads: thread.start()
+                for thread in threads: thread.join()
+
+                project_manifest['files'] = files_manifest
+
+                project_package = KPP(project_manifest)
+
+                project_package_instance = ProjectPackage()
+                project_package_instance.project = project
+
+                with tempfile.TemporaryDirectory(dir='.tmp') as package_tmpdir:
+                    path_package = Path(package_tmpdir, (datetime.now().isoformat()+'.kpp'))
+
+                    project_package.export(target_path=str(path_package),
+                                           files_to_export=files_to_export)
+
+                    project_package_instance.package.save(path_package.name,
+                                                          path_package.open('rb'))
+
+                    project_package_instance.created_by = request.user
+                    project_package_instance.save()
+
+                    return FileResponse(path_package.open('rb'))
 
         elif request.POST.get('task') == 'import':
             form = KPPUploadForm(request.POST, request.FILES)
 
-            with zipfile.ZipFile(form.files.getlist('package')[0]) as kpp:
-                manifest = json.loads(kpp.read('manifest.json'))
+            threads = []
 
-                for i, file in manifest['files'].items():
-                    project_file_instance = ProjectFile.objects.filter(project=project) \
-                                            .get(target_bilingualfile__endswith=file['targetBF'])
+            Path('.tmp').mkdir(exist_ok=True)
+            with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
+                with zipfile.ZipFile(form.files.getlist('package')[0]) as kpp:
+                    manifest = json.loads(kpp.read('manifest.json'))
 
-                    project_file_segments = Segment.objects.filter(file=project_file_instance)
 
-                    tmp_path = Path('kaplancloudapp/.tmp/') / Path(file['targetBF']).name
+                    for i, file in manifest['files'].items():
+                        project_file_instance = ProjectFile.objects.filter(project=project) \
+                                                .get(bilingual_file__endswith=Path(file['targetBF']).name)
 
-                    while tmp_path.exists():
-                        tmp_path = tmp_path.parent / (tmp_path.stem + '_' + tmp_path.suffix)
+                        path_target_bf = Path(tmpdir, Path(file['targetBF']).name)
+                        path_target_bf.write_bytes(kpp.read(file['targetBF']))
 
-                    with open(tmp_path, 'wb') as targetbf:
-                        targetbf.write(kpp.read(file['targetBF']))
+                        threads.append(ImportTargetBilingualFile(project_file_instance,
+                                                                 path_target_bf))
 
-                    for package_tu in open_bilingualfile(str(tmp_path)).gen_translation_units():
-                        if package_tu.attrib.get('id') is None:
-                            continue
-                        relevant_segments = project_file_segments.filter(tu_id=package_tu.attrib['id'])
-                        for package_segment in package_tu:
-                            if package_segment.attrib.get('id') is None:
-                                continue
-
-                            package_target = trim_segment(package_segment[1])
-
-                            relevant_segment = relevant_segments.get(s_id=package_segment.attrib['id'])
-                            relevant_segment.target = package_target
-                            relevant_segment.updated_by = request.user
-                            relevant_segment.save()
-
-                    tmp_path.unlink()
+                for thread in threads: thread.start()
+                for thread in threads: thread.join()
 
         elif request.POST.get('task') == 'assign_linguist':
             form1 = AssignLinguistForm(request.POST)
@@ -277,6 +307,7 @@ def project(request, id):
     return render(request,
                   'project.html',
                   {'files':project_files,
+                   'reference':ProjectReferenceFile.objects.filter(project=project),
                    'form':form,
                    'form1':form1,
                    'project':project,
@@ -314,13 +345,6 @@ def editor(request, id):
             target = segment_dict['target'] \
                      .replace(' contenteditable="false" draggable="true">', '>') \
                      .replace('&nbsp;', ' ')
-
-            bf = open_bilingualfile(project_file.target_bilingualfile.path)
-            bf.update_segment('<target>' + target + '</target>',
-                              segment_dict['tu_id'],
-                              segment_dict['s_id'],
-                              segment_dict['status'])
-            bf.save(project_file.get_target_directory())
 
             segment = Segment.objects.filter(file=project_file) \
                       .filter(tu_id=segment_dict['tu_id']) \
@@ -389,8 +413,6 @@ def editor(request, id):
             return JsonResponse({'message':'success'})
 
     else:
-        bilingualfile = open_bilingualfile(project_file.target_bilingualfile.path)
-
         if request.GET.get('task') == 'lookup':
             segment_dict = request.GET
             segment = Segment.objects.filter(file=project_file) \
@@ -438,6 +460,40 @@ def editor(request, id):
                                               'created_at':comment.created_at}))
 
             return JsonResponse({'tm':tm_entries, 'comments':dict(comments)})
+        elif request.GET.get('task') == 'concordance':
+            query = request.GET['query']
+
+            tm_entries = []
+            for tm in project_file.project.translationmemories.all():
+                relevant_tm_entries = TMEntry.objects.filter(translationmemory=tm)
+                relevant_tm_entries = relevant_tm_entries.filter(source__contains=query) \
+                                    | relevant_tm_entries.filter(target__contains=query)
+
+                for relevant_tm_entry in relevant_tm_entries:
+                    tm_entry_source = KDB.entry_to_segment(relevant_tm_entry.source, 'source')
+                    tm_entry_source = etree.tostring(tm_entry_source, encoding='UTF-8').decode()[8:-9]
+
+                    tm_entry_target = KDB.entry_to_segment(relevant_tm_entry.target, 'target')
+                    tm_entry_target = etree.tostring(tm_entry_target, encoding='UTF-8').decode()[8:-9]
+
+                    if query in tm_entry_source and query not in tm_entry_target:
+                        len_diff = abs(len(query) - len(tm_entry_source))
+                    elif query not in tm_entry_source and query in tm_entry_target:
+                        len_diff =  abs(len(query) - len(tm_entry_target))
+                    else:
+                        len_diff = abs(len(query) - ((len(tm_entry_source) + len(tm_entry_target))/2))
+
+                    tm_entries.append((len_diff,
+                                       {'source': tm_entry_source,
+                                        'target': tm_entry_target,
+                                        'updated_by': relevant_tm_entry.updated_by.username,
+                                        'updated_at': relevant_tm_entry.updated_at
+                                       }))
+
+                    tm_entries.sort()
+
+            return JsonResponse({'concordance': tm_entries})
+
         else:
             translation_units = {}
             for segment_instance in Segment.objects.filter(file=project_file).order_by('s_id'):
@@ -446,6 +502,26 @@ def editor(request, id):
                 translation_units[segment_instance.tu_id][segment_instance.s_id] = segment_instance
 
             return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form, 'can_edit':can_edit})
+
+@login_required
+def reference_file(request, id):
+    reference_file_instance = ProjectReferenceFile.objects.get(id=id)
+
+    is_relevant = True
+    if not not request.user.has_perm('kaplancloudapp.view_projectreferencefile') \
+    and request.user not in reference_file_instance.project.managed_by.all() \
+    and request.user != reference_file_instance.project.created_by:
+        is_relevant = False
+        for project_file_instance in ProjectFile.objects.filter(project=reference_file_instance.project):
+            if request.user == project_file_instance.translator \
+            or request.user == project_file_instance.reviewer:
+                is_relevant = True
+                break
+
+    if is_relevant:
+        return FileResponse(reference_file_instance.reference_file.open())
+    else:
+        return redirect('/accounts/login?next={0}'.format(request.path))
 
 @login_required
 def report(request, id):

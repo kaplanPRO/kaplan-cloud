@@ -8,7 +8,7 @@ optionally, [nginxproxy/acme-companion](https://hub.docker.com/r/nginxproxy/acme
 running on the same machine. Please make sure to connect the
 nginxproxy/nginx-proxy container to a network, the name of which you'll need
 to set to the NETWORK_NAME environment variable in .env. Please see the
-.env.template and .db.env.template files for instructions.
+.env.template and .env.web.template files for instructions.
 
 When you're done, run `docker-compose up -d` while in the same directory as docker-compose.yml
 

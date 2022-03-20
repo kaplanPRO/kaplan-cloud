@@ -7,8 +7,10 @@ Kaplan Cloud
 ============
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
+   try-for-free-online
+   pre-installation-configuration
    installation
    users
    language-profiles

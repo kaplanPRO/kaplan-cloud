@@ -6,43 +6,53 @@ Local installation with Docker
 ==============================
 1. Follow `these instructions <https://docs.docker.com/get-docker>`_ to install Docker.
 
-2. Deploy a `Postgres container <https://hub.docker.com/_/postgres>`_:
+2. Deploy a `Kaplan Cloud container <https://hub.docker.com/r/kaplanpro/cloud>`_:
 
-    .. code-block::
-
-        docker run -d \
-        --expose 5432 \
-        -e POSTGRES_PASSWORD=postgres \
-        -v kaplan-postgres:/var/lib/postgresql/data \
-        --restart always \
-        --name kaplan-postgres \
-        postgres
-
-    "postgres" is your password for the Postgres instance. It'd be best to change it.
-
-3. Deploy a `Kaplan Cloud container <https://hub.docker.com/r/kaplanpro/cloud>`_:
+    Please note that with Docker containers, storage is ephemeral. This means
+    that when you upgrade to a newer version, you will essentially remove the
+    container and its contents along with any work you may have done. Docker
+    solves this with
+    `mounts/volumes <https://docs.docker.com/storage/volumes/>`_. If you would
+    like to just fiddle around with Kaplan Cloud, the invocation below is all
+    you need:
 
     .. code-block::
 
         docker run -d \
         -p 8080:8080 \
-        --link kaplan-postgres \
-        -e POSTGRES_HOST=kaplan-postgres \
-        -e POSTGRES_PASSWORD=postgres \
-        -v kaplan-cloud:/code/kaplancloudapp/projects \
         --restart always \
         --name kaplan-cloud \
-        kaplanpro/cloud``
+        kaplanpro/cloud
 
-    Change "postgres" to the password you input in the previous step.
+    However, if you'd like your locally stored data to persist, you'll first
+    need to create some directories and files, which we will attach (or bind)
+    to the container:
+    
+    .. code-block::
 
-4. Create an admin (superuser) account:
+        mkdir kaplan-cloud && \
+        mkdir kaplan-cloud/projects && \
+        touch kaplan-cloud/db.sqlite3
+
+    Now, let's start the container with them attached:
+
+    .. code-block::
+
+        docker run -d \
+        -p 8080:8080 \
+        --mount type=bind,source=${PWD}/kaplan-cloud/db.sqlite3,target=/code/db.sqlite3 \
+        --mount type=bind,source=${PWD}/kaplan-cloud/projects,target=/code/kaplancloudapp/projects \
+        --restart always \
+        --name kaplan-cloud \
+        kaplanpro/cloud
+
+3. Create an admin (superuser) account:
 
     .. code-block::
 
         docker exec -it kaplan-cloud python manage.py createsuperuser
 
-5. We're done! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud.
+4. We're done! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud.
 
 ===========================================
 Production installation with Docker Compose

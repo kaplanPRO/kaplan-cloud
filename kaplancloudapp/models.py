@@ -3,10 +3,16 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
-from pathlib import Path
+from kaplan import open_bilingualfile
 
+from pathlib import Path
+import tempfile
+
+from .custom_storage import get_private_storage
 from .thread_classes import NewFileThread, NewProjectReportThread
-from .utils import get_kpp_path, get_source_file_path, get_target_file_path
+from .utils import get_kpp_path, get_source_file_path, \
+                   get_reference_file_path, get_target_file_path
+
 # Create your models here.
 
 file_statuses = project_statuses = (
@@ -104,6 +110,19 @@ class TMEntry(models.Model):
     updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='tmentry_update')
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.target != '':
+            tmentry_update = apps.get_model('kaplancloudapp', 'TMEntryUpdate')()
+            tmentry_update.source = self.source
+            tmentry_update.target = self.target
+            tmentry_update.tmentry = self
+            if self.updated_by:
+                tmentry_update.submitted_by = self.updated_by
+            elif self.created_by:
+                tmentry_update.submitted_by = self.created_by
+            tmentry_update.save()
+
 
 class TMEntryUpdate(models.Model):
     source = models.TextField(blank=True)
@@ -124,7 +143,7 @@ class Project(models.Model):
     status = models.IntegerField(choices=project_statuses, default=0)
     client = models.ForeignKey(Client, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    directory = models.TextField()
+    directory = models.CharField(max_length=100)
     due_by = models.DateTimeField(blank=True, null=True)
     _are_all_files_submitted = models.BooleanField(default=False)
 
@@ -179,9 +198,8 @@ class ProjectFile(models.Model):
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
     project = models.ForeignKey(Project, models.CASCADE)
-    source_file = models.FileField(upload_to=get_source_file_path, blank=True, null=True)
-    source_bilingualfile = models.FileField(upload_to=get_source_file_path, blank=True, null=True)
-    target_bilingualfile = models.FileField(upload_to=get_target_file_path, blank=True)
+    source_file = models.FileField(storage=get_private_storage, upload_to=get_source_file_path, blank=True, null=True, max_length=256)
+    bilingual_file = models.FileField(storage=get_private_storage, upload_to=get_source_file_path, blank=True, null=True, max_length=256)
     status = models.IntegerField(choices=project_statuses, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     due_by = models.DateTimeField(blank=True, null=True)
@@ -198,12 +216,17 @@ class ProjectFile(models.Model):
         from django.urls import reverse
         return reverse('editor', kwargs={'id' : self.id})
 
+    def get_source_directory(self):
+        return Path(self.project.directory,
+                    self.source_language)
+
     def get_status(self):
         status_dict = dict(file_statuses)
         return status_dict[self.status]
 
     def get_target_directory(self):
-        return str(Path(self.project.directory) / self.target_language)
+        return Path(self.project.directory,
+                    self.target_language)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -223,12 +246,22 @@ class ProjectFile(models.Model):
 
 class ProjectPackage(models.Model):
     project = models.ForeignKey(Project, models.CASCADE)
-    package = models.FileField(upload_to=get_kpp_path, max_length=255)
+    package = models.FileField(storage=get_private_storage, upload_to=get_kpp_path, max_length=256)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-id']
+
+
+class ProjectReferenceFile(models.Model):
+    name = models.TextField()
+    project = models.ForeignKey(Project, models.CASCADE)
+    reference_file = models.FileField(storage=get_private_storage, upload_to=get_reference_file_path, max_length=256)
+
+    def delete(self, *args, **kwargs):
+        self.reference_file.delete()
+        super().delete()
 
 
 class ProjectReport(models.Model):
@@ -262,9 +295,44 @@ class Segment(models.Model):
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_create')
     updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_update')
 
-    @property
     def get_status(self):
         return segment_statuses[self.status][1]
+
+    def save(self, no_override=False, *args, **kwargs):
+        prev_target = self.target
+        prev_updated_by = self.updated_by
+        super().save(*args, **kwargs)
+        if no_override:
+            return
+        elif self.target != '' and self.target != prev_target:
+            try:
+                Path('.tmp').mkdir(exist_ok=True)
+                with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
+                    path_bf = Path(tmpdir, Path(self.file_instance.bilingual_file.name).name)
+                    path_bf.write_bytes(self.file_instance.bilingual_file.read())
+
+                    bf = open_bilingualfile(path_bf)
+
+                bf.update_segment(target_segment,
+                                  self.tu_id,
+                                  self.s_id,
+                                  segment_state=('blank','draft','translated')[int(self.status)])
+            except:
+                self.target = prev_target
+                self.updated_by = prev_updated_by
+                self.save(no_override=True)
+                raise ValueError('''Can't update the segment''')
+            finally:
+                segment_update = apps.get_model('kaplancloudapp', 'SegmentUpdate')()
+                segment_update.source = self.source
+                segment_update.target = self.target
+                segment_update.status = self.status
+                segment_update.segment = self
+                if self.updated_by:
+                    segment_update.submitted_by = self.updated_by
+                elif self.created_by:
+                    segment_update.submitted_by = self.created_by
+                segment_update.save()
 
 
 class SegmentUpdate(models.Model):
