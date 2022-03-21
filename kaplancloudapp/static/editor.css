@@ -2,6 +2,19 @@ body {
   display: grid;
   grid-template-rows: auto 1fr;
 }
+div#dropdown-filter {
+  background-color: #2a2f33;
+  position: absolute;
+}
+div#dropdown-filter button {
+  border: none;
+  display: block;
+  text-align: left;
+  width: 100%;
+}
+div#dropdown-filter hr {
+  border: 1px solid #f5f5f5;
+}
 div#overlay-submit-translation {
   background-color: rgba(255, 255, 255, 0.5);
   display: none;
@@ -41,10 +54,13 @@ form#comment-form textarea {
 }
 header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto 1fr auto;
 }
-header button {
+header button#btn-filter {
   grid-column: 3;
+}
+header button#btn-submit-translation {
+  grid-column: 5;
 }
 main#editor {
   display: grid;
@@ -120,4 +136,7 @@ tr.error {
 }
 tr.evenrow {
   background-color: rgb(42 47 51 / 15%);
+}
+.hidden {
+  display: none;
 }

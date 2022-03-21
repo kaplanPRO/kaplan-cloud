@@ -24,6 +24,7 @@
           </span>
         </a>
       </nav>
+      <button id="btn-filter">Filter</button>
       <button id="btn-submit-translation" {% if not can_edit %}disabled{% endif %}>
         {% if file.status == 4 %}
           Submit Translation
@@ -81,6 +82,13 @@
         </div>
       </div>
     </main>
+    <div id="dropdown-filter" class="hidden">
+      <button id="btn-filter-all">All</button>
+      <hr/>
+      <button id="btn-filter-translated">Translated</button>
+      <button id="btn-filter-draft">Draft</button>
+      <button id="btn-filter-blank">Blank</button>
+    </div>
     <div id="overlay-submit-translation"> <!--TODO: Add QA steps-->
       <div>
         <p>Checking to see if all segments are translated...</p>

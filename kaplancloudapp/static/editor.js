@@ -74,6 +74,12 @@ window.onload = function() {
     })
   }
 
+  let segmentFilter = new URL(window.location).searchParams.get('segments');
+  if (segmentFilter && segmentFilter !== 'all')
+  {
+    filterSegments(segmentFilter);
+  }
+
   document.getElementById('btn-submit-translation').onclick = function(e) {
     const overlaySubmitTranslation = document.getElementById('overlay-submit-translation');
     const untranslatedSegmentsTable = overlaySubmitTranslation.getElementsByTagName('table')[0];
@@ -221,6 +227,30 @@ window.onload = function() {
       currentSegment.children[2].parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
       currentSegment.children[2].parentElement.classList.add('draft');
     }
+    else if (e.target.id === 'btn-filter')
+    {
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-all')
+    {
+      filterSegments('all');
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-translated')
+    {
+      filterSegments('translated');
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-draft')
+    {
+      filterSegments('draft');
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-blank')
+    {
+      filterSegments('blank');
+      toggleFilterDropdown()
+    }
   }
 
   document.getElementById('comment-form').onsubmit = function(e) {
@@ -323,6 +353,29 @@ window.onload = function() {
     })
   }
 
+  function filterSegments(segmentState) {
+    const segments = document.body.getElementsByClassName('segment');
+
+    for (i = 0; i < segments.length; i++)
+    {
+      if (segmentState === 'all')
+      {
+        segments[i].classList.remove('hidden');
+      }
+      else if (segments[i].classList.contains(segmentState))
+      {
+        segments[i].classList.remove('hidden');
+      }
+      else
+      {
+        segments[i].classList.add('hidden');
+      }
+    }
+
+
+    window.history.pushState('file', 'segments', '?segments='+segmentState)
+  }
+
   function getCSRFToken() {
     return document.getElementsByTagName('input')[0].value;
   }
@@ -414,6 +467,15 @@ window.onload = function() {
       })
 
 
+  }
+
+  function toggleFilterDropdown() {
+    const filterButton = document.getElementById('btn-filter');
+    const filterDropdown = document.getElementById('dropdown-filter');
+
+    filterDropdown.style.top = filterButton.offsetHeight + 'px';
+    filterDropdown.style.left = filterButton.offsetLeft + 'px';
+    filterDropdown.classList.toggle('hidden');
   }
 
 }
