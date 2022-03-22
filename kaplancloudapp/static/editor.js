@@ -14,6 +14,7 @@ window.onload = function() {
 
   let currentSegment;
   let concordanceSearchTimeout;
+  let shiftSelectedSegments = [];
 
   for (i = 0; i < targetCells.length; i++) {
     targetCell = targetCells[i];
@@ -227,6 +228,44 @@ window.onload = function() {
       currentSegment.children[2].parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
       currentSegment.children[2].parentElement.classList.add('draft');
     }
+    else if (e.target.classList.contains('sid'))
+    {
+      if (e.shiftKey)
+      {
+        e.target.parentElement.classList.add('selected');
+        shiftSelectedSegments.push(e.target.parentElement);
+
+        if (shiftSelectedSegments.length === 2)
+        {
+          let applySelect = false;
+          [...document.getElementsByClassName('segment')].forEach((segment, i) => {
+            if (shiftSelectedSegments.includes(segment))
+            {
+              shiftSelectedSegments = shiftSelectedSegments.filter(function(item) {
+                return item != segment;
+              });
+              if (shiftSelectedSegments.length == 1)
+              {
+                applySelect = true;
+              }
+              else
+              {
+                applySelect = false;
+              }
+            }
+            if (applySelect)
+            {
+              segment.classList.add('selected');
+            }
+          });
+        }
+      }
+      else
+      {
+        e.target.parentElement.classList.toggle('selected');
+        shiftSelectedSegments = []
+      }
+    }
     else if (e.target.id === 'btn-filter')
     {
       toggleFilterDropdown()
@@ -250,6 +289,10 @@ window.onload = function() {
     {
       filterSegments('blank');
       toggleFilterDropdown()
+    }
+    else
+    {
+      deselectSegments();
     }
   }
 
@@ -351,6 +394,12 @@ window.onload = function() {
     .then(data => {
       populateTMHits(data['concordance'], false);
     })
+  }
+
+  function deselectSegments() {
+    [...document.getElementsByClassName('segment selected')].forEach((item, i) => {
+      item.classList.remove('selected');
+    });
   }
 
   function filterSegments(segmentState) {

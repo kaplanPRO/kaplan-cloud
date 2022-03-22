@@ -116,8 +116,14 @@ table.tu td, table.tu th {
   border-collapse: inherit;
   padding: 0.25em;
 }
+table.tu th {
+  user-select: none;
+}
 tr.segment.locked {
   opacity: 0.5;
+}
+tr.segment.selected {
+  background-color: rgba(175, 208, 212, 0.5);
 }
 tr.segment.draft th {
   background-color: tan;
