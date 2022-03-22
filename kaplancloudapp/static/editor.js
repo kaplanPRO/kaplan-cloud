@@ -9,6 +9,7 @@ window.onload = function() {
   const tMHits = document.getElementById('tm-hits');
   const comments = document.getElementById('comments');
   const commentForm = document.getElementById('comment-form');
+  const segmentContext = document.getElementById('context-segment');
 
   const targetCells = document.getElementsByClassName('target');
 
@@ -114,6 +115,19 @@ window.onload = function() {
     else
     {
       overlaySubmitTranslation.children[1].classList.add('visible');
+    }
+  }
+
+  document.body.oncontextmenu = function(e) {
+    if (e.target.classList.contains('sid'))
+    {
+      e.preventDefault();
+
+      e.target.parentElement.classList.add('selected');
+
+      segmentContext.classList.remove('hidden');
+      segmentContext.style.left = e.pageX + "px";
+      segmentContext.style.top = e.pageY + "px";
     }
   }
 
@@ -266,6 +280,14 @@ window.onload = function() {
         shiftSelectedSegments = []
       }
     }
+    else if (e.target.id === 'btn-context-lock')
+    {
+      changeSelectedSegmentLocks(true);
+    }
+    else if (e.target.id === 'btn-context-unlock')
+    {
+      changeSelectedSegmentLocks(false);
+    }
     else if (e.target.id === 'btn-filter')
     {
       toggleFilterDropdown()
@@ -293,6 +315,7 @@ window.onload = function() {
     else
     {
       deselectSegments();
+      segmentContext.classList.add('hidden');
     }
   }
 
@@ -370,6 +393,55 @@ window.onload = function() {
         console.error(error);
       })
 
+  }
+
+  function changeSelectedSegmentLocks(lock) {
+    let selectedSegments = [...document.getElementsByClassName('segment selected')]
+    selectedSegments.forEach((selectedSegment, i) => {
+      if (lock) {
+        selectedSegment.children[2].removeAttribute('contentEditable');
+        selectedSegment.classList.add('locked');
+      }
+      else {
+        selectedSegment.children[2].setAttribute('contentEditable', true);
+        selectedSegment.classList.remove('locked');
+      }
+    });
+
+    let selectedSegmentIds = selectedSegments.map(item => item.children[0].textContent)
+    if (selectedSegmentIds === []) {return;}
+
+    let locksFormData = new FormData();
+    locksFormData.append('task', 'change_segment_locks');
+    if (lock) {
+      lock = 'lock';
+    }
+    else {
+      lock = 'unlock';
+    }
+    locksFormData.append('to_lock', lock);
+
+    locksFormData.append('segments', selectedSegmentIds.join(';'))
+
+    fetch('',
+          {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCSRFToken()
+            },
+            body: locksFormData
+          }
+      )
+      .then(response => {
+        if (response.status === 200)
+        {
+          response.json()
+          .then(data => {
+            console.log(data);
+          })
+        }
+      }
+      )
   }
 
   function closeOverlay() {

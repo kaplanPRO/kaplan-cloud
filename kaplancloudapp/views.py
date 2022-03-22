@@ -416,6 +416,18 @@ def editor(request, id):
 
             return JsonResponse({'message':'success'})
 
+        elif request.POST.get('task') == 'change_segment_locks':
+            relevant_segments = Segment.objects.filter(file=project_file)
+            to_lock = request.POST['to_lock'] == 'lock'
+            for s_id in request.POST['segments'].split(';'):
+                relevant_segment = relevant_segments.get(s_id=s_id)
+                if relevant_segment.is_locked == to_lock:
+                    continue
+                relevant_segment.is_locked = to_lock
+                relevant_segment.save(no_override=True)
+
+            return JsonResponse({'message':'success'})
+
     else:
         if request.GET.get('task') == 'lookup':
             segment_dict = request.GET
