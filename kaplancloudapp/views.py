@@ -340,15 +340,19 @@ def editor(request, id):
         if request.POST.get('task') == 'update_segment':
             if not can_edit:
                 return JsonResponse({'message':'forbidden'}, status=403)
+
             segment_dict = request.POST
+            segment = Segment.objects.filter(file=project_file) \
+                      .filter(tu_id=segment_dict['tu_id']) \
+                      .get(s_id=segment_dict['s_id'])
+
+            if segment.is_locked:
+                return JsonResponse({'message':'locked'}, status=403)
 
             target = segment_dict['target'] \
                      .replace(' contenteditable="false" draggable="true">', '>') \
                      .replace('&nbsp;', ' ')
 
-            segment = Segment.objects.filter(file=project_file) \
-                      .filter(tu_id=segment_dict['tu_id']) \
-                      .get(s_id=segment_dict['s_id'])
             segment.target = target
             segment.status = ('blank', 'draft','translated').index(segment_dict['status'])
             segment.updated_by = request.user

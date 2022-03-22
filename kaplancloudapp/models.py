@@ -291,6 +291,7 @@ class Segment(models.Model):
     source = models.TextField(blank=True)
     target = models.TextField(blank=True)
     status = models.IntegerField(choices=segment_statuses, default=0)
+    is_locked = models.BooleanField(default=False)
     file = models.ForeignKey(ProjectFile, models.CASCADE)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_create')
     updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_update')

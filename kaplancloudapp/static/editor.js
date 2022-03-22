@@ -168,7 +168,7 @@ window.onload = function() {
               isNext = true;
               continue;
             }
-            if (isNext && !nextTarget.parentElement.classList.contains('translated'))
+            if (isNext && !nextTarget.parentElement.classList.contains('translated') && !nextTarget.parentElement.classList.contains('locked'))
             {
               nextTarget.focus();
               break;

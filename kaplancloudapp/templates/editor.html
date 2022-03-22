@@ -42,10 +42,10 @@
           {% for tu_id, translation_unit in translation_units.items %}
           <table id="{{tu_id}}" class="tu">
               {% for s_id, segment in translation_unit.items %}
-              <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}}" status="{{segment.get_status.lower}}">
+              <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}} {% if segment.is_locked %}locked{% endif %}" status="{{segment.get_status.lower}}">
                   <th class="sid">{{s_id}}</th>
                   <td class="source" lang="{{file.source_language}}">{{segment.source | safe}}</td>
-                  <td class="target" {% if can_edit %}contenteditable{% endif %} lang="{{file.target_language}}">{{segment.target | safe}}</td>
+                  <td class="target" {% if can_edit and not segment.is_locked %}contenteditable{% endif %} lang="{{file.target_language}}">{{segment.target | safe}}</td>
               </tr>
               {% endfor %}
           </table>

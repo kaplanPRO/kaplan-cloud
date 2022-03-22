@@ -116,6 +116,9 @@ table.tu td, table.tu th {
   border-collapse: inherit;
   padding: 0.25em;
 }
+tr.segment.locked {
+  opacity: 0.5;
+}
 tr.segment.draft th {
   background-color: tan;
 }
