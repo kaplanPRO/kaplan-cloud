@@ -6,6 +6,7 @@ from django.db import models
 from kaplan import open_bilingualfile
 
 from pathlib import Path
+import shutil
 import tempfile
 
 from .custom_storage import get_private_storage
@@ -147,11 +148,16 @@ class Project(models.Model):
     due_by = models.DateTimeField(blank=True, null=True)
     _are_all_files_submitted = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return str(self.id) + '-' + self.name
 
-    class Meta:
-       ordering = ['-id']
+    def delete(self, *args, **kwargs):
+        if settings.DEFAULT_FILE_STORAGE == 'django.core.files.storage.FileSystemStorage':
+            shutil.rmtree(self.directory)
+        super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -206,11 +212,18 @@ class ProjectFile(models.Model):
     translator = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='translator')
     reviewer = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='reviewer')
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return '-'.join((str(self.project.id), str(self.id), self.name))
 
-    class Meta:
-       ordering = ['name']
+    def delete(self, *args, **kwargs):
+        if self.source_file:
+            self.source_file.delete(save=False)
+        if self.bilingual_file:
+            self.bilingual_file.delete(save=False)
+        super().delete()
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -253,6 +266,10 @@ class ProjectPackage(models.Model):
     class Meta:
         ordering = ['-id']
 
+    def delete(self, *args, **kwargs):
+        self.package.delete(save=False)
+        super().delete()
+
 
 class ProjectPreprocessingSettings(models.Model):
     project = models.ForeignKey(Project, models.CASCADE)
@@ -265,7 +282,7 @@ class ProjectReferenceFile(models.Model):
     reference_file = models.FileField(storage=get_private_storage, upload_to=get_reference_file_path, max_length=256)
 
     def delete(self, *args, **kwargs):
-        self.reference_file.delete()
+        self.reference_file.delete(save=False)
         super().delete()
 
 
