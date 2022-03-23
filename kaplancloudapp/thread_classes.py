@@ -155,6 +155,20 @@ class NewFileThread(threading.Thread):
 
                     bf = open_bilingualfile(path_bf)
 
+            ProjPreSettingsModel = apps.get_model('kaplancloudapp',
+                                                  'ProjectPreprocessingSettings')
+            TMEntryModel = apps.get_model('kaplancloudapp', 'TMEntry')
+            try:
+                proj_pre_settings = ProjPreSettingsModel.objects.get(project=instance.project)
+                pretranslate = proj_pre_settings.will_pretranslate
+                relevant_tm_entries = TMEntryModel.objects.none()
+                if pretranslate:
+                    for tm in instance.project.translationmemories.all():
+                        relevant_tm_entries = relevant_tm_entries | TMEntryModel.objects.filter(translationmemory=tm)
+            except ProjPreSettingsModel.DoesNotExist:
+                pretranslate = False
+                relevant_tm_entries = TMEntryModel.objects.none()
+
             SegmentModel = apps.get_model('kaplancloudapp', 'Segment')
 
             _regex_source = regex.compile('<source[^<>]*?>(.*)</source>')
@@ -185,6 +199,22 @@ class NewFileThread(threading.Thread):
                             segment.target = segment_target.group(1)
                         else:
                             segment.target = ''
+
+                    if segment.target == '' and pretranslate:
+                        source_segment = etree.fromstring('<source>' + segment.source + '</source>')
+                        source_entry, tags = KDB.segment_to_entry(source_segment, {})
+                        reversed_tags = {v: k for k, v in tags.items()}
+
+                        tm_hits = []
+                        for tm_hit in relevant_tm_entries.filter(source=source_entry):
+                            tm_hits.append(tm_hit)
+
+                        if tm_hits != []:
+                            tm_hits.sort(key=lambda x: x.updated_at, reverse=True)
+                            target_entry = tm_hits[0].target
+                            target_segment = KDB.entry_to_segment(target_entry, 'target', reversed_tags, source_segment)
+                            segment.target = trim_segment(target_segment)
+                            segment.status = 2
 
                     segment.file = instance
                     segment.created_by = instance.project.created_by

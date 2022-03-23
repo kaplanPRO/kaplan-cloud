@@ -10,8 +10,8 @@ from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
                    SegmentCommentForm, TranslationMemoryForm, \
                    TranslationMemoryImportForm
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
-                    ProjectReferenceFile, ProjectReport, Project, Segment, \
-                    TranslationMemory, TMEntry
+                    ProjectPreprocessingSettings, ProjectReferenceFile, \
+                    ProjectReport, Project, Segment, TranslationMemory, TMEntry
 
 from .thread_classes import CreateTargetBilingualFileThread, \
                             GenerateTargetTranslationThread, \
@@ -48,6 +48,12 @@ def newproject(request):
         if form.cleaned_data.get('client'):
             new_project.client = form.cleaned_data['client']
         new_project.save()
+
+        if form.cleaned_data['will_pretranslate']:
+            proj_pre_settings = ProjectPreprocessingSettings()
+            proj_pre_settings.project = new_project
+            proj_pre_settings.will_pretranslate = True
+            proj_pre_settings.save()
 
         for tm in form.cleaned_data['translation_memories']:
             new_project.translationmemories.add(tm)

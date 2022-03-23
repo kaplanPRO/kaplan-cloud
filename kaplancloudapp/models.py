@@ -254,6 +254,11 @@ class ProjectPackage(models.Model):
         ordering = ['-id']
 
 
+class ProjectPreprocessingSettings(models.Model):
+    project = models.ForeignKey(Project, models.CASCADE)
+    will_pretranslate = models.BooleanField(default=True)
+
+
 class ProjectReferenceFile(models.Model):
     name = models.TextField()
     project = models.ForeignKey(Project, models.CASCADE)
