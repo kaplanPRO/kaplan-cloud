@@ -19,6 +19,7 @@ button, nav a {
   font-weight: bold;
   justify-content: center;
   padding: 0.25em;
+  text-align: center;
 }
 button:not(:disabled):hover, button:not(:disabled).selected {
   border-color: #2a2f33;
