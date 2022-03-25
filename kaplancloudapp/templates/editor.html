@@ -25,6 +25,7 @@
         </a>
       </nav>
       <button id="btn-filter">Filter</button>
+      <button id="btn-propagation">Propagation</button>
       <button id="btn-submit-translation" {% if not can_edit %}disabled{% endif %}>
         {% if file.status == 4 %}
           Submit Translation
@@ -92,6 +93,10 @@
       <button id="btn-filter-translated">Translated</button>
       <button id="btn-filter-draft">Draft</button>
       <button id="btn-filter-blank">Blank</button>
+    </div>
+    <div id="dropdown-propagation" class="hidden">
+      <button id="btn-settings-backward-propagation"><input id="checkbox-backward-propagation" type="checkbox" checked/>Backward Propagation</button>
+      <button id="btn-settings-forward-propagation"><input id="checkbox-forward-propagation" type="checkbox" checked/>Forward Propagation</button>
     </div>
     <div id="overlay-submit-translation"> <!--TODO: Add QA steps-->
       <div>

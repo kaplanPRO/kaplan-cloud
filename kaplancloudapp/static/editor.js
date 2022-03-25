@@ -11,6 +11,9 @@ window.onload = function() {
   const commentForm = document.getElementById('comment-form');
   const segmentContext = document.getElementById('context-segment');
 
+  const settingBackwardPropagation = document.getElementById('checkbox-backward-propagation');
+  const settingForwardPropagation = document.getElementById('checkbox-forward-propagation');
+
   const targetCells = document.getElementsByClassName('target');
 
   let currentSegment;
@@ -168,6 +171,43 @@ window.onload = function() {
           e.target.parentElement.classList.add('blank');
           e.target.parentElement.setAttribute('status', 'blank');
         }
+
+        if (settingBackwardPropagation.checked || settingForwardPropagation.checked)
+        {
+          originSourceCell = e.target.parentElement.children[1];
+
+          sourceCells = [...document.getElementsByClassName('source')].filter(sourceCell => sourceCell.innerHTML === originSourceCell.innerHTML);
+
+          if (settingBackwardPropagation.checked)
+          {
+            sourceCells.slice(0, sourceCells.indexOf(originSourceCell)).forEach((sourceCell, i) => {
+              if (['hidden', 'locked'].some(c => sourceCell.parentElement.classList.contains(c)))
+              {
+                return;
+              }
+              sourceCell.parentElement.classList.remove('blank', 'error', 'draft', 'reviewed');
+              sourceCell.parentElement.classList.add(e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.setAttribute('status', e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.children[2].innerHTML = e.target.innerHTML;
+              submitSegment(sourceCell.parentElement.children[2]);
+            });
+          }
+          if (settingForwardPropagation.checked)
+          {
+            sourceCells.slice(sourceCells.indexOf(originSourceCell)+1).forEach((sourceCell, i) => {
+              if (['hidden', 'locked'].some(c => sourceCell.parentElement.classList.contains(c)))
+              {
+                return;
+              }
+              sourceCell.parentElement.classList.remove('blank', 'error', 'draft', 'reviewed');
+              sourceCell.parentElement.classList.add(e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.setAttribute('status', e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.children[2].innerHTML = e.target.innerHTML;
+              submitSegment(sourceCell.parentElement.children[2]);
+            });
+          }
+        }
+
         e.target.blur();
 
         if (!e.shiftKey)
@@ -311,6 +351,18 @@ window.onload = function() {
     {
       filterSegments('blank');
       toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-propagation')
+    {
+      togglePropagationDropdown();
+    }
+    else if (e.target.id === 'btn-settings-backward-propagation')
+    {
+      settingBackwardPropagation.checked = !settingBackwardPropagation.checked;
+    }
+    else if (e.target.id === 'btn-settings-forward-propagation')
+    {
+      settingForwardPropagation.checked = !settingForwardPropagation.checked;
     }
     else
     {
@@ -599,6 +651,14 @@ window.onload = function() {
     filterDropdown.classList.toggle('hidden');
   }
 
+  function togglePropagationDropdown() {
+    const propagationButton = document.getElementById('btn-propagation');
+    const propagationDropdown = document.getElementById('dropdown-propagation');
+
+    propagationDropdown.style.top = propagationButton.offsetHeight + 'px';
+    propagationDropdown.style.left = propagationButton.offsetLeft + 'px';
+    propagationDropdown.classList.toggle('hidden');
+  }
 }
 function toggleExpand(span)
 {
