@@ -8,49 +8,50 @@ Local installation with Docker
 
 2. Deploy a `Kaplan Cloud container <https://hub.docker.com/r/kaplanpro/cloud>`_:
 
-    Please note that with Docker containers, storage is ephemeral. This means
-    that when you upgrade to a newer version, you will essentially remove the
-    container and its contents along with any work you may have done. Docker
-    solves this with
-    `mounts/volumes <https://docs.docker.com/storage/volumes/>`_. If you would
-    like to just fiddle around with Kaplan Cloud, the invocation below is all
-    you need:
+   .. note::
+      Please note that with Docker containers, storage is ephemeral. This means
+      that when you upgrade to a newer version, you will essentially remove the
+      container and its contents along with any work you may have done. Docker
+      solves this with
+      `mounts/volumes <https://docs.docker.com/storage/volumes/>`_. If you would
+      like to just fiddle around with Kaplan Cloud, the invocation below is all
+      you need:
 
-    .. code-block::
+   .. code-block::
 
-        docker run -d \
-        -p 8080:8080 \
-        --restart always \
-        --name kaplan-cloud \
-        kaplanpro/cloud
+       docker run -d \
+       -p 8080:8080 \
+       --restart always \
+       --name kaplan-cloud \
+       kaplanpro/cloud
 
-    However, if you'd like your locally stored data to persist, you'll first
-    need to create some directories and files, which we will attach (or bind)
-    to the container:
-    
-    .. code-block::
+   However, if you'd like your locally stored data to persist, you'll first
+   need to create some directories and files, which we will attach (or bind)
+   to the container:
 
-        mkdir kaplan-cloud && \
-        mkdir kaplan-cloud/projects && \
-        touch kaplan-cloud/db.sqlite3
+   .. code-block::
 
-    Now, let's start the container with them attached:
+       mkdir kaplan-cloud && \
+       mkdir kaplan-cloud/projects && \
+       touch kaplan-cloud/db.sqlite3
 
-    .. code-block::
+   Now, let's start the container with them attached:
 
-        docker run -d \
-        -p 8080:8080 \
-        --mount type=bind,source=${PWD}/kaplan-cloud/db.sqlite3,target=/code/db.sqlite3 \
-        --mount type=bind,source=${PWD}/kaplan-cloud/projects,target=/code/kaplancloudapp/projects \
-        --restart always \
-        --name kaplan-cloud \
-        kaplanpro/cloud
+   .. code-block::
+
+      docker run -d \
+      -p 8080:8080 \
+      --mount type=bind,source=${PWD}/kaplan-cloud/db.sqlite3,target=/code/db.sqlite3 \
+      --mount type=bind,source=${PWD}/kaplan-cloud/projects,target=/code/kaplancloudapp/projects \
+      --restart always \
+      --name kaplan-cloud \
+      kaplanpro/cloud
 
 3. Create an admin (superuser) account:
 
-    .. code-block::
+   .. code-block::
 
-        docker exec -it kaplan-cloud python manage.py createsuperuser
+      docker exec -it kaplan-cloud python manage.py createsuperuser
 
 4. We're done! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud.
 
@@ -64,15 +65,15 @@ Production installation with Docker Compose
 
 3. If you have not set a dedicated Docker network for your proxy tier, create one:
 
-  .. code-block::
+   .. code-block::
 
       docker network create network-name
 
-  Replace "network-name" with an arbitrary name of your choosing.
+   Replace "network-name" with an arbitrary name of your choosing.
 
 4. If you do not already have one, deploy an `nginxproxy/nginx-proxy container <https://hub.docker.com/r/nginxproxy/nginx-proxy>`_:
 
-  .. code-block::
+   .. code-block::
 
       docker run --detach \
       --name nginx-proxy \
@@ -90,7 +91,7 @@ Production installation with Docker Compose
 
 5. If you do not already have one, deploy an `nginxproxy/acme-companion container <https://hub.docker.com/r/nginxproxy/acme-companion>`_:
 
-  .. code-block::
+   .. code-block::
 
       docker run --detach \
       --name nginx-proxy-acme \
@@ -111,7 +112,7 @@ Production installation with Docker Compose
 
       docker-compose up -d
 
-  If, for some reason, this step fails, run this command without the -d flag to see what went wrong::
+   If, for some reason, this step fails, run this command without the -d flag to see what went wrong::
 
       docker-compose up
 
@@ -125,9 +126,9 @@ Additional steps for Cloudflare users
 
 1. Add the following page rule:
 
-  .. code-block::
+   .. code-block::
 
       For: *yourdomain.tld/.well-known/*
       With: Disable Security, Cache Level: Bypass, Automatic HTTPS Rewrites: Off
 
-  It might take a minute or two for the SSL certificate to kick in.
+   It might take a minute or two for the SSL certificate to kick in.
