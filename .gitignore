@@ -136,3 +136,4 @@ projects/
 app/
 .tmp/
 db/
+staticfiles/
