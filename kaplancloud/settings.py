@@ -148,6 +148,7 @@ DEFAULT_FILE_STORAGE = os.environ.get('FILE_STORAGE', 'django.core.files.storage
 # This will set s3 parameters only if default file storage and/or staticfiles
 # storage is set to S3Boto3Storage
 if DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage' or STATICFILES_STORAGE == 'storages.backends.s3boto3.S3StaticStorage':
+    AWS_DEFAULT_ACL = os.environ.get('S3_DEFAULT_ACL')
     AWS_S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
     AWS_S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
     AWS_S3_REGION_NAME = os.environ.get('S3_REGION_NAME')
