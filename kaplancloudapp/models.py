@@ -157,6 +157,20 @@ class Project(models.Model):
     def delete(self, *args, **kwargs):
         if settings.DEFAULT_FILE_STORAGE == 'django.core.files.storage.FileSystemStorage':
             shutil.rmtree(self.directory)
+        elif settings.DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage':
+            import boto3
+
+            session = boto3.Session(aws_access_key_id=settings.AWS_S3_ACCESS_KEY_ID,
+                                    aws_secret_access_key=settings.AWS_S3_SECRET_ACCESS_KEY,
+                                    region_name=settings.AWS_S3_REGION_NAME)
+
+            s3 = session.resource('s3',
+                                  endpoint_url=settings.AWS_S3_ENDPOINT_URL)
+
+            bucket = s3.Bucket(settings.S3_PRIVATE_BUCKET_NAME)
+
+            response = bucket.objects.filter(Prefix=str(Path(settings.S3_PRIVATE_BUCKET_LOCATION, self.directory))).delete()
+
         super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
