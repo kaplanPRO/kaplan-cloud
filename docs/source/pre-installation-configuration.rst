@@ -20,10 +20,19 @@ Project files, packages and others are stored at
 --
 S3
 --
-Kaplan Cloud depends on `django-storages <https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html>`_
-to offer S3 support. You will need two S3 buckets, one with public access and
-one without. The one with public access will store static files and the one
-without will store project files, packages, etc.
+
+Kaplan Cloud depends on `django-storages
+<https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html>`_
+to offer S3 support.
+
+.. note::
+   For the purposes of this documentation, private content refers to project
+   files, packages, etc. while public content refers to the style and logic
+   files (CSS, JS, etc.) required for Kaplan Cloud to function in users' web
+   browsers.
+
+Separate buckets for private and public content (recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. Create the public bucket. Make sure to uncheck **Block all public access**.
 You will set the environment variable ``S3_PUBLIC_BUCKET`` to the name of the
@@ -119,4 +128,73 @@ the environment variable ``S3_ACCESS_KEY_ID`` to **Access key ID**, and
    By default, static files will be saved under */static* in the public bucket,
    and project files will be saved under the root directory of the private
    bucket. You can change these directories by setting the environment variables
+   ``S3_PUBLIC_BUCKET_LOCATION`` and ``S3_PRIVATE_BUCKET_LOCATION``
+
+Single bucket
+~~~~~~~~~~~~~
+
+1. Create a new bucket with ACL enabled and Block all public access unticked.
+   You will set the environment variables ``S3_PRIVATE_BUCKET`` and
+   ``S3_PUBLIC_BUCKET`` to the name of this bucket.
+
+   .. image:: ./_static/img/aws-create-bucket-w-acl-wo-block-public.png
+     :alt: AWS S3 create bucket
+
+   .. note::
+      For your public content to be actually public, you'll need to set the
+      environment variable ``S3_DEFAULT_ACL`` to ``public-read``. This does not
+      apply to your private content.
+
+2. Head over to IAM and create a policy with full access to this bucket. Change
+   ``arn:aws:s3:::mybucket`` to the name of your bucket.
+
+   .. image:: ./_static/img/aws-iam-policy-single-bucket.png
+     :alt: AWS IAM create policy
+
+   .. code-block::
+
+     {
+       "Version": "2012-10-17",
+       "Statement": [
+           {
+               "Sid": "KaplanCloudBucket",
+               "Effect": "Allow",
+               "Action": [
+                   "s3:PutObject",
+                   "s3:GetObjectAcl",
+                   "s3:GetObject",
+                   "s3:ListBucket",
+                   "s3:DeleteObject",
+                   "s3:PutObjectAcl"
+               ],
+               "Resource": [
+                   "arn:aws:s3:::mybucket/*",
+                   "arn:aws:s3:::mybucket"
+               ]
+             }
+         ]
+     }
+
+2. Under Users, create a user for **Access key - Programmatic access**.
+
+   .. image:: ./_static/img/aws-iam-add-user.png
+     :alt: AWS IAM create user
+
+3. Click **Attach existing policies directly** and select the policy we
+   created earlier.
+
+   .. image:: ./_static/img/aws-iam-attach-existing-policies-directly.png
+     :alt: AWS IAM attach policy
+
+4. At the final step, you will be presented with your credentials. You'll set
+   the environment variable ``S3_ACCESS_KEY_ID`` to **Access key ID**, and
+   ``S3_SECRET_ACCESS_KEY`` to **Secret access key**.
+
+   .. image:: ./_static/img/aws-iam-credentials.png
+     :alt: AWS IAM credentials
+
+.. note::
+   By default, public content will be saved under the */static* directory, while
+   private content will be saved under the */kaplancloudapp/projects* directory.
+   You can change these directories by setting the environment variables
    ``S3_PUBLIC_BUCKET_LOCATION`` and ``S3_PRIVATE_BUCKET_LOCATION``
