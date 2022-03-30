@@ -156,7 +156,7 @@ if DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage' or STATICF
     S3_PRIVATE_BUCKET_NAME = os.environ.get('S3_PRIVATE_BUCKET')
     AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
     AWS_S3_CUSTOM_DOMAIN = os.environ.get('S3_CUSTOM_DOMAIN')
-    AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', True)
+    AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', 'True') == 'True'
     AWS_LOCATION = os.environ.get('S3_PUBLIC_BUCKET_LOCATION', 'static')
     S3_PRIVATE_BUCKET_LOCATION = os.environ.get('S3_PRIVATE_BUCKET_LOCATION', '')
 
@@ -171,4 +171,4 @@ elif 'storages.backends.gcloud.GoogleCloudStorage' in (DEFAULT_FILE_STORAGE, STA
     GS_CUSTOM_ENDPOINT = os.environ.get('GS_CUSTOM_ENDPOINT')
     GS_LOCATION = os.environ.get('GS_PUBLIC_BUCKET_LOCATION', 'static')
     GS_PRIVATE_BUCKET_LOCATION = os.environ.get('GS_PRIVATE_BUCKET_LOCATION', '')
-    GS_QUERYSTRING_AUTH = os.environ.get('GS_QUERYSTRING_AUTH', True)
+    GS_QUERYSTRING_AUTH = os.environ.get('GS_QUERYSTRING_AUTH', 'True') == 'True'
