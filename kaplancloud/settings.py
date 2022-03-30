@@ -171,3 +171,4 @@ elif 'storages.backends.gcloud.GoogleCloudStorage' in (DEFAULT_FILE_STORAGE, STA
     GS_CUSTOM_ENDPOINT = os.environ.get('GS_CUSTOM_ENDPOINT')
     GS_LOCATION = os.environ.get('GS_PUBLIC_BUCKET_LOCATION', 'static')
     GS_PRIVATE_BUCKET_LOCATION = os.environ.get('GS_PRIVATE_BUCKET_LOCATION', '')
+    GS_QUERYSTRING_AUTH = os.environ.get('GS_QUERYSTRING_AUTH', True)
