@@ -171,6 +171,19 @@ class Project(models.Model):
 
             response = bucket.objects.filter(Prefix=str(Path(settings.S3_PRIVATE_BUCKET_LOCATION, self.directory))).delete()
 
+        elif settings.DEFAULT_FILE_STORAGE == 'storages.backends.gcloud.GoogleCloudStorage':
+            from google.cloud import storage
+
+            client = storage.Client()
+
+            bucket = storage.Bucket(client, settings.GS_PRIVATE_BUCKET_NAME)
+
+            blobs = client.list_blobs(bucket,
+                                      prefix=str(Path(settings.GS_PRIVATE_BUCKET_LOCATION, self.directory))
+                                     )
+
+            bucket.delete_blobs(list(blobs), client=client)
+
         super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
