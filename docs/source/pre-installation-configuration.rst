@@ -33,7 +33,7 @@ Google Cloud Storage
 
 .. note::
    Kaplan Cloud depends on `django-storages
-   <https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html>`_
+   <https://django-storages.readthedocs.io/en/latest/backends/gcloud.html>`_
    to offer Google Cloud Storage support.
 
 1. Create a bucket (`Create a new bucket`_)
@@ -41,6 +41,11 @@ Google Cloud Storage
    fine-grained access`_). You will set the environment variables
    ``GS_PUBLIC_BUCKET_NAME`` and ``GS_PRIVATE_BUCKET_NAME`` to the name of this
    bucket.
+
+   .. note::
+      For your public content to be actually public, you'll need to set the
+      environment variable ``GS_DEFAULT_ACL`` to ``public-read``. This will not
+      affect your private content.
 
 2. Create a service account and make sure it has read and write access to your
    bucket (`Creating a Service Account`_).
@@ -76,11 +81,6 @@ Separate buckets for private and public content (recommended)
    **Block all public access**. You will set the environment variable
    ``S3_PUBLIC_BUCKET`` to the name of the bucket, and ``S3_REGION_NAME`` to the
    bucket's region.
-
-   .. note::
-      For your public content to be actually public, you'll need to set the
-      environment variable ``GS_DEFAULT_ACL`` to ``public-read``. This will not
-      affect your private content.
 
 2. Edit the bucket's policy to allow anonymous read access
    (`Using bucket policies`_). Below is a policy example, change
@@ -164,7 +164,7 @@ Single bucket
       environment variable ``S3_DEFAULT_ACL`` to ``public-read``. This will not
       affect your private content.
 
-2. Head over to IAM and create a policy with full access to these buckets.
+2. Head over to IAM and create a policy with full access to this bucket.
    Change ``arn:aws:s3:::mybucket`` to the name of your bucket (`AWS IAM Docs`_).
 
    .. code-block::
