@@ -159,6 +159,7 @@ if DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage' or STATICF
     AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', 'True') == 'True'
     AWS_LOCATION = os.environ.get('S3_PUBLIC_BUCKET_LOCATION', 'static')
     S3_PRIVATE_BUCKET_LOCATION = os.environ.get('S3_PRIVATE_BUCKET_LOCATION', '')
+    AWS_QUERYSTRING_AUTH = os.environ.get('AWS_QUERYSTRING_AUTH', 'False') == 'True'
 
 # This will set GCP Cloud Storage parameters only if the default file storage
 # and/or staticfiles storage is set to GoogleCloudStorage
