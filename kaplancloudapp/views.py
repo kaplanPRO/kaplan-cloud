@@ -10,8 +10,8 @@ from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
                    SegmentCommentForm, TranslationMemoryForm, \
                    TranslationMemoryImportForm
 from .models import Client, Comment, ProjectFile, ProjectPackage, \
-                    ProjectReferenceFile, ProjectReport, Project, Segment, \
-                    TranslationMemory, TMEntry
+                    ProjectPreprocessingSettings, ProjectReferenceFile, \
+                    ProjectReport, Project, Segment, TranslationMemory, TMEntry
 
 from .thread_classes import CreateTargetBilingualFileThread, \
                             GenerateTargetTranslationThread, \
@@ -48,6 +48,12 @@ def newproject(request):
         if form.cleaned_data.get('client'):
             new_project.client = form.cleaned_data['client']
         new_project.save()
+
+        if form.cleaned_data['will_pretranslate']:
+            proj_pre_settings = ProjectPreprocessingSettings()
+            proj_pre_settings.project = new_project
+            proj_pre_settings.will_pretranslate = True
+            proj_pre_settings.save()
 
         for tm in form.cleaned_data['translation_memories']:
             new_project.translationmemories.add(tm)
@@ -340,15 +346,19 @@ def editor(request, id):
         if request.POST.get('task') == 'update_segment':
             if not can_edit:
                 return JsonResponse({'message':'forbidden'}, status=403)
+
             segment_dict = request.POST
+            segment = Segment.objects.filter(file=project_file) \
+                      .filter(tu_id=segment_dict['tu_id']) \
+                      .get(s_id=segment_dict['s_id'])
+
+            if segment.is_locked:
+                return JsonResponse({'message':'locked'}, status=403)
 
             target = segment_dict['target'] \
                      .replace(' contenteditable="false" draggable="true">', '>') \
                      .replace('&nbsp;', ' ')
 
-            segment = Segment.objects.filter(file=project_file) \
-                      .filter(tu_id=segment_dict['tu_id']) \
-                      .get(s_id=segment_dict['s_id'])
             segment.target = target
             segment.status = ('blank', 'draft','translated').index(segment_dict['status'])
             segment.updated_by = request.user
@@ -409,6 +419,18 @@ def editor(request, id):
 
             project_file.status += 1
             project_file.save()
+
+            return JsonResponse({'message':'success'})
+
+        elif request.POST.get('task') == 'change_segment_locks':
+            relevant_segments = Segment.objects.filter(file=project_file)
+            to_lock = request.POST['to_lock'] == 'lock'
+            for s_id in request.POST['segments'].split(';'):
+                relevant_segment = relevant_segments.get(s_id=s_id)
+                if relevant_segment.is_locked == to_lock:
+                    continue
+                relevant_segment.is_locked = to_lock
+                relevant_segment.save(no_override=True)
 
             return JsonResponse({'message':'success'})
 

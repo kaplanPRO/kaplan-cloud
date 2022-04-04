@@ -2,6 +2,19 @@ body {
   display: grid;
   grid-template-rows: auto 1fr;
 }
+div#context-segment, div#dropdown-filter, div#dropdown-propagation {
+  background-color: #2a2f33;
+  position: absolute;
+}
+div#context-segment button, div#dropdown-filter button, div#dropdown-propagation button {
+  border: none;
+  display: block;
+  text-align: left;
+  width: 100%;
+}
+div#context-segment hr, div#dropdown-filter hr {
+  border: 1px solid #f5f5f5;
+}
 div#overlay-submit-translation {
   background-color: rgba(255, 255, 255, 0.5);
   display: none;
@@ -41,10 +54,13 @@ form#comment-form textarea {
 }
 header {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto 1fr auto;
 }
-header button {
+header button#btn-filter {
   grid-column: 3;
+}
+header button#btn-submit-translation {
+  grid-column: 6;
 }
 main#editor {
   display: grid;
@@ -100,6 +116,15 @@ table.tu td, table.tu th {
   border-collapse: inherit;
   padding: 0.25em;
 }
+table.tu th {
+  user-select: none;
+}
+tr.segment.locked {
+  opacity: 0.5;
+}
+tr.segment.selected {
+  background-color: rgba(175, 208, 212, 0.5);
+}
 tr.segment.draft th {
   background-color: tan;
 }
@@ -120,4 +145,7 @@ tr.error {
 }
 tr.evenrow {
   background-color: rgb(42 47 51 / 15%);
+}
+.hidden {
+  display: none;
 }

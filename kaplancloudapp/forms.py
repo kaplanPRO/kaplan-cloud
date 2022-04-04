@@ -44,6 +44,7 @@ class ProjectForm(forms.Form):
     project_files = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'accept': ','.join(['.docx', '.json', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
     reference_files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'multiple':True}))
     due_by = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
+    will_pretranslate = forms.BooleanField(label='Pretranslate from TM', required=False)
 
     def clean_target_language(self):
         source_language = self.cleaned_data['source_language'].iso_code

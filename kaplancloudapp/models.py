@@ -6,6 +6,7 @@ from django.db import models
 from kaplan import open_bilingualfile
 
 from pathlib import Path
+import shutil
 import tempfile
 
 from .custom_storage import get_private_storage
@@ -147,11 +148,43 @@ class Project(models.Model):
     due_by = models.DateTimeField(blank=True, null=True)
     _are_all_files_submitted = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['-id']
+
     def __str__(self):
         return str(self.id) + '-' + self.name
 
-    class Meta:
-       ordering = ['-id']
+    def delete(self, *args, **kwargs):
+        if settings.DEFAULT_FILE_STORAGE == 'django.core.files.storage.FileSystemStorage':
+            shutil.rmtree(self.directory)
+        elif settings.DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage':
+            import boto3
+
+            session = boto3.Session(aws_access_key_id=settings.AWS_S3_ACCESS_KEY_ID,
+                                    aws_secret_access_key=settings.AWS_S3_SECRET_ACCESS_KEY,
+                                    region_name=settings.AWS_S3_REGION_NAME)
+
+            s3 = session.resource('s3',
+                                  endpoint_url=settings.AWS_S3_ENDPOINT_URL)
+
+            bucket = s3.Bucket(settings.S3_PRIVATE_BUCKET_NAME)
+
+            response = bucket.objects.filter(Prefix=str(Path(settings.S3_PRIVATE_BUCKET_LOCATION, self.directory))).delete()
+
+        elif settings.DEFAULT_FILE_STORAGE == 'storages.backends.gcloud.GoogleCloudStorage':
+            from google.cloud import storage
+
+            client = storage.Client()
+
+            bucket = storage.Bucket(client, settings.GS_PRIVATE_BUCKET_NAME)
+
+            blobs = client.list_blobs(bucket,
+                                      prefix=str(Path(settings.GS_PRIVATE_BUCKET_LOCATION, self.directory))
+                                     )
+
+            bucket.delete_blobs(list(blobs), client=client)
+
+        super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -206,11 +239,18 @@ class ProjectFile(models.Model):
     translator = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='translator')
     reviewer = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='reviewer')
 
+    class Meta:
+        ordering = ['name']
+
     def __str__(self):
         return '-'.join((str(self.project.id), str(self.id), self.name))
 
-    class Meta:
-       ordering = ['name']
+    def delete(self, *args, **kwargs):
+        if self.source_file:
+            self.source_file.delete(save=False)
+        if self.bilingual_file:
+            self.bilingual_file.delete(save=False)
+        super().delete()
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -253,6 +293,15 @@ class ProjectPackage(models.Model):
     class Meta:
         ordering = ['-id']
 
+    def delete(self, *args, **kwargs):
+        self.package.delete(save=False)
+        super().delete()
+
+
+class ProjectPreprocessingSettings(models.Model):
+    project = models.ForeignKey(Project, models.CASCADE)
+    will_pretranslate = models.BooleanField(default=True)
+
 
 class ProjectReferenceFile(models.Model):
     name = models.TextField()
@@ -260,7 +309,7 @@ class ProjectReferenceFile(models.Model):
     reference_file = models.FileField(storage=get_private_storage, upload_to=get_reference_file_path, max_length=256)
 
     def delete(self, *args, **kwargs):
-        self.reference_file.delete()
+        self.reference_file.delete(save=False)
         super().delete()
 
 
@@ -291,6 +340,7 @@ class Segment(models.Model):
     source = models.TextField(blank=True)
     target = models.TextField(blank=True)
     status = models.IntegerField(choices=segment_statuses, default=0)
+    is_locked = models.BooleanField(default=False)
     file = models.ForeignKey(ProjectFile, models.CASCADE)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_create')
     updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_update')

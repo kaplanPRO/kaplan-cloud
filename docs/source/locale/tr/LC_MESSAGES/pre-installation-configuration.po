@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Kaplan Cloud \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-18 15:53+0300\n"
+"POT-Creation-Date: 2022-04-01 17:07+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,134 +32,188 @@ msgid ""
 "will not be moved to the new storage automatically. You'd need to copy "
 "them over manually."
 msgstr ""
-"Depolama türünü kurulum sonrasında değitirmeyin. Dosyalarınız yeni depolama "
-"alanına otomatik olarak taşınmaz. Elle kopyalamanız gerekir."
+"Depolama türünü kurulum sonrasında değiştirmeyin. Dosyalarınız yeni "
+"depolama alanına otomatik olarak taşınmaz. Elle kopyalamanız gerekir."
 
-#: ../../source/pre-installation-configuration.rst:14
+#: ../../source/pre-installation-configuration.rst:13
+msgid ""
+"For the purposes of this documentation, private content refers to project"
+" files, packages, etc. while public content refers to the style and logic"
+" files (CSS, JS, etc.) required for Kaplan Cloud to function in users' "
+"web browsers."
+msgstr ""
+"Bu dokümantasyonda *genel erişime kapalı içerik* ifadesi proje dosyası, "
+"paket vb. dosyaları, *genel erişime açık içerik* ifadesi ise Kaplan Bulut'un "
+"kullanıcıların internet tarayıcılarında işleyebilmesi için gerekli biçim ve "
+"mantık dosyalarını (CSS, JS vb.) ifade eder."
+
+#: ../../source/pre-installation-configuration.rst:20
 msgid "Local"
 msgstr "Yerel"
 
-#: ../../source/pre-installation-configuration.rst:15
+#: ../../source/pre-installation-configuration.rst:21
 msgid ""
 "Local file storage does not require additional configuration. Static "
 "files, which are needed for the app to function are stored at "
 "*$PROJECT_DIR/staticfiles*. Project files, packages and others are stored"
 " at *$PROJECT_DIR/kaplancloudapp/projects*."
 msgstr ""
-"Yerel dosya depolamak için ek yapılandırma gerekmez. Uygulamanın işlemesi "
-"için gerekli statik dosyalar *$PROJECT_DIR/staticfiles* dizininde saklanırken "
-"proje dosyaları, paketler vb. *$PROJECT_DIR/kaplancloudapp/projects* dizininde"
-" saklanır."
-
-#: ../../source/pre-installation-configuration.rst:22
-msgid "S3"
-msgstr "S3"
-
-#: ../../source/pre-installation-configuration.rst:23
-msgid ""
-"Kaplan Cloud depends on `django-storages <https://django-"
-"storages.readthedocs.io/en/latest/backends/amazon-S3.html>`_ to offer S3 "
-"support. You will need two S3 buckets, one with public access and one "
-"without. The one with public access will store static files and the one "
-"without will store project files, packages, etc."
-msgstr ""
-"Kaplan Bulut, S3 desteği için `django-storages <https://django-"
-"storages.readthedocs.io/en/latest/backends/amazon-S3.html>`_ kitaplığından "
-"yararlanır. Biri genel erişime açık diğeri genel erişime kapalı olmak üzere "
-"2 adet S3 kovasına (bucket) ihtiyacınız olacak. Genel erişime açık olan kova, "
-"statik dosyalarınızı barındırır. Proje dosyaları, paketler, vb ise diğerinde"
-" saklanır."
+"Yerel dosya depolamak için ek yapılandırma gerekmez. Uygulamanın işlemesi"
+" için gerekli statik dosyalar *$PROJE_DİZİNİ/staticfiles* dizininde "
+"saklanırken proje dosyaları, paketler vb. ise "
+"*$PROJE_DİZİNİ/kaplancloudapp/projects* dizininde saklanır."
 
 #: ../../source/pre-installation-configuration.rst:28
-msgid ""
-"1. Create the public bucket. Make sure to uncheck **Block all public "
-"access**. You will set the environment variable ``S3_PUBLIC_BUCKET`` to "
-"the name of the bucket, and ``S3_REGION_NAME`` to the bucket's region."
-msgstr ""
-"1\. Genel erişime açık kovayı oluşturun. **Block all public access** "
-"seçeneğinin işaretini kaldırmayı unutmayın. ``S3_PUBLIC_BUCKET`` ortam "
-"değişkenini bu kovanın adı, ``S3_REGION_NAME`` ortam değişkenini ise kovanın "
-"bulunduğu bölge olarak ayarlayın."
-
-#: ../../source/pre-installation-configuration.rst
-msgid "AWS S3 create public bucket"
-msgstr "AWS S3 genel erişime açık kova oluşturma"
+msgid "Google Cloud Storage"
+msgstr "Google Cloud Storage"
 
 #: ../../source/pre-installation-configuration.rst:35
 msgid ""
-"2. Edit the bucket's policy to allow anonymous read access. Change the "
-"entry under **Resource** to the name of your bucket."
+"Kaplan Cloud depends on `django-storages <https://django-"
+"storages.readthedocs.io/en/latest/backends/gcloud.html>`_ to offer "
+"Google Cloud Storage support."
 msgstr ""
-"2\. Kovanın politikasını düzenleyip anonim okuma izni tanımlayın. **Resource** "
-"altındaki girdiyi kovanızın adıyla değiştirin."
+"Kaplan Bulut, Google Cloud Storage desteği için `django-storages <https"
+"://django-storages.readthedocs.io/en/latest/backends/gcloud.html>`_ "
+"paketinden destek almaktadır."
 
-#: ../../source/pre-installation-configuration.rst
-msgid "AWS S3 edit public bucket policy"
-msgstr "AWS S3 genel erişime açık kovanın politikasını düzenleme"
-
-#: ../../source/pre-installation-configuration.rst:61
+#: ../../source/pre-installation-configuration.rst:39
 msgid ""
-"3. Create the private bucket. You will set the environment variable "
-"``S3_PRIVATE_BUCKET`` to the name of this bucket."
+"Create a bucket (`Create a new bucket`_) and make sure to set control to "
+"*Fine-grained* (`Choose between uniform and fine-grained access`_). You "
+"will set the environment variables ``GS_PUBLIC_BUCKET_NAME`` and "
+"``GS_PRIVATE_BUCKET_NAME`` to the name of this bucket."
 msgstr ""
-"3\. Genel erişime kapalı kovayı oluşturun. ``S3_PRIVATE_BUCKET`` ortam "
-"değişkenini bu kovanın adı olarak ayarlayacaksınız."
+"Bir kova oluşturun (`Yeni kova oluşturma`_) ve *Fine-grained* kontrol "
+"modelini (`Uniform ve fine-grained erişim arasında seçim`_) seçin. "
+"``GS_PUBLIC_BUCKET_NAME`` ve ``GS_PRIVATE_BUCKET_NAME`` ortam "
+"değişkenlerini bu kovanın adı olarak ayarlayacaksınız."
 
-#: ../../source/pre-installation-configuration.rst
-msgid "AWS S3 create private bucket"
-msgstr "AWS S3 genel erişime kapalı kova oluşturma"
-
-#: ../../source/pre-installation-configuration.rst:67
+#: ../../source/pre-installation-configuration.rst:45
 msgid ""
-"4. Head over to IAM and create a policy with full access to these "
-"buckets. Change ``arn:aws:s3:::kaplanclouddemo-private`` and ``arn:aws:s3"
-":::kaplanclouddemo-public`` to the names of your buckets."
+"Create a service account and make sure it has read and write access to "
+"your bucket (`Creating a Service Account`_)."
 msgstr ""
-"4\. IAM sayfasına girip bu kovalara tam erişim veren bir politika oluşturun. "
-"``arn:aws:s3:::kaplanclouddemo-private`` ve ``arn:aws:s3:::kaplanclouddemo-"
-"public`` yerine kendi kovalarınızın adlarını yazın."
+"Bir hizmet hesabı oluşturup kovanıza okuma ve yazma erişimi verin "
+"(`Hizmet Hesabı Oluşturma`_)."
 
-#: ../../source/pre-installation-configuration.rst
-msgid "AWS IAM create policy"
-msgstr "AWS IAM politika oluşturma"
-
-#: ../../source/pre-installation-configuration.rst:100
-msgid "Under Users, create a user for **Access key - Programmatic access**."
-msgstr ""
-"Users sekmesinde **Access key - Programmatic access** için kullanıcı oluşturun"
-"."
-
-#: ../../source/pre-installation-configuration.rst
-msgid "AWS IAM create user"
-msgstr "AWS IAM kullanıcı oluşturma"
-
-#: ../../source/pre-installation-configuration.rst:105
+#: ../../source/pre-installation-configuration.rst:48
 msgid ""
-"6. Click **Attach existing policies directly** and select the policy we "
-"created at step 4."
+"Create and download an access key for your service account. You will set "
+"the environment variable ``GOOGLE_APPLICATION_CREDENTIALS`` to the path "
+"to this key file."
 msgstr ""
-"6\. **Attach existing policies directly** seçeneğini tıklayıp 4. adımda "
-"oluşturduğumuz politikayı seçin."
+"Hizmet hesabınız için bir erişim anahtarı oluşturup indirin. "
+"``GOOGLE_APPLICATION_CREDENTIALS`` ortam değişkenini bu anahtar dosyasının "
+"dosya yoluna ayarlayacaksınız."
 
-#: ../../source/pre-installation-configuration.rst
-msgid "AWS IAM attach policy"
-msgstr "AWS IAM politika ekleme"
-
-#: ../../source/pre-installation-configuration.rst:111
+#: ../../source/pre-installation-configuration.rst:53
 msgid ""
-"7. At the final step, you will be presented with your credentials. You'll"
-" set the environment variable ``S3_ACCESS_KEY_ID`` to **Access key ID**, "
+"By default, public content will be saved under the */static* directory, "
+"while private content will be saved under the */kaplancloudapp/projects* "
+"directory. You can change these directories by setting the environment "
+"variables ``GS_PUBLIC_BUCKET_LOCATION`` and "
+"``GS_PRIVATE_BUCKET_LOCATION``"
+msgstr ""
+"Varsayılan ayarları değiştirmediğinizde genel erişime açık içeriğiniz "
+"*/static* dizininde, genel erişime kapalı içeriğiniz ise "
+"*/kaplancloudapp/projects* dizininde saklanır. Bunu "
+"``GS_PUBLIC_BUCKET_LOCATION`` ve ``GS_PRIVATE_BUCKET_LOCATION`` ortam "
+"değişkenlerini kullanarak değiştirebilirsiniz."
+
+#: ../../source/pre-installation-configuration.rst:60
+msgid "S3"
+msgstr "S3"
+
+#: ../../source/pre-installation-configuration.rst:68
+msgid ""
+"Kaplan Cloud depends on `django-storages <https://django-"
+"storages.readthedocs.io/en/latest/backends/amazon-S3.html>`_ to offer S3 "
+"support."
+msgstr ""
+"Kaplan Bulut, S3 desteği için `django-storages <https://django-"
+"storages.readthedocs.io/en/latest/backends/amazon-S3.html>`_ paketinden "
+"destek almaktadır."
+
+#: ../../source/pre-installation-configuration.rst:73
+msgid "Separate buckets for private and public content (recommended)"
+msgstr "Genel erişime kapalı ve açık içerikler için ayrı kovalar (önerilen)"
+
+#: ../../source/pre-installation-configuration.rst:75
+msgid ""
+"Create the public bucket (`Creating a bucket`_). Make sure to uncheck "
+"**Block all public access**. You will set the environment variable "
+"``S3_PUBLIC_BUCKET`` to the name of the bucket, and ``S3_REGION_NAME`` to"
+" the bucket's region."
+msgstr ""
+"Genel erişime açık kovayı oluşturun (`Kova oluşturma`_). **Block all "
+"public access** seçeneğinin işaretini kaldırmayı unutmayın. "
+"``S3_PUBLIC_BUCKET`` ortam değişkenini bu kovanın adı, ``S3_REGION_NAME``"
+" ortam değişkenini ise kovanın bölgesi olarak ayarlayacaksınız."
+
+#: ../../source/pre-installation-configuration.rst:81
+msgid ""
+"For your public content to be actually public, you'll need to set the "
+"environment variable ``GS_DEFAULT_ACL`` to ``public-read``. This will not"
+" affect your private content."
+msgstr ""
+"Genel erişime açık içeriğinizin ulaşılabilir olması için "
+"``GS_DEFAULT_ACL`` ortam değişkenini ``public-read`` olarak ayarlamanız "
+"gerekiyor. Bu ayar, genel erişime kapalı içeriğinizi etkilemez."
+
+#: ../../source/pre-installation-configuration.rst:85
+msgid ""
+"Edit the bucket's policy to allow anonymous read access (`Using bucket "
+"policies`_). Below is a policy example, change ``mypublicbucket`` to the "
+"name of your bucket:"
+msgstr ""
+"Kovanın politikasını düzenleyip anonim okuma izni tanımlayın (`Kova "
+"politikaları kullanma`_). Aşağıdaki örnek politikayı kullanabilirsiniz. "
+"``mypublicbucket`` değerini kovanızın adıyla değiştirin."
+
+#: ../../source/pre-installation-configuration.rst:109
+msgid ""
+"Create the private bucket (`Creating a bucket`_). You will set the "
+"environment variable ``S3_PRIVATE_BUCKET`` to the name of this bucket."
+msgstr ""
+"Genel erişime kapalı kovayı oluşturun (`Kova oluşturma`_). "
+"``S3_PRIVATE_BUCKET`` ortam değişkenini bu kovanın adı olarak "
+"ayarlayacaksınız."
+
+#: ../../source/pre-installation-configuration.rst:112
+msgid ""
+"Head over to IAM and create a policy with full access to these buckets. "
+"Change ``arn:aws:s3:::myprivatebucket`` and "
+"``arn:aws:s3:::mypublicbucket`` to the names of your buckets (`AWS IAM "
+"Docs`_)."
+msgstr ""
+"IAM sayfasına girip bu kovalara tam erişim veren bir politika oluşturun. "
+"``arn:aws:s3:::myprivatebucket`` ve ``arn:aws:s3:::mypublicbucket`` "
+"yerine kendi kovalarınızın adlarını yazın (`AWS IAM Dokümantasyonu`_)."
+
+#: ../../source/pre-installation-configuration.rst:142
+#: ../../source/pre-installation-configuration.rst:194
+msgid ""
+"Under Users, create a user for **Access key - Programmatic access** and "
+"attach the policy we created at the previous step (`Creating IAM "
+"users`_)."
+msgstr ""
+"Users sekmesinde **Access key - Programmatic access** için kullanıcı "
+"oluşturup bir önceki adımda oluşturduğumuz politikayı bu kullanıcıya "
+"bağlayın (`IAM kullanıcıları oluşturma`_)."
+
+#: ../../source/pre-installation-configuration.rst:145
+#: ../../source/pre-installation-configuration.rst:197
+msgid ""
+"At the final step, you will be presented with your credentials. You'll "
+"set the environment variable ``S3_ACCESS_KEY_ID`` to **Access key ID**, "
 "and ``S3_SECRET_ACCESS_KEY`` to **Secret access key**."
 msgstr ""
-"7\. Son adımda erişim bilgilerinizi göreceksiniz. ``S3_ACCESS_KEY_ID`` ortam "
-"değişkenini **Access key ID**, ``S3_SECRET_ACCESS_KEY`` ortam değişkenini ise "
-"**Secret access key** hanesinde yazan değer olarak ayarlayın."
+"Son adımda erişim bilgilerinizi göreceksiniz. ``S3_ACCESS_KEY_ID`` ortam "
+"değişkenini **Access key ID**, ``S3_SECRET_ACCESS_KEY`` ortam değişkenini "
+"ise **Secret access key** hanesinde yazan değer olarak ayarlayın."
 
-#: ../../source/pre-installation-configuration.rst
-msgid "AWS IAM credentials"
-msgstr "AWS IAM erişim bilgileri"
-
-#: ../../source/pre-installation-configuration.rst:119
+#: ../../source/pre-installation-configuration.rst:150
 msgid ""
 "By default, static files will be saved under */static* in the public "
 "bucket, and project files will be saved under the root directory of the "
@@ -167,8 +221,58 @@ msgid ""
 "environment variables ``S3_PUBLIC_BUCKET_LOCATION`` and "
 "``S3_PRIVATE_BUCKET_LOCATION``"
 msgstr ""
-"Varsayılan ayarları değiştirmediğinizde statik dosyalarınız genel erişime açık"
-" kovada */static* dizininde kaydedilirken proje dosyaları genel erişime kapalı"
-" kovanın kaynak dizinide kaydedilir. Bunu ``S3_PUBLIC_BUCKET_LOCATION`` ve "
-"``S3_PRIVATE_BUCKET_LOCATION`` ortam değişkenlerini kullanarak "
-"değiştirebilirsiniz."
+"Varsayılan ayarları değiştirmediğinizde statik dosyalarınız genel erişime"
+" açık kovada */static* dizininde kaydedilirken proje dosyaları genel "
+"erişime kapalı kovanın kaynak dizinide kaydedilir. Bunu "
+"``S3_PUBLIC_BUCKET_LOCATION`` ve ``S3_PRIVATE_BUCKET_LOCATION`` ortam "
+"değişkenlerini kullanarak değiştirebilirsiniz."
+
+#: ../../source/pre-installation-configuration.rst:156
+msgid "Single bucket"
+msgstr "Tek kova"
+
+#: ../../source/pre-installation-configuration.rst:158
+msgid ""
+"Create a new bucket with ACL enabled and Block all public access unticked"
+" (`Creating a bucket`_). You will set the environment variables "
+"``S3_PRIVATE_BUCKET`` and ``S3_PUBLIC_BUCKET`` to the name of this "
+"bucket."
+msgstr ""
+"Bir kova oluşturun. ACL'yi etkinleştirin ve Block all public access "
+"ayarının işaretini kaldırın (`Kova oluşturma`_). ``S3_PRIVATE_BUCKET`` "
+"ve ``S3_PUBLIC_BUCKET`` ortam değişkenlerini bu kovanın adı olarak "
+"ayarlayacaksınız."
+
+#: ../../source/pre-installation-configuration.rst:163
+msgid ""
+"For your public content to be actually public, you'll need to set the "
+"environment variable ``S3_DEFAULT_ACL`` to ``public-read``. This will not"
+" affect your private content."
+msgstr ""
+"Genel erişime açık içeriğinizin ulaşılabilir olması için ``S3_DEFAULT_ACL`` "
+"ortam değişkenini ``public-read`` olarak ayarlamanız gerekiyor. Bu ayar, genel "
+"erişime kapalı içeriğinizi etkilemez."
+
+#: ../../source/pre-installation-configuration.rst:167
+msgid ""
+"Head over to IAM and create a policy with full access to this bucket. "
+"Change ``arn:aws:s3:::mybucket`` to the name of your bucket (`AWS IAM "
+"Docs`_)."
+msgstr ""
+"IAM sayfasına girip bu kovaya tam erişim veren bir politika oluşturun. "
+"``arn:aws:s3:::mybucket`` yerine kendi kovanızın adını yazın (`AWS IAM "
+"Dokümantasyonu`_)."
+
+#: ../../source/pre-installation-configuration.rst:202
+msgid ""
+"By default, public content will be saved under the */static* directory, "
+"while private content will be saved under the */kaplancloudapp/projects* "
+"directory. You can change these directories by setting the environment "
+"variables ``S3_PUBLIC_BUCKET_LOCATION`` and "
+"``S3_PRIVATE_BUCKET_LOCATION``"
+msgstr ""
+"Varsayılan ayarları değiştirmediğinizde genel erişime açık içerik "
+"*/static* dizininde, genel erişime kapalı içerik ise "
+"*/kaplancloudapp/projects* dizininde saklanır. Bunu "
+"``S3_PRIVATE_BUCKET_LOCATION`` ve ``S3_PUBLIC_BUCKET_LOCATION`` ortam "
+"değişkenlerini kullanarak değiştirebilirsiniz."

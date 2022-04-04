@@ -2,8 +2,9 @@ from django.contrib import admin
 
 from .models import LanguageProfile, Termbase, TBEntry, TBEntryUpdate, \
                     TranslationMemory, TMEntry, TMEntryUpdate, Project, \
-                    ProjectFile, ProjectPackage, ProjectReferenceFile, \
-                    ProjectReport, Client, Segment, SegmentUpdate, Comment
+                    ProjectFile, ProjectPackage, ProjectPreprocessingSettings, \
+                    ProjectReferenceFile, ProjectReport, Client, Segment, \
+                    SegmentUpdate, Comment
 
 # Register your models here.
 
@@ -37,6 +38,8 @@ admin.site.register(Project, ProjectAdmin)
 admin.site.register(ProjectFile)
 
 admin.site.register(ProjectPackage)
+
+admin.site.register(ProjectPreprocessingSettings)
 
 admin.site.register(ProjectReferenceFile)
 

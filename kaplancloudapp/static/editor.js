@@ -9,11 +9,16 @@ window.onload = function() {
   const tMHits = document.getElementById('tm-hits');
   const comments = document.getElementById('comments');
   const commentForm = document.getElementById('comment-form');
+  const segmentContext = document.getElementById('context-segment');
+
+  const settingBackwardPropagation = document.getElementById('checkbox-backward-propagation');
+  const settingForwardPropagation = document.getElementById('checkbox-forward-propagation');
 
   const targetCells = document.getElementsByClassName('target');
 
   let currentSegment;
   let concordanceSearchTimeout;
+  let shiftSelectedSegments = [];
 
   for (i = 0; i < targetCells.length; i++) {
     targetCell = targetCells[i];
@@ -74,6 +79,12 @@ window.onload = function() {
     })
   }
 
+  let segmentFilter = new URL(window.location).searchParams.get('segments');
+  if (segmentFilter && segmentFilter !== 'all')
+  {
+    filterSegments(segmentFilter);
+  }
+
   document.getElementById('btn-submit-translation').onclick = function(e) {
     const overlaySubmitTranslation = document.getElementById('overlay-submit-translation');
     const untranslatedSegmentsTable = overlaySubmitTranslation.getElementsByTagName('table')[0];
@@ -107,6 +118,19 @@ window.onload = function() {
     else
     {
       overlaySubmitTranslation.children[1].classList.add('visible');
+    }
+  }
+
+  document.body.oncontextmenu = function(e) {
+    if (e.target.classList.contains('sid'))
+    {
+      e.preventDefault();
+
+      e.target.parentElement.classList.add('selected');
+
+      segmentContext.classList.remove('hidden');
+      segmentContext.style.left = e.pageX + "px";
+      segmentContext.style.top = e.pageY + "px";
     }
   }
 
@@ -147,6 +171,43 @@ window.onload = function() {
           e.target.parentElement.classList.add('blank');
           e.target.parentElement.setAttribute('status', 'blank');
         }
+
+        if (settingBackwardPropagation.checked || settingForwardPropagation.checked)
+        {
+          originSourceCell = e.target.parentElement.children[1];
+
+          sourceCells = [...document.getElementsByClassName('source')].filter(sourceCell => sourceCell.innerHTML === originSourceCell.innerHTML);
+
+          if (settingBackwardPropagation.checked)
+          {
+            sourceCells.slice(0, sourceCells.indexOf(originSourceCell)).forEach((sourceCell, i) => {
+              if (['hidden', 'locked'].some(c => sourceCell.parentElement.classList.contains(c)))
+              {
+                return;
+              }
+              sourceCell.parentElement.classList.remove('blank', 'error', 'draft', 'reviewed');
+              sourceCell.parentElement.classList.add(e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.setAttribute('status', e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.children[2].innerHTML = e.target.innerHTML;
+              submitSegment(sourceCell.parentElement.children[2]);
+            });
+          }
+          if (settingForwardPropagation.checked)
+          {
+            sourceCells.slice(sourceCells.indexOf(originSourceCell)+1).forEach((sourceCell, i) => {
+              if (['hidden', 'locked'].some(c => sourceCell.parentElement.classList.contains(c)))
+              {
+                return;
+              }
+              sourceCell.parentElement.classList.remove('blank', 'error', 'draft', 'reviewed');
+              sourceCell.parentElement.classList.add(e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.setAttribute('status', e.target.parentElement.getAttribute('status'));
+              sourceCell.parentElement.children[2].innerHTML = e.target.innerHTML;
+              submitSegment(sourceCell.parentElement.children[2]);
+            });
+          }
+        }
+
         e.target.blur();
 
         if (!e.shiftKey)
@@ -162,7 +223,7 @@ window.onload = function() {
               isNext = true;
               continue;
             }
-            if (isNext && !nextTarget.parentElement.classList.contains('translated'))
+            if (isNext && !nextTarget.parentElement.classList.contains('translated') && !nextTarget.parentElement.classList.contains('locked'))
             {
               nextTarget.focus();
               break;
@@ -220,6 +281,93 @@ window.onload = function() {
       currentSegment.children[2].innerHTML = e.target.parentElement.children[1].innerHTML;
       currentSegment.children[2].parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
       currentSegment.children[2].parentElement.classList.add('draft');
+    }
+    else if (e.target.classList.contains('sid'))
+    {
+      if (e.shiftKey)
+      {
+        e.target.parentElement.classList.add('selected');
+        shiftSelectedSegments.push(e.target.parentElement);
+
+        if (shiftSelectedSegments.length === 2)
+        {
+          let applySelect = false;
+          [...document.getElementsByClassName('segment')].forEach((segment, i) => {
+            if (shiftSelectedSegments.includes(segment))
+            {
+              shiftSelectedSegments = shiftSelectedSegments.filter(function(item) {
+                return item != segment;
+              });
+              if (shiftSelectedSegments.length == 1)
+              {
+                applySelect = true;
+              }
+              else
+              {
+                applySelect = false;
+              }
+            }
+            if (applySelect)
+            {
+              segment.classList.add('selected');
+            }
+          });
+        }
+      }
+      else
+      {
+        e.target.parentElement.classList.toggle('selected');
+        shiftSelectedSegments = []
+      }
+    }
+    else if (e.target.id === 'btn-context-lock')
+    {
+      changeSelectedSegmentLocks(true);
+    }
+    else if (e.target.id === 'btn-context-unlock')
+    {
+      changeSelectedSegmentLocks(false);
+    }
+    else if (e.target.id === 'btn-filter')
+    {
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-all')
+    {
+      filterSegments('all');
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-translated')
+    {
+      filterSegments('translated');
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-draft')
+    {
+      filterSegments('draft');
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-filter-blank')
+    {
+      filterSegments('blank');
+      toggleFilterDropdown()
+    }
+    else if (e.target.id === 'btn-propagation')
+    {
+      togglePropagationDropdown();
+    }
+    else if (e.target.id === 'btn-settings-backward-propagation')
+    {
+      settingBackwardPropagation.checked = !settingBackwardPropagation.checked;
+    }
+    else if (e.target.id === 'btn-settings-forward-propagation')
+    {
+      settingForwardPropagation.checked = !settingForwardPropagation.checked;
+    }
+    else
+    {
+      deselectSegments();
+      segmentContext.classList.add('hidden');
     }
   }
 
@@ -299,6 +447,55 @@ window.onload = function() {
 
   }
 
+  function changeSelectedSegmentLocks(lock) {
+    let selectedSegments = [...document.getElementsByClassName('segment selected')]
+    selectedSegments.forEach((selectedSegment, i) => {
+      if (lock) {
+        selectedSegment.children[2].removeAttribute('contentEditable');
+        selectedSegment.classList.add('locked');
+      }
+      else {
+        selectedSegment.children[2].setAttribute('contentEditable', true);
+        selectedSegment.classList.remove('locked');
+      }
+    });
+
+    let selectedSegmentIds = selectedSegments.map(item => item.children[0].textContent)
+    if (selectedSegmentIds === []) {return;}
+
+    let locksFormData = new FormData();
+    locksFormData.append('task', 'change_segment_locks');
+    if (lock) {
+      lock = 'lock';
+    }
+    else {
+      lock = 'unlock';
+    }
+    locksFormData.append('to_lock', lock);
+
+    locksFormData.append('segments', selectedSegmentIds.join(';'))
+
+    fetch('',
+          {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCSRFToken()
+            },
+            body: locksFormData
+          }
+      )
+      .then(response => {
+        if (response.status === 200)
+        {
+          response.json()
+          .then(data => {
+            console.log(data);
+          })
+        }
+      }
+      )
+  }
+
   function closeOverlay() {
     const overlaySubmitTranslation = document.getElementById('overlay-submit-translation');
 
@@ -321,6 +518,35 @@ window.onload = function() {
     .then(data => {
       populateTMHits(data['concordance'], false);
     })
+  }
+
+  function deselectSegments() {
+    [...document.getElementsByClassName('segment selected')].forEach((item, i) => {
+      item.classList.remove('selected');
+    });
+  }
+
+  function filterSegments(segmentState) {
+    const segments = document.body.getElementsByClassName('segment');
+
+    for (i = 0; i < segments.length; i++)
+    {
+      if (segmentState === 'all')
+      {
+        segments[i].classList.remove('hidden');
+      }
+      else if (segments[i].classList.contains(segmentState))
+      {
+        segments[i].classList.remove('hidden');
+      }
+      else
+      {
+        segments[i].classList.add('hidden');
+      }
+    }
+
+
+    window.history.pushState('file', 'segments', '?segments='+segmentState)
   }
 
   function getCSRFToken() {
@@ -416,6 +642,23 @@ window.onload = function() {
 
   }
 
+  function toggleFilterDropdown() {
+    const filterButton = document.getElementById('btn-filter');
+    const filterDropdown = document.getElementById('dropdown-filter');
+
+    filterDropdown.style.top = filterButton.offsetHeight + 'px';
+    filterDropdown.style.left = filterButton.offsetLeft + 'px';
+    filterDropdown.classList.toggle('hidden');
+  }
+
+  function togglePropagationDropdown() {
+    const propagationButton = document.getElementById('btn-propagation');
+    const propagationDropdown = document.getElementById('dropdown-propagation');
+
+    propagationDropdown.style.top = propagationButton.offsetHeight + 'px';
+    propagationDropdown.style.left = propagationButton.offsetLeft + 'px';
+    propagationDropdown.classList.toggle('hidden');
+  }
 }
 function toggleExpand(span)
 {

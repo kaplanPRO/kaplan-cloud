@@ -145,13 +145,31 @@ PROJECTS_DIR = 'kaplancloudapp/projects'
 
 DEFAULT_FILE_STORAGE = os.environ.get('FILE_STORAGE', 'django.core.files.storage.FileSystemStorage')
 
-AWS_S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
-AWS_S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
-AWS_S3_REGION_NAME = os.environ.get('S3_REGION_NAME')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_PUBLIC_BUCKET')
-S3_PRIVATE_BUCKET_NAME = os.environ.get('S3_PRIVATE_BUCKET')
-AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
-AWS_S3_CUSTOM_DOMAIN = os.environ.get('S3_CUSTOM_DOMAIN')
-AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', True)
-AWS_LOCATION = os.environ.get('S3_PUBLIC_BUCKET_LOCATION', 'static')
-S3_PRIVATE_BUCKET_LOCATION = os.environ.get('S3_PRIVATE_BUCKET_LOCATION', '')
+# This will set s3 parameters only if default file storage and/or staticfiles
+# storage is set to S3Boto3Storage
+if DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage' or STATICFILES_STORAGE == 'storages.backends.s3boto3.S3StaticStorage':
+    AWS_DEFAULT_ACL = os.environ.get('S3_DEFAULT_ACL')
+    AWS_S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
+    AWS_S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
+    AWS_S3_REGION_NAME = os.environ.get('S3_REGION_NAME')
+    AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_PUBLIC_BUCKET')
+    S3_PRIVATE_BUCKET_NAME = os.environ.get('S3_PRIVATE_BUCKET')
+    AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get('S3_CUSTOM_DOMAIN')
+    AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', 'True') == 'True'
+    AWS_LOCATION = os.environ.get('S3_PUBLIC_BUCKET_LOCATION', 'static')
+    S3_PRIVATE_BUCKET_LOCATION = os.environ.get('S3_PRIVATE_BUCKET_LOCATION', '')
+    AWS_QUERYSTRING_AUTH = os.environ.get('AWS_QUERYSTRING_AUTH', 'False') == 'True'
+
+# This will set GCP Cloud Storage parameters only if the default file storage
+# and/or staticfiles storage is set to GoogleCloudStorage
+elif 'storages.backends.gcloud.GoogleCloudStorage' in (DEFAULT_FILE_STORAGE, STATICFILES_STORAGE):
+    # Environmental variable GOOGLE_APPLICATION_CREDENTIALS is to be set to the
+    # path of the key file
+    GS_BUCKET_NAME = os.environ.get('GS_PUBLIC_BUCKET_NAME')
+    GS_PRIVATE_BUCKET_NAME = os.environ.get('GS_PRIVATE_BUCKET_NAME')
+    GS_DEFAULT_ACL = os.environ.get('GS_DEFAULT_ACL')
+    GS_CUSTOM_ENDPOINT = os.environ.get('GS_CUSTOM_ENDPOINT')
+    GS_LOCATION = os.environ.get('GS_PUBLIC_BUCKET_LOCATION', 'static')
+    GS_PRIVATE_BUCKET_LOCATION = os.environ.get('GS_PRIVATE_BUCKET_LOCATION', '')
+    GS_QUERYSTRING_AUTH = os.environ.get('GS_QUERYSTRING_AUTH', 'False') == 'True'

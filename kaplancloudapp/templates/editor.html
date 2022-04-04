@@ -24,6 +24,8 @@
           </span>
         </a>
       </nav>
+      <button id="btn-filter">Filter</button>
+      <button id="btn-propagation">Propagation</button>
       <button id="btn-submit-translation" {% if not can_edit %}disabled{% endif %}>
         {% if file.status == 4 %}
           Submit Translation
@@ -41,10 +43,10 @@
           {% for tu_id, translation_unit in translation_units.items %}
           <table id="{{tu_id}}" class="tu">
               {% for s_id, segment in translation_unit.items %}
-              <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}}" status="{{segment.get_status.lower}}">
+              <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}} {% if segment.is_locked %}locked{% endif %}" status="{{segment.get_status.lower}}">
                   <th class="sid">{{s_id}}</th>
                   <td class="source" lang="{{file.source_language}}">{{segment.source | safe}}</td>
-                  <td class="target" {% if can_edit %}contenteditable{% endif %} lang="{{file.target_language}}">{{segment.target | safe}}</td>
+                  <td class="target" {% if can_edit and not segment.is_locked %}contenteditable{% endif %} lang="{{file.target_language}}">{{segment.target | safe}}</td>
               </tr>
               {% endfor %}
           </table>
@@ -81,6 +83,21 @@
         </div>
       </div>
     </main>
+    <div id="context-segment" class="hidden">
+      <button id="btn-context-lock">Lock</button>
+      <button id="btn-context-unlock">Unlock</button>
+    </div>
+    <div id="dropdown-filter" class="hidden">
+      <button id="btn-filter-all">All</button>
+      <hr/>
+      <button id="btn-filter-translated">Translated</button>
+      <button id="btn-filter-draft">Draft</button>
+      <button id="btn-filter-blank">Blank</button>
+    </div>
+    <div id="dropdown-propagation" class="hidden">
+      <button id="btn-settings-backward-propagation"><input id="checkbox-backward-propagation" type="checkbox" checked/>Backward Propagation</button>
+      <button id="btn-settings-forward-propagation"><input id="checkbox-forward-propagation" type="checkbox" checked/>Forward Propagation</button>
+    </div>
     <div id="overlay-submit-translation"> <!--TODO: Add QA steps-->
       <div>
         <p>Checking to see if all segments are translated...</p>
