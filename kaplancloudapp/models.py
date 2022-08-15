@@ -348,22 +348,22 @@ class Segment(models.Model):
     def get_status(self):
         return segment_statuses[self.status][1]
 
-    def save(self, no_override=False, *args, **kwargs):
-        prev_target = self.target
-        prev_updated_by = self.updated_by
+    def save(self, no_override=False, cur_target=None, cur_updated_by=None, *args, **kwargs):
         super().save(*args, **kwargs)
+        prev_target = cur_target if cur_target is not None else self.target
+        prev_updated_by = cur_updated_by if cur_updated_by is not None else self.updated_by
         if no_override:
             return
         elif self.target != '' and self.target != prev_target:
             try:
                 Path('.tmp').mkdir(exist_ok=True)
                 with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
-                    path_bf = Path(tmpdir, Path(self.file_instance.bilingual_file.name).name)
-                    path_bf.write_bytes(self.file_instance.bilingual_file.read())
+                    path_bf = Path(tmpdir, Path(self.file.bilingual_file.name).name)
+                    path_bf.write_bytes(self.file.bilingual_file.read())
 
                     bf = open_bilingualfile(path_bf)
 
-                bf.update_segment(target_segment,
+                bf.update_segment('<target>' + self.target + '</target>',
                                   self.tu_id,
                                   self.s_id,
                                   segment_state=('blank','draft','translated')[int(self.status)])
