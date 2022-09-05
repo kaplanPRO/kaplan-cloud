@@ -161,6 +161,10 @@ window.onload = function() {
       if (e.code === 'Insert') {
         let sourceCell = e.target.parentElement.children[1];
         insertInnerHTML(sourceCell, e.target);
+      } else if (e.code == 'KeyL') {
+        e.preventDefault();
+        changeSegmentLocks(!currentSegment.classList.contains('locked'), [currentSegment]);
+        return;
       } else if (e.code === 'Enter') {
         e.target.parentElement.classList.remove('blank', 'error', 'draft', 'reviewed');
 
@@ -447,21 +451,20 @@ window.onload = function() {
 
   }
 
-  function changeSelectedSegmentLocks(lock) {
-    let selectedSegments = [...document.getElementsByClassName('segment selected')]
-    selectedSegments.forEach((selectedSegment, i) => {
+  function changeSegmentLocks(lock, segments) {
+    segments.forEach((segment, i) => {
       if (lock) {
-        selectedSegment.children[2].removeAttribute('contentEditable');
-        selectedSegment.classList.add('locked');
+        segment.children[2].removeAttribute('contentEditable');
+        segment.classList.add('locked');
       }
       else {
-        selectedSegment.children[2].setAttribute('contentEditable', true);
-        selectedSegment.classList.remove('locked');
+        segment.children[2].setAttribute('contentEditable', true);
+        segment.classList.remove('locked');
       }
     });
 
-    let selectedSegmentIds = selectedSegments.map(item => item.children[0].textContent)
-    if (selectedSegmentIds === []) {return;}
+    segments = segments.map(item => item.children[0].textContent)
+    if (segments === []) {return;}
 
     let locksFormData = new FormData();
     locksFormData.append('task', 'change_segment_locks');
@@ -473,7 +476,7 @@ window.onload = function() {
     }
     locksFormData.append('to_lock', lock);
 
-    locksFormData.append('segments', selectedSegmentIds.join(';'))
+    locksFormData.append('segments', segments.join(';'))
 
     fetch('',
           {
@@ -494,6 +497,11 @@ window.onload = function() {
         }
       }
       )
+  }
+
+  function changeSelectedSegmentLocks(lock) {
+    let selectedSegments = [...document.getElementsByClassName('segment selected')]
+    changeSegmentLocks(lock, selectedSegments);
   }
 
   function closeOverlay() {
