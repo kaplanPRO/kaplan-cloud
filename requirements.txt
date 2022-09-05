@@ -1,4 +1,4 @@
 Django>=3.2,<4.1
 django-storages[boto3,google]>=1.12,<1.13
-kaplan>=0.15,<0.16
+kaplan>=0.16,<0.17
 psycopg2-binary>=2.9,<2.10

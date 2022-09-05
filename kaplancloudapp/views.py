@@ -355,6 +355,9 @@ def editor(request, id):
             if segment.is_locked:
                 return JsonResponse({'message':'locked'}, status=403)
 
+            cur_target = segment.target
+            cur_updated_by = segment.updated_by
+
             target = segment_dict['target'] \
                      .replace(' contenteditable="false" draggable="true">', '>') \
                      .replace('&nbsp;', ' ')
@@ -362,7 +365,7 @@ def editor(request, id):
             segment.target = target
             segment.status = ('blank', 'draft','translated').index(segment_dict['status'])
             segment.updated_by = request.user
-            segment.save()
+            segment.save(cur_target=cur_target,cur_updated_by=cur_updated_by)
 
             if segment.status < 2:
                 return JsonResponse(request.POST)

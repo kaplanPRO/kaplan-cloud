@@ -14,70 +14,9 @@ window.onload = function() {
   const settingBackwardPropagation = document.getElementById('checkbox-backward-propagation');
   const settingForwardPropagation = document.getElementById('checkbox-forward-propagation');
 
-  const targetCells = document.getElementsByClassName('target');
-
   let currentSegment;
   let concordanceSearchTimeout;
   let shiftSelectedSegments = [];
-
-  for (i = 0; i < targetCells.length; i++) {
-    targetCell = targetCells[i];
-
-    targetCell.onfocus = function(e) {
-      currentSegment = this.parentElement;
-      commentForm.style.display = 'block';
-
-      while (comments.children.length > 1) {
-        comments.removeChild(comments.children[1]);
-      }
-
-      var url = new URL(window.location.href);
-
-      var params = {task:'lookup',
-                    tu_id:this.parentElement.parentElement.parentElement.id,
-                    s_id:this.parentElement.id};
-      url.search = new URLSearchParams(params).toString();
-
-      fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        populateTMHits(data['tm']);
-
-        comments_data = data['comments'];
-        Object.keys(comments_data).forEach((key, i) => {
-          commentSpan = document.createElement('span');
-          commentSpan.className = 'comment';
-
-          commentP = document.createElement('p');
-          commentP.textContent = comments_data[key]['comment'];
-          commentSpan.appendChild(commentP);
-
-          commentDetailsSpan = document.createElement('span');
-          commentDetailsSpan.className = 'details';
-          userP = document.createElement('p');
-          userP.className = 'detail';
-          userP.textContent = comments_data[key]['created_by'];
-          commentDetailsSpan.appendChild(userP);
-          datetimeP = document.createElement('p');
-          datetimeP.className = 'detail';
-          datetimeP.textContent = new Date(comments_data[key]['created_at']).toLocaleString();
-          commentDetailsSpan.appendChild(datetimeP);
-          commentSpan.appendChild(commentDetailsSpan);
-
-          comments.appendChild(commentSpan);
-        });
-
-      })
-      .catch(error => {
-        console.error('Could not look up segment #' + params['s_id'] + '.');
-        console.error(error);
-      })
-    }
-
-    targetCell.addEventListener('focusout', function() {
-      submitSegment(this);
-    })
-  }
 
   let segmentFilter = new URL(window.location).searchParams.get('segments');
   if (segmentFilter && segmentFilter !== 'all')
@@ -140,6 +79,67 @@ window.onload = function() {
     navigator.clipboard.writeText(selectedText);
   }
 
+  document.body.addEventListener('focusin', function(e) {
+    if (e.target.classList.contains('target')) {
+      currentSegment = e.target.parentElement;
+      commentForm.style.display = 'block';
+
+      while (comments.children.length > 1) {
+        comments.removeChild(comments.children[1]);
+      }
+
+      var url = new URL(window.location.href);
+
+      var params = {task:'lookup',
+                    tu_id:e.target.parentElement.parentElement.parentElement.id,
+                    s_id:e.target.parentElement.id};
+      url.search = new URLSearchParams(params).toString();
+
+      fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        populateTMHits(data['tm']);
+
+        comments_data = data['comments'];
+        Object.keys(comments_data).forEach((key, i) => {
+          commentSpan = document.createElement('span');
+          commentSpan.className = 'comment';
+
+          commentP = document.createElement('p');
+          commentP.textContent = comments_data[key]['comment'];
+          commentSpan.appendChild(commentP);
+
+          commentDetailsSpan = document.createElement('span');
+          commentDetailsSpan.className = 'details';
+          userP = document.createElement('p');
+          userP.className = 'detail';
+          userP.textContent = comments_data[key]['created_by'];
+          commentDetailsSpan.appendChild(userP);
+          datetimeP = document.createElement('p');
+          datetimeP.className = 'detail';
+          datetimeP.textContent = new Date(comments_data[key]['created_at']).toLocaleString();
+          commentDetailsSpan.appendChild(datetimeP);
+          commentSpan.appendChild(commentDetailsSpan);
+
+          comments.appendChild(commentSpan);
+        });
+
+      })
+      .catch(error => {
+        console.error('Could not look up segment #' + params['s_id'] + '.');
+        console.error(error);
+      })
+    }
+  })
+
+  document.body.addEventListener('focusout', function(e) {
+    if (e.target.classList.contains('target')) {
+      if (!e.target.parentElement.classList.contains('locked')) {
+        submitSegment(e.target);
+      }
+    }
+  })
+
   document.body.onkeydown = function(e) {
     if (e.code === 'F3') {
       e.preventDefault();
@@ -161,6 +161,10 @@ window.onload = function() {
       if (e.code === 'Insert') {
         let sourceCell = e.target.parentElement.children[1];
         insertInnerHTML(sourceCell, e.target);
+      } else if (e.code == 'KeyL') {
+        e.preventDefault();
+        changeSegmentLocks(!currentSegment.classList.contains('locked'), [currentSegment]);
+        return;
       } else if (e.code === 'Enter') {
         e.target.parentElement.classList.remove('blank', 'error', 'draft', 'reviewed');
 
@@ -230,7 +234,6 @@ window.onload = function() {
             }
           }
         }
-
       }
     }
     else if (e.key !== 'Tab'
@@ -447,21 +450,20 @@ window.onload = function() {
 
   }
 
-  function changeSelectedSegmentLocks(lock) {
-    let selectedSegments = [...document.getElementsByClassName('segment selected')]
-    selectedSegments.forEach((selectedSegment, i) => {
+  function changeSegmentLocks(lock, segments) {
+    segments.forEach((segment, i) => {
       if (lock) {
-        selectedSegment.children[2].removeAttribute('contentEditable');
-        selectedSegment.classList.add('locked');
+        segment.children[2].removeAttribute('contentEditable');
+        segment.classList.add('locked');
       }
       else {
-        selectedSegment.children[2].setAttribute('contentEditable', true);
-        selectedSegment.classList.remove('locked');
+        segment.children[2].setAttribute('contentEditable', true);
+        segment.classList.remove('locked');
       }
     });
 
-    let selectedSegmentIds = selectedSegments.map(item => item.children[0].textContent)
-    if (selectedSegmentIds === []) {return;}
+    segments = segments.map(item => item.children[0].textContent)
+    if (segments === []) {return;}
 
     let locksFormData = new FormData();
     locksFormData.append('task', 'change_segment_locks');
@@ -473,7 +475,7 @@ window.onload = function() {
     }
     locksFormData.append('to_lock', lock);
 
-    locksFormData.append('segments', selectedSegmentIds.join(';'))
+    locksFormData.append('segments', segments.join(';'))
 
     fetch('',
           {
@@ -494,6 +496,11 @@ window.onload = function() {
         }
       }
       )
+  }
+
+  function changeSelectedSegmentLocks(lock) {
+    let selectedSegments = [...document.getElementsByClassName('segment selected')]
+    changeSegmentLocks(lock, selectedSegments);
   }
 
   function closeOverlay() {
