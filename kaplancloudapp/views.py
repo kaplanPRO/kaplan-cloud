@@ -99,7 +99,8 @@ def newtm(request):
         tm.name = form.cleaned_data['name']
         tm.source_language = form.cleaned_data['source_language'].iso_code
         tm.target_language = form.cleaned_data['target_language'].iso_code
-        tm.user = request.user
+        tm.created_by = request.user
+        tm.client = form.cleaned_data['client']
         tm.save()
 
         return redirect('translation-memories')
@@ -126,7 +127,14 @@ def projects(request):
         projects = projects.filter(client=client)
         display_form = True
 
-    projects = list(projects.filter(created_by=request.user) | projects.filter(managed_by=request.user))
+    client_accounts_for_user = Client.objects.filter(team=request.user)
+
+    projects = list(
+        projects.filter(created_by=request.user)
+        |
+        projects.filter(managed_by=request.user)
+        |
+        projects.filter(client__in=client_accounts_for_user))
 
     project_files = ProjectFile.objects.all()
     for project in projects:
@@ -148,9 +156,15 @@ def projects(request):
 def project(request, id):
     project = Project.objects.get(id=id)
     project_files = ProjectFile.objects.filter(project=project)
-    if not request.user.has_perm('kaplancloudapp.change_projectfile') \
-       and project.created_by != request.user \
-       and request.user not in project.managed_by.all():
+    if (
+        not request.user.has_perm('kaplancloudapp.change_projectfile') \
+        and project.created_by != request.user \
+        and request.user not in project.managed_by.all()
+       ) and not (
+            project.client is not None 
+            and
+            request.user in project.client.team.all()
+        ):
         project_files = project_files.filter(translator=request.user) \
                       | project_files.filter(reviewer=request.user)
 
@@ -326,7 +340,11 @@ def editor(request, id):
 
     if request.user.has_perm('kaplancloudapp.change_projectfile') \
         or request.user == project_file.project.created_by \
-        or request.user in project_file.project.managed_by.all():
+        or request.user in project_file.project.managed_by.all() \
+        or (
+            project_file.project.client is not None 
+            and
+            request.user in project_file.project.client.team.all()):
         can_edit = project_file.status < 7
     elif ((project_file.translator == request.user \
         or project_file.reviewer == request.user) \
@@ -578,6 +596,10 @@ def translation_memories(request):
         translation_memories = translation_memories.filter(client=client)
         display_form = True
 
+    if not request.user.has_perm('kaplancloudapp.view_translationmemory'):
+        translation_memories = translation_memories \
+            .filter(client__in=Client.objects.filter(team=request.user))
+
     if request.GET.get('format') == 'JSON':
         tm_dict = {}
         for tm in translation_memories:
@@ -588,9 +610,20 @@ def translation_memories(request):
 
 @login_required
 def translation_memory(request, id):
+    tm = TranslationMemory.objects.get(id=id)
+
+    if (
+        not request.user.has_perm('kaplancloudapp.view_translationmemory')
+        and
+        not (
+            tm.client is not None and request.user not in tm.client.team.all()
+        )
+    ):
+        return redirect('/accounts/login?next={0}'.format(request.path))
+
     tm_entries = TMEntry.objects \
-                .filter(translationmemory=TranslationMemory.objects.get(id=id)) \
-                .exclude(target='')
+        .filter(translationmemory=tm) \
+        .exclude(target='')
 
     return render(request, 'tm.html', {'tm_entries':tm_entries, 'tm_id':id})
 
