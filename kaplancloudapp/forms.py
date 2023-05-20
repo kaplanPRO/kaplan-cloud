@@ -16,6 +16,24 @@ from kaplan import open_bilingualfile
 from kaplan.kxliff import KXLIFF
 
 
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = single_file_clean(data, initial)
+        return result
+    
+
 class AssignLinguistForm(forms.Form):
     username = forms.CharField(max_length=128)
     override = forms.BooleanField(required=False)
@@ -41,8 +59,8 @@ class ProjectForm(forms.Form):
     target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     translation_memories = forms.ChoiceField(required=False)
     client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
-    project_files = forms.FileField(widget=forms.ClearableFileInput(attrs={'allow_multiple_selected': True, 'accept': ','.join(['.docx', '.json', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
-    reference_files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'allow_multiple_selected':True}))
+    project_files = MultipleFileField(widget=MultipleFileInput(attrs={'accept':','.join(['.docx', '.json', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
+    reference_files = MultipleFileField(required=False)
     due_by = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
     will_pretranslate = forms.BooleanField(label='Pretranslate from TM', required=False)
 
@@ -66,7 +84,7 @@ class ProjectForm(forms.Form):
             return []
 
     def clean_project_files(self):
-        files = self.files.getlist('project_files')
+        files = self.cleaned_data['project_files']
 
         validationerrors = []
         Path('.tmp').mkdir(exist_ok=True)
