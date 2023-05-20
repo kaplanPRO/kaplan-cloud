@@ -57,6 +57,7 @@ class LanguageProfile(models.Model):
 
 class Client(models.Model):
     name = models.CharField(max_length=64)
+    team = models.ManyToManyField(User, blank=True)
 
     def __str__(self):
         return str(self.id) + '-' + self.name
