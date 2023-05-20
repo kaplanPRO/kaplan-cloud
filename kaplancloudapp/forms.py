@@ -41,8 +41,8 @@ class ProjectForm(forms.Form):
     target_language = forms.ModelChoiceField(queryset=LanguageProfile.objects.all(), to_field_name='iso_code', help_text='If you don\'t see the language you need, please create a LanguageProfile in the Admin dashboard.')
     translation_memories = forms.ChoiceField(required=False)
     client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
-    project_files = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True, 'accept': ','.join(['.docx', '.json', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
-    reference_files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'multiple':True}))
+    project_files = forms.FileField(widget=forms.ClearableFileInput(attrs={'allow_multiple_selected': True, 'accept': ','.join(['.docx', '.json', '.kxliff', '.odp', '.ods', '.odt', '.po', '.sdlxliff', '.txt', '.xliff'])}))
+    reference_files = forms.FileField(required=False, widget=forms.ClearableFileInput(attrs={'allow_multiple_selected':True}))
     due_by = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}))
     will_pretranslate = forms.BooleanField(label='Pretranslate from TM', required=False)
 
