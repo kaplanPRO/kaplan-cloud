@@ -1,9 +1,7 @@
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.models import User
 from django.conf import settings
-from django.core.files import File
-from django.core.serializers import serialize
-from django.http import FileResponse, JsonResponse, HttpResponseRedirect
+from django.http import FileResponse, JsonResponse
 from django.shortcuts import redirect, render
 
 from .forms import KPPUploadForm, ProjectForm, SearchForm, AssignLinguistForm, \
@@ -25,11 +23,8 @@ import tempfile
 import zipfile
 
 from lxml import etree
-from kaplan import open_bilingualfile
 from kaplan.kdb import KDB
 from kaplan.project import Project as KPP
-
-from .utils import trim_segment
 
 # Create your views here.
 
