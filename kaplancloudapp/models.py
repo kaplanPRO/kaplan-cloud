@@ -8,6 +8,7 @@ from kaplan import open_bilingualfile
 from pathlib import Path
 import shutil
 import tempfile
+import uuid
 
 from .custom_storage import get_private_storage
 from .thread_classes import NewFileThread, NewProjectReportThread
@@ -64,6 +65,7 @@ class Client(models.Model):
 
 
 class Termbase(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=64)
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
@@ -89,6 +91,7 @@ class TBEntryUpdate(models.Model):
 
 
 class TranslationMemory(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=64)
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
@@ -101,7 +104,7 @@ class TranslationMemory(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('tm', kwargs={'id' : self.id})
+        return reverse('tm', kwargs={'uuid' : self.uuid})
 
 
 class TMEntry(models.Model):
@@ -135,6 +138,7 @@ class TMEntryUpdate(models.Model):
 
 
 class Project(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=64)
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
@@ -189,7 +193,7 @@ class Project(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('project', kwargs={'id' : self.id})
+        return reverse('project', kwargs={'uuid' : self.uuid})
 
     def get_manifest(self):
         manifest_dict = {'title':self.name,
@@ -228,6 +232,7 @@ class Project(models.Model):
 
 
 class ProjectFile(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.TextField()
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
@@ -255,7 +260,7 @@ class ProjectFile(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('editor', kwargs={'id' : self.id})
+        return reverse('editor', kwargs={'uuid' : self.uuid})
 
     def get_source_directory(self):
         return Path(self.project.directory,
@@ -286,6 +291,7 @@ class ProjectFile(models.Model):
 
 
 class ProjectPackage(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     project = models.ForeignKey(Project, models.CASCADE)
     package = models.FileField(storage=get_private_storage, upload_to=get_kpp_path, max_length=256)
     created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
@@ -305,6 +311,7 @@ class ProjectPreprocessingSettings(models.Model):
 
 
 class ProjectReferenceFile(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.TextField()
     project = models.ForeignKey(Project, models.CASCADE)
     reference_file = models.FileField(storage=get_private_storage, upload_to=get_reference_file_path, max_length=256)
@@ -315,6 +322,7 @@ class ProjectReferenceFile(models.Model):
 
 
 class ProjectReport(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     project = models.ForeignKey(Project, models.CASCADE)
     project_files = models.ManyToManyField(ProjectFile)
     content = models.JSONField()
@@ -327,7 +335,7 @@ class ProjectReport(models.Model):
 
     def get_absolute_url(self):
         from django.urls import reverse
-        return reverse('report', kwargs={'id' : self.id})
+        return reverse('report', kwargs={'uuid' : self.uuid})
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

@@ -34,17 +34,17 @@ window.onload = function() {
   }
 
   document.getElementById('context-btn-analyze').onclick = function() {
-    let fileIds = '';
+    fileUuids = []
     filesList.forEach((item, i) => {
-      fileIds += item[0] + ';'
+      fileUuids.push(item[0])
     });
-    analyzeFiles(this, fileIds);
+    analyzeFiles(fileUuids.join(';'));
   }
 
   document.getElementById('context-btn-download-translation').onclick = function() {
-    fileIds = []
+    fileUuids = []
     filesList.forEach((item, i) => {
-      fileIds.push(item[0])
+      fileUuids.push(item[0])
     });
     if (filesList.length > 1) {
       fileName = 'target.zip'
@@ -52,15 +52,15 @@ window.onload = function() {
     else {
       fileName = filesList[0][1]
     }
-    downloadTranslations(self, fileIds.join(';'), fileName)
+    downloadTranslations(fileUuids.join(';'), fileName)
   }
 
   document.getElementById('context-btn-export').onclick = function() {
-    let fileIds = '';
+    fileUuids = []
     filesList.forEach((item, i) => {
-      fileIds += item[0] + ';'
+      fileUuids.push(item[0])
     });
-    exportFiles(fileIds);
+    exportFiles(fileUuids.join(';'));
   }
 
   document.getElementById('context-btn-import').onclick = function() {
@@ -85,7 +85,7 @@ window.onload = function() {
     {
       filesList = getAllFiles(true);
     }
-    assignLinguistForm['file_ids'].value = filesList.join(';');
+    assignLinguistForm['file_uuids'].value = filesList.join(';');
 
     assignLinguistForm['task'].value = 'assign_linguist';
   }
@@ -123,12 +123,11 @@ window.onload = function() {
     return list;
   }
 }
-function analyzeFiles(button, fileIds)
+function analyzeFiles(fileUuids)
 {
   fileFormData = new FormData();
   fileFormData.append('task', 'analyze');
-  fileFormData.append('file_ids', fileIds);
-
+  fileFormData.append('file_uuids', fileUuids);
   fetch('',
         {
           method: 'POST',
@@ -140,16 +139,16 @@ function analyzeFiles(button, fileIds)
     )
     .then(response => response.json())
     .then(data => {
-      checkReport(data['id']);
+      checkReport(data['uuid']);
     })
     .catch(error => {
       console.error(error);
     })
 }
 
-function checkReport(reportId)
+function checkReport(reportUuid)
 {
-  var url = new URL(window.location.origin + '/report/' + reportId);
+  var url = new URL(window.location.origin + '/report/' + reportUuid);
   var params = {task:'get_status'};
   url.search = new URLSearchParams(params).toString();
 
@@ -159,7 +158,7 @@ function checkReport(reportId)
     {
       if (data['status'] == 1 || data['status'] == 2)
       {
-        setTimeout(checkReport, 5000, reportId);
+        setTimeout(checkReport, 5000, reportUuid);
       }
       else
       {
@@ -169,11 +168,11 @@ function checkReport(reportId)
   )
 }
 
-function downloadTranslations(button, fileIds, fileName)
+function downloadTranslations(fileUuids, fileName)
 {
   fileFormData = new FormData();
   fileFormData.append('task', 'download_translations');
-  fileFormData.append('file_ids', fileIds);
+  fileFormData.append('file_uuids', fileUuids);
 
   fetch('',
         {
@@ -197,10 +196,10 @@ function downloadTranslations(button, fileIds, fileName)
     })
 }
 
-function exportFiles(fileIds) {
+function exportFiles(fileUuids) {
   fileFormData = new FormData();
   fileFormData.append('task', 'export');
-  fileFormData.append('file_ids', fileIds);
+  fileFormData.append('file_uuids', fileUuids);
 
   fetch('',
         {

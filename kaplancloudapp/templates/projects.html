@@ -44,7 +44,7 @@
     </tr>
     {% for project in projects %}
     <tr>
-      <td><a href="{% url 'project' project.id %}">{{project.name}}</a></td>
+      <td><a href="{% url 'project' project.uuid %}">{{project.name}}</a></td>
       <td>{{project.source_language}}</td>
       <td>{{project.target_language}}</td>
       <td>{{project.get_status}}</td>

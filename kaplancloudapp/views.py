@@ -59,7 +59,7 @@ def newproject(request):
             new_project.translationmemories.add(tm)
 
         new_project.directory = str(Path(settings.PROJECTS_DIR,
-                                         str(new_project.id)))
+                                         str(new_project.uuid)))
         new_project.save()
 
         for file in form.files.getlist('project_files'):
@@ -153,8 +153,8 @@ def projects(request):
     return render(request, 'projects.html', {'at_projects':True, 'projects':projects, 'form':form, 'display_form':display_form})
 
 @login_required
-def project(request, id):
-    project = Project.objects.get(id=id)
+def project(request, uuid):
+    project = Project.objects.get(uuid=uuid)
     project_files = ProjectFile.objects.filter(project=project)
     if (
         not request.user.has_perm('kaplancloudapp.change_projectfile') \
@@ -182,8 +182,8 @@ def project(request, id):
             threads = []
             Path('.tmp').mkdir(exist_ok=True)
             with tempfile.TemporaryDirectory(dir='.tmp') as tmpdir:
-                for pf_id in request.POST['file_ids'].split(';'):
-                    project_file = project_files.get(id=int(pf_id))
+                for pf_id in request.POST['file_uuids'].split(';'):
+                    project_file = project_files.get(uuid=pf_id)
                     threads.append(GenerateTargetTranslationThread(project_file,
                                                                    tmpdir))
 
@@ -209,17 +209,17 @@ def project(request, id):
             projectreport_instance.created_by = request.user
             projectreport_instance.save()
 
-            for file_id in request.POST['file_ids'].split(';')[:-1]:
-                projectreport_instance.project_files.add(project_files.get(id=file_id))
+            for file_uuid in request.POST['file_uuids'].split(';'):
+                projectreport_instance.project_files.add(project_files.get(uuid=file_uuid))
             projectreport_instance.status = 1
             projectreport_instance.save()
 
-            return JsonResponse({'id':projectreport_instance.id})
+            return JsonResponse({'uuid':projectreport_instance.uuid})
 
         elif request.POST.get('task') == 'export':
             files_manifest = {}
 
-            files_to_export = [int(i) for i in request.POST['file_ids'].split(';') if i != '']
+            files_to_export = [id for id in request.POST['file_uuids'].split(';') if id != '']
 
             if len(files_to_export) == 0:
                 return JsonResponse({'error':'No files selected'}, status=500)
@@ -257,7 +257,7 @@ def project(request, id):
 
                         file_manifest['targetBF'] = str(path_target_bf)
 
-                    files_manifest[project_file_instance.id] = file_manifest
+                    files_manifest[str(project_file_instance.uuid)] = file_manifest
 
                 for thread in threads: thread.start()
                 for thread in threads: thread.join()
@@ -311,8 +311,8 @@ def project(request, id):
             form1 = AssignLinguistForm(request.POST)
 
             if form1.is_valid():
-                for f_id in request.POST['file_ids'].split(';'):
-                    project_file = project_files.get(id=f_id)
+                for f_uuid in request.POST['file_uuids'].split(';'):
+                    project_file = project_files.get(uuid=f_uuid)
                     if int(request.POST['role']) == 0:
                         if project_file.translator is not None and request.POST.get('override') is None:
                             continue
@@ -335,8 +335,8 @@ def project(request, id):
                   })
 
 @login_required
-def editor(request, id):
-    project_file = ProjectFile.objects.get(id=id)
+def editor(request, uuid):
+    project_file = ProjectFile.objects.get(uuid=uuid)
 
     if request.user.has_perm('kaplancloudapp.change_projectfile') \
         or request.user == project_file.project.created_by \
@@ -547,8 +547,8 @@ def editor(request, id):
             return render(request, 'editor.html', {'file':project_file, 'translation_units':translation_units, 'form':form, 'can_edit':can_edit})
 
 @login_required
-def reference_file(request, id):
-    reference_file_instance = ProjectReferenceFile.objects.get(id=id)
+def reference_file(request, uuid):
+    reference_file_instance = ProjectReferenceFile.objects.get(uuid=uuid)
 
     is_relevant = True
     if not not request.user.has_perm('kaplancloudapp.view_projectreferencefile') \
@@ -567,8 +567,8 @@ def reference_file(request, id):
         return redirect('/accounts/login?next={0}'.format(request.path))
 
 @login_required
-def report(request, id):
-    project_report = ProjectReport.objects.get(id=id)
+def report(request, uuid):
+    project_report = ProjectReport.objects.get(uuid=uuid)
     if request.GET.get('task') == 'get_status':
         return JsonResponse({'status':project_report.status})
     project_report = project_report.content
@@ -609,8 +609,8 @@ def translation_memories(request):
         return render(request, 'translation-memories.html', {'at_tms':True, 'tms':translation_memories, 'form':form, 'display_form':display_form})
 
 @login_required
-def translation_memory(request, id):
-    tm = TranslationMemory.objects.get(id=id)
+def translation_memory(request, uuid):
+    tm = TranslationMemory.objects.get(uuid=uuid)
 
     if (
         not request.user.has_perm('kaplancloudapp.view_translationmemory')
@@ -625,12 +625,12 @@ def translation_memory(request, id):
         .filter(translationmemory=tm) \
         .exclude(target='')
 
-    return render(request, 'tm.html', {'tm_entries':tm_entries, 'tm_id':id})
+    return render(request, 'tm.html', {'tm_entries':tm_entries, 'tm_uuid':tm.uuid})
 
 @login_required
 @permission_required('kaplancloudapp.add_translationmemory')
-def translation_memory_import(request, id):
-    translation_memory = TranslationMemory.objects.get(id=id)
+def translation_memory_import(request, uuid):
+    translation_memory = TranslationMemory.objects.get(uuid=uuid)
     form = TranslationMemoryImportForm(request.POST or None,
                                        request.FILES or None,
                                        initial={'source_language':translation_memory.source_language,
@@ -700,6 +700,6 @@ def translation_memory_import(request, id):
         while max([thread.is_alive() for thread in threads]):
             None
 
-        return redirect('tm', id=translation_memory.id)
+        return redirect('tm', uuid=translation_memory.uuid)
 
     return render(request, 'tm-import.html', {'form':form})

@@ -38,7 +38,7 @@ class AssignLinguistForm(forms.Form):
     username = forms.CharField(max_length=128)
     override = forms.BooleanField(required=False)
     role = forms.ChoiceField(choices=((0,'Translator'),(1,'Reviewer')), initial=0, widget=forms.HiddenInput())
-    file_ids = forms.CharField(widget=forms.HiddenInput())
+    file_uuids = forms.CharField(widget=forms.HiddenInput())
 
     def clean_username(self):
         username = self.cleaned_data['username']

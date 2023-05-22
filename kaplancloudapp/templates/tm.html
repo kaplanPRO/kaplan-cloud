@@ -4,7 +4,7 @@
 {% block div %}
 <header>
   <nav>
-    <a href="{% url 'tm-import' tm_id %}">Import</a>
+    <a href="{% url 'tm-import' tm_uuid %}">Import</a>
     <!--<a class="disabled" href="#" title="Not yet implemented">Export</a> TODO-->
     {% if not user.is_authenticated %}
     <a id="login" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
