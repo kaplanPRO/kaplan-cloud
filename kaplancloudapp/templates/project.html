@@ -26,7 +26,7 @@
         <th></th>
         <td>
           {{form1.role}}
-          {{form1.file_ids}}
+          {{form1.file_uuids}}
         </td>
       </tr>
       <tr>
@@ -77,9 +77,9 @@
         <th>Due by</th>
       </tr>
       {% for file in files %}
-      <tr class="file" id="{{ file.id }}">
+      <tr class="file" id="{{ file.uuid }}">
         <th><input class="checkbox" type="checkbox"></th>
-        <td><a href="{% url 'editor' file.id %}">{{file.name}}</a></td>
+        <td><a href="{% url 'editor' file.uuid %}">{{file.name}}</a></td>
         <td>{{file.get_status}}</td>
         {% if perms.kaplancloudapp.change_project %}
         <td>
@@ -118,7 +118,7 @@
       </tr>
       {% for ref in reference %}
       <tr>
-        <td><a href="{% url 'reference-file' ref.id %}" target="_blank">{{ ref.name }}</a></td>
+        <td><a href="{% url 'reference-file' ref.uuid %}" target="_blank">{{ ref.name }}</a></td>
       </tr>
       {% endfor %}
     </table>
@@ -127,7 +127,7 @@
     <h3>Reports</h3>
     <ul>
       {% for report in reports %}
-      <li><a href="{% url 'report' report.id %}" target="_blank">{{report.created_at}}</a></li>
+      <li><a href="{% url 'report' report.uuid %}" target="_blank">{{report.created_at}}</a></li>
       {% endfor %}
     </ul>
   </div>

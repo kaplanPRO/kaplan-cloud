@@ -44,7 +44,7 @@ Translation Memories | Kaplan Cloud
     </tr>
     {% for tm in tms %}
     <tr>
-      <td><a href="{% url 'tm' tm.id %}">{{tm.name}}</a></td>
+      <td><a href="{% url 'tm' tm.uuid %}">{{tm.name}}</a></td>
       <td>{{tm.source_language}}</td>
       <td>{{tm.target_language}}</td>
       <td>{{tm.client.name}}</td>
