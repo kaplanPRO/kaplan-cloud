@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'storages',
+    'rest_framework',
+    'rest_framework.authtoken',
     'kaplancloudaccounts',
+    'kaplancloudapi',
     'kaplancloudapp'
 ]
 
@@ -180,3 +183,17 @@ elif 'storages.backends.gcloud.GoogleCloudStorage' in (STORAGES['default']['BACK
     GS_LOCATION = os.environ.get('GS_PUBLIC_BUCKET_LOCATION', 'static')
     GS_PRIVATE_BUCKET_LOCATION = os.environ.get('GS_PRIVATE_BUCKET_LOCATION', '')
     GS_QUERYSTRING_AUTH = os.environ.get('GS_QUERYSTRING_AUTH', 'False') == 'True'
+
+# https://www.django-rest-framework.org/api-guide/permissions/
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
+}
