@@ -211,6 +211,12 @@ class Project(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
+        if self.status == 0 and self.directory.strip() == '':
+            project_directory = Path(settings.PROJECTS_DIR, str(self.uuid))
+            self.directory = str(project_directory)
+
+            self.save()
+
         if self.status == 1 and self._are_all_files_submitted:
             ProjectFileModel = apps.get_model('kaplancloudapp', 'ProjectFile')
             project_files = ProjectFileModel.objects.filter(project=self)
