@@ -1,4 +1,6 @@
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.hashers import make_password
+
 from rest_framework import serializers
 
 from kaplancloudapi.models import ProjectWebHook, ProjectFileWebHook
@@ -86,6 +88,14 @@ class TranslationMemorySerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+  password = serializers.CharField(write_only=True, required=False, style={'input_type': 'password'})
+  is_active = serializers.BooleanField(initial=True)
+
   class Meta:
     model = User
-    fields = ('id', 'username', 'email', 'groups')
+    fields = ('id', 'username', 'password', 'email', 'is_active', 'groups')
+
+  def create(self, validated_data):
+    validated_data['password'] = make_password(validated_data.get('password'))
+
+    return super().create(validated_data)
