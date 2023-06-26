@@ -162,9 +162,9 @@ class Project(models.Model):
 
     def delete(self, *args, **kwargs):
         try:
-            if settings.DEFAULT_FILE_STORAGE == 'django.core.files.storage.FileSystemStorage':
+            if settings.STORAGES['default']['BACKEND'] == 'django.core.files.storage.FileSystemStorage':
                 shutil.rmtree(self.directory)
-            elif settings.DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage':
+            elif settings.STORAGES['default']['BACKEND'] == 'storages.backends.s3boto3.S3Boto3Storage':
                 import boto3
 
                 session = boto3.Session(aws_access_key_id=settings.AWS_S3_ACCESS_KEY_ID,
@@ -178,7 +178,7 @@ class Project(models.Model):
 
                 bucket.objects.filter(Prefix=str(Path(settings.S3_PRIVATE_BUCKET_LOCATION, self.directory))).delete()
 
-            elif settings.DEFAULT_FILE_STORAGE == 'storages.backends.gcloud.GoogleCloudStorage':
+            elif settings.STORAGES['default']['BACKEND'] == 'storages.backends.gcloud.GoogleCloudStorage':
                 from google.cloud import storage
 
                 client = storage.Client()
