@@ -7,7 +7,7 @@ from kaplancloudapi.models import ProjectWebHook, ProjectFileWebHook
 
 from kaplancloudapp.models import (
   Client, LanguageProfile, Project, ProjectFile,
-  ProjectReferenceFile, TranslationMemory
+  ProjectReferenceFile, TranslationMemory, file_statuses, project_statuses
 )
 
 
@@ -39,6 +39,8 @@ class LanguageProfileSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
+  status = serializers.ChoiceField(choices=project_statuses, initial=0)
+
   class Meta:
     model = Project
     fields = (
@@ -59,6 +61,8 @@ class ProjectWebHookSerializer(serializers.ModelSerializer):
 
 
 class ProjectFileSerializer(serializers.ModelSerializer):
+  status = serializers.ChoiceField(choices=file_statuses, initial=0)
+  
   class Meta:
     model = ProjectFile
     exclude = ('bilingual_file', 'source_language', 'target_language')
