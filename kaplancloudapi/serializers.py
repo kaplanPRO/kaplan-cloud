@@ -39,7 +39,7 @@ class LanguageProfileSerializer(serializers.ModelSerializer):
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-  status = serializers.ChoiceField(choices=project_statuses, initial=0)
+  status = serializers.ChoiceField(choices=project_statuses, default=0, initial=0)
 
   class Meta:
     model = Project
@@ -61,7 +61,7 @@ class ProjectWebHookSerializer(serializers.ModelSerializer):
 
 
 class ProjectFileSerializer(serializers.ModelSerializer):
-  status = serializers.ChoiceField(choices=file_statuses, initial=0)
+  status = serializers.ChoiceField(choices=file_statuses, default=0, initial=0)
   
   class Meta:
     model = ProjectFile
