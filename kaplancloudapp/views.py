@@ -120,12 +120,13 @@ def projects(request):
 
     client_accounts_for_user = Client.objects.filter(team=request.user)
 
-    projects = list(
-        projects.filter(created_by=request.user)
-        |
-        projects.filter(managed_by=request.user)
-        |
-        projects.filter(client__in=client_accounts_for_user))
+    if not request.user.has_perm('kaplancloudapp.view_project'):
+        projects = list(
+            projects.filter(created_by=request.user)
+            |
+            projects.filter(managed_by=request.user)
+            |
+            projects.filter(client__in=client_accounts_for_user))
 
     project_files = ProjectFile.objects.all()
     for project in projects:
