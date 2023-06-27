@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'storages',
+    'rest_framework',
+    'rest_framework.authtoken',
     'kaplancloudaccounts',
+    'kaplancloudapi',
     'kaplancloudapp'
 ]
 
@@ -132,8 +135,6 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-STATICFILES_STORAGE = os.environ.get('STATICFILES_STORAGE', 'django.contrib.staticfiles.storage.StaticFilesStorage')
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -143,11 +144,20 @@ LOGIN_URL = '/accounts/login'
 
 PROJECTS_DIR = 'kaplancloudapp/projects'
 
-DEFAULT_FILE_STORAGE = os.environ.get('FILE_STORAGE', 'django.core.files.storage.FileSystemStorage')
+# https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-STORAGES
+
+STORAGES = {
+    'default': {
+        'BACKEND': os.environ.get('FILE_STORAGE', 'django.core.files.storage.FileSystemStorage'),
+    },
+    'staticfiles': {
+        'BACKEND': os.environ.get('STATICFILES_STORAGE', 'django.contrib.staticfiles.storage.StaticFilesStorage'),
+    }
+}
 
 # This will set s3 parameters only if default file storage and/or staticfiles
 # storage is set to S3Boto3Storage
-if DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage' or STATICFILES_STORAGE == 'storages.backends.s3boto3.S3StaticStorage':
+if STORAGES['default']['BACKEND'] == 'storages.backends.s3boto3.S3Boto3Storage' or STORAGES['staticfiles']['BACKEND'] == 'storages.backends.s3boto3.S3StaticStorage':
     AWS_DEFAULT_ACL = os.environ.get('S3_DEFAULT_ACL')
     AWS_S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
     AWS_S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
@@ -163,7 +173,7 @@ if DEFAULT_FILE_STORAGE == 'storages.backends.s3boto3.S3Boto3Storage' or STATICF
 
 # This will set GCP Cloud Storage parameters only if the default file storage
 # and/or staticfiles storage is set to GoogleCloudStorage
-elif 'storages.backends.gcloud.GoogleCloudStorage' in (DEFAULT_FILE_STORAGE, STATICFILES_STORAGE):
+elif 'storages.backends.gcloud.GoogleCloudStorage' in (STORAGES['default']['BACKEND'], STORAGES['staticfiles']['BACKEND']):
     # Environmental variable GOOGLE_APPLICATION_CREDENTIALS is to be set to the
     # path of the key file
     GS_BUCKET_NAME = os.environ.get('GS_PUBLIC_BUCKET_NAME')
@@ -173,3 +183,17 @@ elif 'storages.backends.gcloud.GoogleCloudStorage' in (DEFAULT_FILE_STORAGE, STA
     GS_LOCATION = os.environ.get('GS_PUBLIC_BUCKET_LOCATION', 'static')
     GS_PRIVATE_BUCKET_LOCATION = os.environ.get('GS_PRIVATE_BUCKET_LOCATION', '')
     GS_QUERYSTRING_AUTH = os.environ.get('GS_QUERYSTRING_AUTH', 'False') == 'True'
+
+# https://www.django-rest-framework.org/api-guide/permissions/
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAdminUser'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 100
+}

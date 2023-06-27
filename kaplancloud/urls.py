@@ -19,5 +19,6 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('kaplancloudaccounts.urls')),
+    path('api/', include('kaplancloudapi.urls')),
     path('', include('kaplancloudapp.urls')),
 ]

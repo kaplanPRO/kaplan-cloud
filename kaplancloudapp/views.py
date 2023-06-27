@@ -53,10 +53,6 @@ def newproject(request):
         for tm in form.cleaned_data['translation_memories']:
             new_project.translationmemories.add(tm)
 
-        new_project.directory = str(Path(settings.PROJECTS_DIR,
-                                         str(new_project.uuid)))
-        new_project.save()
-
         for file in form.files.getlist('project_files'):
             new_file = ProjectFile()
             new_file.name = file.name[3:]
