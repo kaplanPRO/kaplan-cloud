@@ -84,8 +84,8 @@ def newtm(request):
     if form.is_valid():
         tm = TranslationMemory()
         tm.name = form.cleaned_data['name']
-        tm.source_language = form.cleaned_data['source_language'].iso_code
-        tm.target_language = form.cleaned_data['target_language'].iso_code
+        tm.source_language = form.cleaned_data['source_language']
+        tm.target_language = form.cleaned_data['target_language']
         tm.created_by = request.user
         tm.client = form.cleaned_data['client']
         tm.save()

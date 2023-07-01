@@ -70,8 +70,8 @@ class ProjectForm(forms.Form):
     def clean_translation_memories(self):
         if self.cleaned_data['translation_memories'] != '' and self.cleaned_data['translation_memories'] != '-----':
             tm = TranslationMemory.objects.get(id=self.cleaned_data['translation_memories'])
-            if (tm.source_language != self.cleaned_data['source_language'].iso_code
-            or tm.target_language != self.cleaned_data['target_language'].iso_code):
+            if (tm.source_language != self.cleaned_data['source_language']
+            or tm.target_language != self.cleaned_data['target_language']):
                 raise ValidationError('TM language pair is different from that of the project.')
             else:
                 return [tm]

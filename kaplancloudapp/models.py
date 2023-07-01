@@ -68,8 +68,8 @@ class Client(models.Model):
 class Termbase(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=64)
-    source_language = models.CharField(max_length=10)
-    target_language = models.CharField(max_length=10)
+    source_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='tb_source_language')
+    target_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='tb_target_language')
     created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -94,8 +94,8 @@ class TBEntryUpdate(models.Model):
 class TranslationMemory(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=64)
-    source_language = models.CharField(max_length=10)
-    target_language = models.CharField(max_length=10)
+    source_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='tm_source_language')
+    target_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='tm_target_language')
     created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
     client = models.ForeignKey(Client, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
