@@ -141,8 +141,8 @@ class TMEntryUpdate(models.Model):
 class Project(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=64)
-    source_language = models.CharField(max_length=10)
-    target_language = models.CharField(max_length=10)
+    source_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='source_language')
+    target_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='target_language')
     created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='project_create')
     managed_by = models.ManyToManyField(get_user_model(), related_name='pm', blank=True)
     termbases = models.ManyToManyField(Termbase, blank=True)
@@ -203,8 +203,8 @@ class Project(models.Model):
     def get_manifest(self):
         manifest_dict = {'title':self.name,
                          'directory': str(Path(self.directory).resolve()),
-                         'source_language':self.source_language,
-                         'target_language':self.target_language,
+                         'source_language':self.source_language.iso,
+                         'target_language':self.target_language.iso,
                         }
 
         return manifest_dict

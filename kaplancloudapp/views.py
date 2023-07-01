@@ -35,8 +35,8 @@ def newproject(request):
     if form.is_valid():
         new_project = Project()
         new_project.name = form.cleaned_data['name']
-        new_project.source_language = form.cleaned_data['source_language'].iso_code
-        new_project.target_language = form.cleaned_data['target_language'].iso_code
+        new_project.source_language = form.cleaned_data['source_language']
+        new_project.target_language = form.cleaned_data['target_language']
         new_project.due_by = form.cleaned_data['due_by']
         new_project.created_by = request.user
         if form.cleaned_data.get('client'):
@@ -55,8 +55,8 @@ def newproject(request):
         for file in form.files.getlist('project_files'):
             new_file = ProjectFile()
             new_file.name = file.name[3:]
-            new_file.source_language = new_project.source_language
-            new_file.target_language = new_project.target_language
+            new_file.source_language = new_project.source_language.iso_code
+            new_file.target_language = new_project.target_language.iso_code
             new_file.project = new_project
             new_file_name = file.name[3:]
             if file.name[:3] == 'MF-':
