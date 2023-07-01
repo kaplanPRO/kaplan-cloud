@@ -1,6 +1,5 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import User
-from django.conf import settings
 from django.http import FileResponse, JsonResponse
 from django.shortcuts import redirect, render
 
@@ -308,12 +307,12 @@ def project(request, uuid):
                     if int(request.POST['role']) == 0:
                         if project_file.translator is not None and request.POST.get('override') is None:
                             continue
-                        project_file.translator = User.objects.get(username=request.POST['username'])
+                        project_file.translator = get_user_model().objects.get(username=request.POST['username'])
                         project_file.save()
                     elif int(request.POST['role']) == 1:
                         if project_file.reviewer is not None and request.POST.get('override') is None:
                             continue
-                        project_file.reviewer = User.objects.get(username=request.POST['username'])
+                        project_file.reviewer = get_user_model().objects.get(username=request.POST['username'])
                         project_file.save()
 
     return render(request,

@@ -1,16 +1,11 @@
 from django import forms
-from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 
 from .models import Client, LanguageProfile, TranslationMemory
 
-from datetime import datetime
-from io import BytesIO
 from pathlib import Path
 import tempfile
-
-from lxml import etree
 
 from kaplan import open_bilingualfile
 from kaplan.kxliff import KXLIFF
@@ -43,9 +38,9 @@ class AssignLinguistForm(forms.Form):
     def clean_username(self):
         username = self.cleaned_data['username']
         try:
-            user = User.objects.get(username=username)
+            user = get_user_model().objects.get(username=username)
             return username
-        except User.DoesNotExist:
+        except get_user_model().DoesNotExist:
             raise ValidationError('No users found with that username')
 
 

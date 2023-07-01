@@ -1,4 +1,5 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
@@ -96,7 +97,7 @@ class UserSerializer(serializers.ModelSerializer):
   is_active = serializers.BooleanField(initial=True)
 
   class Meta:
-    model = User
+    model = get_user_model()
     fields = ('id', 'username', 'password', 'email', 'is_active', 'groups')
 
   def create(self, validated_data):

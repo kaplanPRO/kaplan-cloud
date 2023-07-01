@@ -1,6 +1,6 @@
 from django.apps import apps
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from kaplan import open_bilingualfile
@@ -14,7 +14,7 @@ import uuid
 from .custom_storage import get_private_storage
 from .thread_classes import NewFileThread, NewProjectReportThread
 from .utils import get_kpp_path, get_source_file_path, \
-                   get_reference_file_path, get_target_file_path
+                   get_reference_file_path
 
 # Create your models here.
 
@@ -48,7 +48,7 @@ class LanguageProfile(models.Model):
     name = models.CharField(max_length=64)
     iso_code = models.CharField(max_length=10, unique=True)
     is_ltr = models.BooleanField(default=True)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -59,7 +59,7 @@ class LanguageProfile(models.Model):
 
 class Client(models.Model):
     name = models.CharField(max_length=64)
-    team = models.ManyToManyField(User, blank=True)
+    team = models.ManyToManyField(get_user_model(), blank=True)
 
     def __str__(self):
         return str(self.id) + '-' + self.name
@@ -70,7 +70,7 @@ class Termbase(models.Model):
     name = models.CharField(max_length=64)
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -78,8 +78,8 @@ class TBEntry(models.Model):
     source = models.TextField()
     target = models.TextField()
     termbase = models.ForeignKey(Termbase, models.CASCADE)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='tbentry_create')
-    updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='tbentry_update')
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='tbentry_create')
+    updated_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='tbentry_update')
     updated_at = models.DateTimeField(auto_now=True)
 
 
@@ -88,7 +88,7 @@ class TBEntryUpdate(models.Model):
     target = models.TextField(blank=True)
     tbentry = models.ForeignKey(TBEntry, models.CASCADE)
     submitted_at = models.DateTimeField(auto_now_add=True)
-    submitted_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    submitted_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
 
 
 class TranslationMemory(models.Model):
@@ -96,7 +96,7 @@ class TranslationMemory(models.Model):
     name = models.CharField(max_length=64)
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
     client = models.ForeignKey(Client, models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -112,8 +112,8 @@ class TMEntry(models.Model):
     source = models.TextField()
     target = models.TextField()
     translationmemory = models.ForeignKey(TranslationMemory, models.CASCADE)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='tmentry_create')
-    updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='tmentry_update')
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='tmentry_create')
+    updated_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='tmentry_update')
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
@@ -135,7 +135,7 @@ class TMEntryUpdate(models.Model):
     target = models.TextField(blank=True)
     tmentry = models.ForeignKey(TMEntry, models.CASCADE)
     submitted_at = models.DateTimeField(auto_now_add=True)
-    submitted_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    submitted_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
 
 
 class Project(models.Model):
@@ -143,8 +143,8 @@ class Project(models.Model):
     name = models.CharField(max_length=64)
     source_language = models.CharField(max_length=10)
     target_language = models.CharField(max_length=10)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='project_create')
-    managed_by = models.ManyToManyField(User, related_name='pm', blank=True)
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='project_create')
+    managed_by = models.ManyToManyField(get_user_model(), related_name='pm', blank=True)
     termbases = models.ManyToManyField(Termbase, blank=True)
     translationmemories = models.ManyToManyField(TranslationMemory, blank=True)
     status = models.IntegerField(choices=project_statuses, default=0)
@@ -252,8 +252,8 @@ class ProjectFile(models.Model):
     status = models.IntegerField(choices=project_statuses, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     due_by = models.DateTimeField(blank=True, null=True)
-    translator = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='translator')
-    reviewer = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='reviewer')
+    translator = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='translator')
+    reviewer = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='reviewer')
 
     class Meta:
         ordering = ['name']
@@ -304,7 +304,7 @@ class ProjectPackage(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     project = models.ForeignKey(Project, models.CASCADE)
     package = models.FileField(storage=get_private_storage, upload_to=get_kpp_path, max_length=256)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -337,7 +337,7 @@ class ProjectReport(models.Model):
     project_files = models.ManyToManyField(ProjectFile)
     content = models.JSONField()
     status = models.IntegerField(choices=report_statuses, default=0)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -361,8 +361,8 @@ class Segment(models.Model):
     status = models.IntegerField(choices=segment_statuses, default=0)
     is_locked = models.BooleanField(default=False)
     file = models.ForeignKey(ProjectFile, models.CASCADE)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_create')
-    updated_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True, related_name='segment_update')
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='segment_create')
+    updated_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True, related_name='segment_update')
 
     def get_status(self):
         return segment_statuses[self.status][1]
@@ -410,12 +410,12 @@ class SegmentUpdate(models.Model):
     status = models.IntegerField(choices=segment_statuses, default=1)
     segment = models.ForeignKey(Segment, models.CASCADE)
     submitted_at = models.DateTimeField(auto_now_add=True)
-    submitted_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    submitted_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
 
 
 class Comment(models.Model):
     comment = models.TextField()
     is_active = models.BooleanField(default=True)
     segment = models.ForeignKey(Segment, models.CASCADE)
-    created_by = models.ForeignKey(User, models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

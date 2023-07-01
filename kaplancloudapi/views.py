@@ -1,4 +1,5 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 
@@ -31,7 +32,7 @@ class ClientViewSet(viewsets.ModelViewSet):
     team_member_username = self.request.query_params.get('team_member_username', None)
 
     if team_member_username is not None:
-      queryset = queryset.filter(team=User.objects.get(username=team_member_username))
+      queryset = queryset.filter(team=get_user_model().objects.get(username=team_member_username))
 
     return queryset
 
@@ -133,7 +134,7 @@ class TranslationMemoryViewSet(viewsets.ModelViewSet):
   
 
 class UserViewSet(viewsets.ModelViewSet):
-  queryset = User.objects.all()
+  queryset = get_user_model().objects.all()
   serializer_class = UserSerializer
   filter_backends = (SearchFilter,)
   search_fields = ('username','client_name')
