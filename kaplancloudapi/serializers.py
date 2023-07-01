@@ -31,7 +31,7 @@ class LanguageProfileSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = LanguageProfile
-    fields = ('id', 'name', 'iso_code', 'is_ltr')
+    fields = ('name', 'iso_code', 'is_ltr')
   
   def create(self, validated_data):
     validated_data['created_by'] = self.context['request'].user

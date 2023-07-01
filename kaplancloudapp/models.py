@@ -46,7 +46,7 @@ segment_statuses = (
 
 class LanguageProfile(models.Model):
     name = models.CharField(max_length=64)
-    iso_code = models.CharField(max_length=10, unique=True)
+    iso_code = models.CharField(max_length=10, primary_key=True)
     is_ltr = models.BooleanField(default=True)
     created_by = models.ForeignKey(get_user_model(), models.SET_NULL, blank=True, null=True)
 
