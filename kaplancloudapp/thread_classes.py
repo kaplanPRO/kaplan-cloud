@@ -127,8 +127,6 @@ class NewFileThread(threading.Thread):
         instance = self.file_instance
 
         try:
-            project_directory = Path(instance.project.directory)
-
             if instance.source_file \
             and not instance.bilingual_file:
 
@@ -137,8 +135,8 @@ class NewFileThread(threading.Thread):
                     path_source.write_bytes(self.file_instance.source_file.read())
 
                     bf = KXLIFF.new(path_source,
-                                    instance.source_language,
-                                    instance.target_language)
+                                    instance.project.source_language.iso_code,
+                                    instance.project.target_language.iso_code)
 
 
                     bf.save(tmpdir)

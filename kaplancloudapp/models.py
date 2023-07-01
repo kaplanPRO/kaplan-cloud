@@ -245,8 +245,8 @@ class Project(models.Model):
 class ProjectFile(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.TextField()
-    source_language = models.CharField(max_length=10)
-    target_language = models.CharField(max_length=10)
+    # source_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='source_language') # TODO: Add Projects with multiple language pairs
+    # target_language = models.ForeignKey(LanguageProfile, models.PROTECT, related_name='target_language') # TODO: Add Projects with multiple language pairs
     project = models.ForeignKey(Project, models.CASCADE)
     source_file = models.FileField(storage=get_private_storage, upload_to=get_source_file_path, blank=True, null=True, max_length=256)
     bilingual_file = models.FileField(storage=get_private_storage, upload_to=get_source_file_path, blank=True, null=True, max_length=256)
@@ -275,7 +275,7 @@ class ProjectFile(models.Model):
 
     def get_source_directory(self):
         return Path(self.project.directory,
-                    self.source_language)
+                    self.project.source_language.iso_code)
 
     def get_status(self):
         status_dict = dict(file_statuses)
@@ -283,7 +283,7 @@ class ProjectFile(models.Model):
 
     def get_target_directory(self):
         return Path(self.project.directory,
-                    self.target_language)
+                    self.project.target_language.iso_code)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None

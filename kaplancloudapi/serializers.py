@@ -66,7 +66,7 @@ class ProjectFileSerializer(serializers.ModelSerializer):
   
   class Meta:
     model = ProjectFile
-    exclude = ('bilingual_file', 'source_language', 'target_language')
+    exclude = ('bilingual_file',)
 
 
 class ProjectFileWebHookSerializer(serializers.ModelSerializer):

@@ -55,14 +55,11 @@ def newproject(request):
         for file in form.files.getlist('project_files'):
             new_file = ProjectFile()
             new_file.name = file.name[3:]
-            new_file.source_language = new_project.source_language.iso_code
-            new_file.target_language = new_project.target_language.iso_code
             new_file.project = new_project
-            new_file_name = file.name[3:]
             if file.name[:3] == 'MF-':
-                new_file.source_file.save(new_file_name, file)
+                new_file.source_file.save(new_file.name, file)
             else:
-                new_file.bilingual_file.save(new_file_name, file)
+                new_file.bilingual_file.save(new_file.name, file)
             new_file.save()
 
         for file in form.files.getlist('reference_files'):
