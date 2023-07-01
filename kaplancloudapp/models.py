@@ -258,6 +258,7 @@ class ProjectFile(models.Model):
 
     class Meta:
         ordering = ['name']
+        unique_together = ['name', 'project']
 
     def __str__(self):
         return '-'.join((str(self.project.id), str(self.id), self.name))
