@@ -66,6 +66,14 @@ class ProjectFileSerializer(serializers.ModelSerializer):
   
   class Meta:
     model = ProjectFile
+    exclude = ('bilingual_file', 'source_file')
+
+
+class ProjectFilePostSerializer(serializers.ModelSerializer):
+  status = serializers.ChoiceField(choices=file_statuses, default=0, initial=0)
+  
+  class Meta:
+    model = ProjectFile
     exclude = ('bilingual_file',)
 
 

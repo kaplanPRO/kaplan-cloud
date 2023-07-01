@@ -9,9 +9,9 @@ from kaplancloudapp.models import (
 )
 from kaplancloudapi.models import ProjectFileWebHook, ProjectWebHook
 from kaplancloudapi.serializers import (
-  ClientSerializer, GroupSerializer, LanguageProfileSerializer, ProjectFileWebHookSerializer,
-  ProjectSerializer, ProjectFileSerializer, ProjectReferenceFileSerializer, ProjectWebHookSerializer,
-  TranslationMemorySerializer, UserSerializer
+  ClientSerializer, GroupSerializer, LanguageProfileSerializer, ProjectFilePostSerializer,
+  ProjectFileWebHookSerializer, ProjectSerializer, ProjectFileSerializer, ProjectReferenceFileSerializer,
+  ProjectWebHookSerializer, TranslationMemorySerializer, UserSerializer
 )
 
 
@@ -94,6 +94,14 @@ class ProjectFileViewSet(viewsets.ModelViewSet):
       queryset = queryset.filter(project=Project.objects.get(id=project_id))
 
     return queryset
+  
+  def get_serializer_class(self):
+    serializer_class = self.serializer_class
+
+    if self.request.method == 'POST':
+      serializer_class = ProjectFilePostSerializer
+
+    return serializer_class
 
 
 class ProjectFileWebHookViewSet(viewsets.ModelViewSet):
