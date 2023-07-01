@@ -191,9 +191,10 @@ class Project(models.Model):
 
                 bucket.delete_blobs(list(blobs), client=client)
 
-            super().delete(*args, **kwargs)
         except Exception as e:
             logging.error(e)
+
+        super().delete(*args, **kwargs)
 
     def get_absolute_url(self):
         from django.urls import reverse
