@@ -1,4 +1,5 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import make_password
 
 from rest_framework import serializers
@@ -30,7 +31,7 @@ class LanguageProfileSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = LanguageProfile
-    fields = ('id', 'name', 'iso_code', 'is_ltr')
+    fields = ('name', 'iso_code', 'is_ltr')
   
   def create(self, validated_data):
     validated_data['created_by'] = self.context['request'].user
@@ -65,7 +66,15 @@ class ProjectFileSerializer(serializers.ModelSerializer):
   
   class Meta:
     model = ProjectFile
-    exclude = ('bilingual_file', 'source_language', 'target_language')
+    exclude = ('bilingual_file', 'source_file')
+
+
+class ProjectFilePostSerializer(serializers.ModelSerializer):
+  status = serializers.ChoiceField(choices=file_statuses, default=0, initial=0)
+  
+  class Meta:
+    model = ProjectFile
+    exclude = ('bilingual_file',)
 
 
 class ProjectFileWebHookSerializer(serializers.ModelSerializer):
@@ -96,7 +105,7 @@ class UserSerializer(serializers.ModelSerializer):
   is_active = serializers.BooleanField(initial=True)
 
   class Meta:
-    model = User
+    model = get_user_model()
     fields = ('id', 'username', 'password', 'email', 'is_active', 'groups')
 
   def create(self, validated_data):

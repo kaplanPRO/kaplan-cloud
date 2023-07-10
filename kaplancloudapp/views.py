@@ -1,6 +1,5 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.models import User
-from django.conf import settings
 from django.http import FileResponse, JsonResponse
 from django.shortcuts import redirect, render
 
@@ -36,8 +35,8 @@ def newproject(request):
     if form.is_valid():
         new_project = Project()
         new_project.name = form.cleaned_data['name']
-        new_project.source_language = form.cleaned_data['source_language'].iso_code
-        new_project.target_language = form.cleaned_data['target_language'].iso_code
+        new_project.source_language = form.cleaned_data['source_language']
+        new_project.target_language = form.cleaned_data['target_language']
         new_project.due_by = form.cleaned_data['due_by']
         new_project.created_by = request.user
         if form.cleaned_data.get('client'):
@@ -56,14 +55,11 @@ def newproject(request):
         for file in form.files.getlist('project_files'):
             new_file = ProjectFile()
             new_file.name = file.name[3:]
-            new_file.source_language = new_project.source_language
-            new_file.target_language = new_project.target_language
             new_file.project = new_project
-            new_file_name = file.name[3:]
             if file.name[:3] == 'MF-':
-                new_file.source_file.save(new_file_name, file)
+                new_file.source_file.save(new_file.name, file)
             else:
-                new_file.bilingual_file.save(new_file_name, file)
+                new_file.bilingual_file.save(new_file.name, file)
             new_file.save()
 
         for file in form.files.getlist('reference_files'):
@@ -88,8 +84,8 @@ def newtm(request):
     if form.is_valid():
         tm = TranslationMemory()
         tm.name = form.cleaned_data['name']
-        tm.source_language = form.cleaned_data['source_language'].iso_code
-        tm.target_language = form.cleaned_data['target_language'].iso_code
+        tm.source_language = form.cleaned_data['source_language']
+        tm.target_language = form.cleaned_data['target_language']
         tm.created_by = request.user
         tm.client = form.cleaned_data['client']
         tm.save()
@@ -120,12 +116,13 @@ def projects(request):
 
     client_accounts_for_user = Client.objects.filter(team=request.user)
 
-    projects = list(
-        projects.filter(created_by=request.user)
-        |
-        projects.filter(managed_by=request.user)
-        |
-        projects.filter(client__in=client_accounts_for_user))
+    if not request.user.has_perm('kaplancloudapp.view_project'):
+        projects = list(
+            projects.filter(created_by=request.user)
+            |
+            projects.filter(managed_by=request.user)
+            |
+            projects.filter(client__in=client_accounts_for_user))
 
     project_files = ProjectFile.objects.all()
     for project in projects:
@@ -307,12 +304,12 @@ def project(request, uuid):
                     if int(request.POST['role']) == 0:
                         if project_file.translator is not None and request.POST.get('override') is None:
                             continue
-                        project_file.translator = User.objects.get(username=request.POST['username'])
+                        project_file.translator = get_user_model().objects.get(username=request.POST['username'])
                         project_file.save()
                     elif int(request.POST['role']) == 1:
                         if project_file.reviewer is not None and request.POST.get('override') is None:
                             continue
-                        project_file.reviewer = User.objects.get(username=request.POST['username'])
+                        project_file.reviewer = get_user_model().objects.get(username=request.POST['username'])
                         project_file.save()
 
     return render(request,
