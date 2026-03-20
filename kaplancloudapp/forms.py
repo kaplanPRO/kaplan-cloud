@@ -38,7 +38,7 @@ class AssignLinguistForm(forms.Form):
     def clean_username(self):
         username = self.cleaned_data['username']
         try:
-            user = get_user_model().objects.get(username=username)
+            get_user_model().objects.get(username=username)
             return username
         except get_user_model().DoesNotExist:
             raise ValidationError('No users found with that username')
@@ -95,11 +95,11 @@ class ProjectForm(forms.Form):
                 try:
                     open_bilingualfile(str(path_to_file))
                     files[i].name = 'BF-' + file.name
-                except:
+                except Exception:
                     try:
                         KXLIFF.new(str(path_to_file), 'xx', 'xx')
                         files[i].name = 'MF-' + file.name
-                    except:
+                    except Exception:
                         validationerrors.append(ValidationError('{0} not compatible.'.format(file.name)))
 
         if validationerrors != []:

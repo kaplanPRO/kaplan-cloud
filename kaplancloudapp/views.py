@@ -175,8 +175,10 @@ def project(request, uuid):
                     threads.append(GenerateTargetTranslationThread(project_file,
                                                                    tmpdir))
 
-                for thread in threads: thread.start()
-                for thread in threads: thread.join()
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
 
                 tmpdir_files = [tmpdir_file for tmpdir_file in list(Path(tmpdir).iterdir()) if not tmpdir_file.is_dir()]
 
@@ -247,8 +249,10 @@ def project(request, uuid):
 
                     files_manifest[str(project_file_instance.uuid)] = file_manifest
 
-                for thread in threads: thread.start()
-                for thread in threads: thread.join()
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
 
                 project_manifest['files'] = files_manifest
 
@@ -292,8 +296,10 @@ def project(request, uuid):
                         threads.append(ImportTargetBilingualFile(project_file_instance,
                                                                  path_target_bf))
 
-                for thread in threads: thread.start()
-                for thread in threads: thread.join()
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join()
 
         elif request.POST.get('task') == 'assign_linguist':
             form1 = AssignLinguistForm(request.POST)

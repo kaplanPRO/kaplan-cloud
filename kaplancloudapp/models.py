@@ -388,7 +388,7 @@ class Segment(models.Model):
                                   self.tu_id,
                                   self.s_id,
                                   segment_state=('blank','draft','translated')[int(self.status)])
-            except:
+            except Exception:
                 self.target = prev_target
                 self.updated_by = prev_updated_by
                 self.save(no_override=True)
