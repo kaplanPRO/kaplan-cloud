@@ -7,7 +7,7 @@ import uuid
 
 def gen_uuid(apps, schema_editor, model_name):
     prev_uuids = []
-    MyModel = apps.get_model('kaplancloudapp', model_name)
+    MyModel = apps.get_model("kaplancloudapp", model_name)
     for row in MyModel.objects.all():
         new_uuid = uuid.uuid4()
         while new_uuid in prev_uuids:
@@ -15,72 +15,85 @@ def gen_uuid(apps, schema_editor, model_name):
             new_uuid = uuid.uuid4()
         prev_uuids.append(new_uuid)
         row.uuid = new_uuid
-        row.save(update_fields=['uuid'])
+        row.save(update_fields=["uuid"])
+
 
 def gen_uuid_for_project(apps, schema_editor):
-    gen_uuid(apps, schema_editor, 'project')
+    gen_uuid(apps, schema_editor, "project")
+
 
 def gen_uuid_for_projectfile(apps, schema_editor):
-    gen_uuid(apps, schema_editor, 'projectfile')
+    gen_uuid(apps, schema_editor, "projectfile")
+
 
 def gen_uuid_for_projectpackage(apps, schema_editor):
-    gen_uuid(apps, schema_editor, 'projectpackage')
+    gen_uuid(apps, schema_editor, "projectpackage")
+
 
 def gen_uuid_for_projectreferencefile(apps, schema_editor):
-    gen_uuid(apps, schema_editor, 'projectreferencefile')
+    gen_uuid(apps, schema_editor, "projectreferencefile")
+
 
 def gen_uuid_for_projectreport(apps, schema_editor):
-    gen_uuid(apps, schema_editor, 'projectreport')
+    gen_uuid(apps, schema_editor, "projectreport")
+
 
 def gen_uuid_for_termbase(apps, schema_editor):
-    gen_uuid(apps, schema_editor, 'termbase')
+    gen_uuid(apps, schema_editor, "termbase")
+
 
 def gen_uuid_for_translationmemory(apps, schema_editor):
-    gen_uuid(apps, schema_editor, 'translationmemory')
+    gen_uuid(apps, schema_editor, "translationmemory")
 
 
 class Migration(migrations.Migration):
-
-    replaces = [('kaplancloudapp', '0016_project_uuid_projectfile_uuid_projectpackage_uuid_and_more'), ('kaplancloudapp', '0017_generate_uuids'), ('kaplancloudapp', '0018_remove_null_uuids')]
+    replaces = [
+        (
+            "kaplancloudapp",
+            "0016_project_uuid_projectfile_uuid_projectpackage_uuid_and_more",
+        ),
+        ("kaplancloudapp", "0017_generate_uuids"),
+        ("kaplancloudapp", "0018_remove_null_uuids"),
+    ]
 
     dependencies = [
-        ('kaplancloudapp', '0015_client_team'),
+        ("kaplancloudapp", "0015_client_team"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='uuid',
+            model_name="project",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
         migrations.AddField(
-            model_name='projectfile',
-            name='uuid',
+            model_name="projectfile",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
         migrations.AddField(
-            model_name='projectpackage',
-            name='uuid',
+            model_name="projectpackage",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
         migrations.AddField(
-            model_name='projectreferencefile',
-            name='uuid',
+            model_name="projectreferencefile",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
         migrations.AddField(
-            model_name='projectreport',
-            name='uuid',
+            model_name="projectreport",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
         migrations.AddField(
-            model_name='termbase',
-            name='uuid',
+            model_name="termbase",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
         migrations.AddField(
-            model_name='translationmemory',
-            name='uuid',
+            model_name="translationmemory",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, null=True),
         ),
         migrations.RunPython(
@@ -112,38 +125,38 @@ class Migration(migrations.Migration):
             reverse_code=django.db.migrations.operations.special.RunPython.noop,
         ),
         migrations.AlterField(
-            model_name='project',
-            name='uuid',
+            model_name="project",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AlterField(
-            model_name='projectfile',
-            name='uuid',
+            model_name="projectfile",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AlterField(
-            model_name='projectpackage',
-            name='uuid',
+            model_name="projectpackage",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AlterField(
-            model_name='projectreferencefile',
-            name='uuid',
+            model_name="projectreferencefile",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AlterField(
-            model_name='projectreport',
-            name='uuid',
+            model_name="projectreport",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AlterField(
-            model_name='termbase',
-            name='uuid',
+            model_name="termbase",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
         migrations.AlterField(
-            model_name='translationmemory',
-            name='uuid',
+            model_name="translationmemory",
+            name="uuid",
             field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
     ]

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0008_alter_projectfile'),
+        ("kaplancloudapp", "0008_alter_projectfile"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='project',
-            name='directory',
+            model_name="project",
+            name="directory",
             field=models.CharField(max_length=100),
         ),
     ]

@@ -5,36 +5,63 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('kaplancloudapp', '0016_add_uuid_fields'),
+        ("kaplancloudapp", "0016_add_uuid_fields"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProjectWebHook',
+            name="ProjectWebHook",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('target', models.URLField()),
-                ('header', models.JSONField()),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kaplancloudapp.project')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("target", models.URLField()),
+                ("header", models.JSONField()),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="kaplancloudapp.project",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ProjectFileWebHook',
+            name="ProjectFileWebHook",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('target', models.URLField()),
-                ('header', models.JSONField()),
-                ('project_file', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kaplancloudapp.projectfile')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("target", models.URLField()),
+                ("header", models.JSONField()),
+                (
+                    "project_file",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="kaplancloudapp.projectfile",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

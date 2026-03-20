@@ -4,30 +4,63 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0006_alter_project_and_projectfile'),
+        ("kaplancloudapp", "0006_alter_project_and_projectfile"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='_are_all_files_submitted',
+            model_name="project",
+            name="_are_all_files_submitted",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='status',
-            field=models.IntegerField(choices=[(-1, 'Error'), (0, 'Preparing'), (1, 'Ready for Analysis'), (2, 'Analyzing'), (3, 'Ready for Translation'), (4, 'In Translation'), (5, 'In Review'), (6, 'Complete'), (7, 'Delivered')], default=0),
+            model_name="project",
+            name="status",
+            field=models.IntegerField(
+                choices=[
+                    (-1, "Error"),
+                    (0, "Preparing"),
+                    (1, "Ready for Analysis"),
+                    (2, "Analyzing"),
+                    (3, "Ready for Translation"),
+                    (4, "In Translation"),
+                    (5, "In Review"),
+                    (6, "Complete"),
+                    (7, "Delivered"),
+                ],
+                default=0,
+            ),
         ),
         migrations.AlterField(
-            model_name='projectfile',
-            name='status',
-            field=models.IntegerField(choices=[(-1, 'Error'), (0, 'Preparing'), (1, 'Ready for Analysis'), (2, 'Analyzing'), (3, 'Ready for Translation'), (4, 'In Translation'), (5, 'In Review'), (6, 'Complete'), (7, 'Delivered')], default=0),
+            model_name="projectfile",
+            name="status",
+            field=models.IntegerField(
+                choices=[
+                    (-1, "Error"),
+                    (0, "Preparing"),
+                    (1, "Ready for Analysis"),
+                    (2, "Analyzing"),
+                    (3, "Ready for Translation"),
+                    (4, "In Translation"),
+                    (5, "In Review"),
+                    (6, "Complete"),
+                    (7, "Delivered"),
+                ],
+                default=0,
+            ),
         ),
         migrations.AlterField(
-            model_name='projectreport',
-            name='status',
-            field=models.IntegerField(choices=[(0, 'Blank'), (1, 'Ready for Processing'), (2, 'Processing'), (3, 'Complete')], default=0),
+            model_name="projectreport",
+            name="status",
+            field=models.IntegerField(
+                choices=[
+                    (0, "Blank"),
+                    (1, "Ready for Processing"),
+                    (2, "Processing"),
+                    (3, "Complete"),
+                ],
+                default=0,
+            ),
         ),
     ]

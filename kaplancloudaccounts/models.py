@@ -5,10 +5,8 @@ from .utils import generate_random_token
 
 # Create your models here.
 
-user_types = (
-    (0, 'Translator'),
-    (1, 'PM')
-)
+user_types = ((0, "Translator"), (1, "PM"))
+
 
 class UserRegistrationToken(models.Model):
     token = models.CharField(max_length=8, unique=True, default=generate_random_token)

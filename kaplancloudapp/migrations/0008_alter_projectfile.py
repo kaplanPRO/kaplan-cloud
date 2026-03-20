@@ -5,25 +5,39 @@ import kaplancloudapp.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0007_alter_project'),
+        ("kaplancloudapp", "0007_alter_project"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='projectfile',
-            name='source_bilingualfile',
-            field=models.FileField(blank=True, max_length=256, null=True, upload_to=kaplancloudapp.utils.get_source_file_path),
+            model_name="projectfile",
+            name="source_bilingualfile",
+            field=models.FileField(
+                blank=True,
+                max_length=256,
+                null=True,
+                upload_to=kaplancloudapp.utils.get_source_file_path,
+            ),
         ),
         migrations.AlterField(
-            model_name='projectfile',
-            name='source_file',
-            field=models.FileField(blank=True, max_length=256, null=True, upload_to=kaplancloudapp.utils.get_source_file_path),
+            model_name="projectfile",
+            name="source_file",
+            field=models.FileField(
+                blank=True,
+                max_length=256,
+                null=True,
+                upload_to=kaplancloudapp.utils.get_source_file_path,
+            ),
         ),
         migrations.AlterField(
-            model_name='projectfile',
-            name='target_bilingualfile',
-            field=models.FileField(blank=True, max_length=256, null=True, upload_to=kaplancloudapp.utils.get_target_file_path),
+            model_name="projectfile",
+            name="target_bilingualfile",
+            field=models.FileField(
+                blank=True,
+                max_length=256,
+                null=True,
+                upload_to=kaplancloudapp.utils.get_target_file_path,
+            ),
         ),
     ]
