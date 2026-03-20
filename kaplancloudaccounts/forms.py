@@ -1,9 +1,14 @@
+from datetime import timedelta
+
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from .models import UserRegistrationToken
+
+TOKEN_EXPIRY_HOURS = 48
 
 
 class UserRegistrationForm(forms.ModelForm):
@@ -20,7 +25,7 @@ class UserRegistrationForm(forms.ModelForm):
         help_text="Enter the same password as before, for verification.",
     )
     token = forms.CharField(
-        max_length=8, help_text="Enter your registration token here."
+        max_length=64, help_text="Enter your registration token here."
     )
 
     class Meta:
@@ -48,11 +53,18 @@ class UserRegistrationForm(forms.ModelForm):
         return password2
 
     def clean_token(self):
-        token = self.cleaned_data.get("token")
+        token_value = self.cleaned_data.get("token")
         try:
-            token = UserRegistrationToken.objects.get(token=token)
-        except UserRegistrationToken.DoesNotExist as error:
-            self.add_error("token", error)
+            token = UserRegistrationToken.objects.get(token=token_value)
+        except UserRegistrationToken.DoesNotExist:
+            raise ValidationError("Invalid registration token.")
+
+        if token.user is not None:
+            raise ValidationError("This registration token has already been used.")
+
+        expiry_threshold = timezone.now() - timedelta(hours=TOKEN_EXPIRY_HOURS)
+        if token.created_at < expiry_threshold:
+            raise ValidationError("This registration token has expired.")
 
         return token
 
