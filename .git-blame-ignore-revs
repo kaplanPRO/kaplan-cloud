@@ -1,0 +1,5 @@
+# Ignore bulk formatting commits in git blame
+# Apply with: git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Apply ruff formatting to entire codebase
+779bd08
