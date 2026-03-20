@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0016_add_uuid_fields'),
+        ("kaplancloudapp", "0016_add_uuid_fields"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='languageprofile',
-            name='id',
+            model_name="languageprofile",
+            name="id",
         ),
         migrations.AlterField(
-            model_name='languageprofile',
-            name='iso_code',
+            model_name="languageprofile",
+            name="iso_code",
             field=models.CharField(max_length=10, primary_key=True, serialize=False),
         ),
     ]

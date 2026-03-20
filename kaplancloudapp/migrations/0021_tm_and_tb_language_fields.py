@@ -5,34 +5,41 @@ import django.db.models.deletion
 
 from itertools import chain
 
+
 def create_missing_language_profiles(apps, schema_editor):
-    TranslationMemory = apps.get_model('kaplancloudapp', 'TranslationMemory')
-    Termbase = apps.get_model('kaplancloudapp', 'Termbase')
-    LanguageProfile = apps.get_model('kaplancloudapp', 'LanguageProfile')
-    
+    TranslationMemory = apps.get_model("kaplancloudapp", "TranslationMemory")
+    Termbase = apps.get_model("kaplancloudapp", "Termbase")
+    LanguageProfile = apps.get_model("kaplancloudapp", "LanguageProfile")
+
     languages = []
     for instance in chain(TranslationMemory.objects.all(), Termbase.objects.all()):
         languages.append(instance.source_language)
         languages.append(instance.target_language)
-    
+
     for language in set(languages):
         language_profiles = LanguageProfile.objects.filter(iso_code=language)
         if len(language_profiles) == 0:
             LanguageProfile.objects.create(name=language, iso_code=language)
 
+
 def set_new_language_fields(apps, schema_editor):
-    TranslationMemory = apps.get_model('kaplancloudapp', 'TranslationMemory')
-    Termbase = apps.get_model('kaplancloudapp', 'Termbase')
-    LanguageProfile = apps.get_model('kaplancloudapp', 'LanguageProfile')
+    TranslationMemory = apps.get_model("kaplancloudapp", "TranslationMemory")
+    Termbase = apps.get_model("kaplancloudapp", "Termbase")
+    LanguageProfile = apps.get_model("kaplancloudapp", "LanguageProfile")
 
     for instance in chain(TranslationMemory.objects.all(), Termbase.objects.all()):
-        instance._source_language = LanguageProfile.objects.get(iso_code=instance.source_language)
-        instance._target_language = LanguageProfile.objects.get(iso_code=instance.target_language)
+        instance._source_language = LanguageProfile.objects.get(
+            iso_code=instance.source_language
+        )
+        instance._target_language = LanguageProfile.objects.get(
+            iso_code=instance.target_language
+        )
         instance.save()
 
+
 def revert_to_old_language_fields(apps, schema_editor):
-    TranslationMemory = apps.get_model('kaplancloudapp', 'TranslationMemory')
-    Termbase = apps.get_model('kaplancloudapp', 'Termbase')
+    TranslationMemory = apps.get_model("kaplancloudapp", "TranslationMemory")
+    Termbase = apps.get_model("kaplancloudapp", "Termbase")
 
     for instance in chain(TranslationMemory.objects.all(), Termbase.objects.all()):
         instance.source_language = instance._source_language.iso_code
@@ -41,9 +48,8 @@ def revert_to_old_language_fields(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0020_alter_projectfile_unique_together'),
+        ("kaplancloudapp", "0020_alter_projectfile_unique_together"),
     ]
 
     operations = [
@@ -52,43 +58,63 @@ class Migration(migrations.Migration):
             reverse_code=django.db.migrations.operations.special.RunPython.noop,
         ),
         migrations.AddField(
-            model_name='termbase',
-            name='_source_language',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tb_source_language', to='kaplancloudapp.languageprofile'),
+            model_name="termbase",
+            name="_source_language",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tb_source_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AddField(
-            model_name='termbase',
-            name='_target_language',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tb_target_language', to='kaplancloudapp.languageprofile'),
+            model_name="termbase",
+            name="_target_language",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tb_target_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AddField(
-            model_name='translationmemory',
-            name='_source_language',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tm_source_language', to='kaplancloudapp.languageprofile'),
+            model_name="translationmemory",
+            name="_source_language",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tm_source_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AddField(
-            model_name='translationmemory',
-            name='_target_language',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='tm_target_language', to='kaplancloudapp.languageprofile'),
+            model_name="translationmemory",
+            name="_target_language",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tm_target_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AlterField(
-            model_name='termbase',
-            name='source_language',
+            model_name="termbase",
+            name="source_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.AlterField(
-            model_name='termbase',
-            name='target_language',
+            model_name="termbase",
+            name="target_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.AlterField(
-            model_name='translationmemory',
-            name='source_language',
+            model_name="translationmemory",
+            name="source_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.AlterField(
-            model_name='translationmemory',
-            name='target_language',
+            model_name="translationmemory",
+            name="target_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.RunPython(
@@ -96,59 +122,75 @@ class Migration(migrations.Migration):
             reverse_code=revert_to_old_language_fields,
         ),
         migrations.RemoveField(
-            model_name='termbase',
-            name='source_language',
+            model_name="termbase",
+            name="source_language",
         ),
         migrations.RemoveField(
-            model_name='termbase',
-            name='target_language',
+            model_name="termbase",
+            name="target_language",
         ),
         migrations.RemoveField(
-            model_name='translationmemory',
-            name='source_language',
+            model_name="translationmemory",
+            name="source_language",
         ),
         migrations.RemoveField(
-            model_name='translationmemory',
-            name='target_language',
+            model_name="translationmemory",
+            name="target_language",
         ),
         migrations.RenameField(
-            model_name='termbase',
-            old_name='_source_language',
-            new_name='source_language',
+            model_name="termbase",
+            old_name="_source_language",
+            new_name="source_language",
         ),
         migrations.RenameField(
-            model_name='termbase',
-            old_name='_target_language',
-            new_name='target_language',
+            model_name="termbase",
+            old_name="_target_language",
+            new_name="target_language",
         ),
         migrations.RenameField(
-            model_name='translationmemory',
-            old_name='_source_language',
-            new_name='source_language',
+            model_name="translationmemory",
+            old_name="_source_language",
+            new_name="source_language",
         ),
         migrations.RenameField(
-            model_name='translationmemory',
-            old_name='_target_language',
-            new_name='target_language',
+            model_name="translationmemory",
+            old_name="_target_language",
+            new_name="target_language",
         ),
         migrations.AlterField(
-            model_name='termbase',
-            name='source_language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tb_source_language', to='kaplancloudapp.languageprofile'),
+            model_name="termbase",
+            name="source_language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tb_source_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AlterField(
-            model_name='termbase',
-            name='target_language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tb_target_language', to='kaplancloudapp.languageprofile'),
+            model_name="termbase",
+            name="target_language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tb_target_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AlterField(
-            model_name='translationmemory',
-            name='source_language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tm_source_language', to='kaplancloudapp.languageprofile'),
+            model_name="translationmemory",
+            name="source_language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tm_source_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AlterField(
-            model_name='translationmemory',
-            name='target_language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='tm_target_language', to='kaplancloudapp.languageprofile'),
-        )
+            model_name="translationmemory",
+            name="target_language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="tm_target_language",
+                to="kaplancloudapp.languageprofile",
+            ),
+        ),
     ]

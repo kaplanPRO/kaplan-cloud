@@ -6,30 +6,36 @@ import django.db.models.deletion
 
 
 def create_missing_language_profiles(apps, schema_editor):
-    Project = apps.get_model('kaplancloudapp', 'Project')
-    LanguageProfile = apps.get_model('kaplancloudapp', 'LanguageProfile')
-    
+    Project = apps.get_model("kaplancloudapp", "Project")
+    LanguageProfile = apps.get_model("kaplancloudapp", "LanguageProfile")
+
     languages = []
     for project in Project.objects.all():
         languages.append(project.source_language)
         languages.append(project.target_language)
-    
+
     for language in set(languages):
         language_profiles = LanguageProfile.objects.filter(iso_code=language)
         if len(language_profiles) == 0:
             LanguageProfile.objects.create(name=language, iso_code=language)
 
+
 def set_new_language_fields(apps, schema_editor):
-    Project = apps.get_model('kaplancloudapp', 'Project')
-    LanguageProfile = apps.get_model('kaplancloudapp', 'LanguageProfile')
+    Project = apps.get_model("kaplancloudapp", "Project")
+    LanguageProfile = apps.get_model("kaplancloudapp", "LanguageProfile")
 
     for project in Project.objects.all():
-        project._source_language = LanguageProfile.objects.get(iso_code=project.source_language)
-        project._target_language = LanguageProfile.objects.get(iso_code=project.target_language)
+        project._source_language = LanguageProfile.objects.get(
+            iso_code=project.source_language
+        )
+        project._target_language = LanguageProfile.objects.get(
+            iso_code=project.target_language
+        )
         project.save()
 
+
 def revert_to_old_language_fields(apps, schema_editor):
-    Project = apps.get_model('kaplancloudapp', 'Project')
+    Project = apps.get_model("kaplancloudapp", "Project")
 
     for project in Project.objects.all():
         project.source_language = project._source_language.iso_code
@@ -38,9 +44,8 @@ def revert_to_old_language_fields(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0017_remove_languageprofile_id_and_more'),
+        ("kaplancloudapp", "0017_remove_languageprofile_id_and_more"),
     ]
 
     operations = [
@@ -49,23 +54,33 @@ class Migration(migrations.Migration):
             reverse_code=django.db.migrations.operations.special.RunPython.noop,
         ),
         migrations.AddField(
-            model_name='project',
-            name='_source_language',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='source_language', to='kaplancloudapp.languageprofile'),
+            model_name="project",
+            name="_source_language",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="source_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='_target_language',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='target_language', to='kaplancloudapp.languageprofile'),
+            model_name="project",
+            name="_target_language",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="target_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='source_language',
+            model_name="project",
+            name="source_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='target_language',
+            model_name="project",
+            name="target_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.RunPython(
@@ -73,31 +88,39 @@ class Migration(migrations.Migration):
             reverse_code=revert_to_old_language_fields,
         ),
         migrations.RemoveField(
-            model_name='project',
-            name='source_language',
+            model_name="project",
+            name="source_language",
         ),
         migrations.RemoveField(
-            model_name='project',
-            name='target_language',
+            model_name="project",
+            name="target_language",
         ),
         migrations.RenameField(
-            model_name='project',
-            old_name='_source_language',
-            new_name='source_language',
+            model_name="project",
+            old_name="_source_language",
+            new_name="source_language",
         ),
         migrations.RenameField(
-            model_name='project',
-            old_name='_target_language',
-            new_name='target_language',
+            model_name="project",
+            old_name="_target_language",
+            new_name="target_language",
         ),
         migrations.AlterField(
-            model_name='project',
-            name='source_language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='source_language', to='kaplancloudapp.languageprofile'),
+            model_name="project",
+            name="source_language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="source_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
         migrations.AlterField(
-            model_name='project',
-            name='target_language',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='target_language', to='kaplancloudapp.languageprofile'),
+            model_name="project",
+            name="target_language",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="target_language",
+                to="kaplancloudapp.languageprofile",
+            ),
         ),
     ]

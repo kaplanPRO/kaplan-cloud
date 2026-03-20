@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0012_projectreferencefile'),
+        ("kaplancloudapp", "0012_projectreferencefile"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='segment',
-            name='is_locked',
+            model_name="segment",
+            name="is_locked",
             field=models.BooleanField(default=False),
         ),
     ]

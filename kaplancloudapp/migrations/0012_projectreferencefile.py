@@ -7,19 +7,39 @@ import kaplancloudapp.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0011_alter_storage_options'),
+        ("kaplancloudapp", "0011_alter_storage_options"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ProjectReferenceFile',
+            name="ProjectReferenceFile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('reference_file', models.FileField(max_length=256, storage=kaplancloudapp.custom_storage.get_private_storage, upload_to=kaplancloudapp.utils.get_reference_file_path)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='kaplancloudapp.project')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.TextField()),
+                (
+                    "reference_file",
+                    models.FileField(
+                        max_length=256,
+                        storage=kaplancloudapp.custom_storage.get_private_storage,
+                        upload_to=kaplancloudapp.utils.get_reference_file_path,
+                    ),
+                ),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="kaplancloudapp.project",
+                    ),
+                ),
             ],
         ),
     ]

@@ -3,27 +3,28 @@
 from django.db import migrations, models
 import django.db.migrations.operations.special
 
+
 def get_languages_from_project(apps, schema_editor):
-    for project_file in apps.get_model('kaplancloudapp', 'ProjectFile').objects.all():
+    for project_file in apps.get_model("kaplancloudapp", "ProjectFile").objects.all():
         project_file.source_language = project_file.project.source_language.iso_code
         project_file.target_language = project_file.project.target_language.iso_code
         project_file.save()
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
-        ('kaplancloudapp', '0018_project_language_fields'),
+        ("kaplancloudapp", "0018_project_language_fields"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='projectfile',
-            name='source_language',
+            model_name="projectfile",
+            name="source_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.AlterField(
-            model_name='projectfile',
-            name='target_language',
+            model_name="projectfile",
+            name="target_language",
             field=models.CharField(max_length=10, null=True),
         ),
         migrations.RunPython(
@@ -31,11 +32,11 @@ class Migration(migrations.Migration):
             reverse_code=get_languages_from_project,
         ),
         migrations.RemoveField(
-            model_name='projectfile',
-            name='source_language',
+            model_name="projectfile",
+            name="source_language",
         ),
         migrations.RemoveField(
-            model_name='projectfile',
-            name='target_language',
+            model_name="projectfile",
+            name="target_language",
         ),
     ]

@@ -13,76 +13,75 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
 # https://docs.djangoproject.com/en/4.0/ref/settings/#csrf-trusted-origins
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://*').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "http://*").split(",")
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'storages',
-    'rest_framework',
-    'rest_framework.authtoken',
-    'kaplancloudaccounts',
-    'kaplancloudapi',
-    'kaplancloudapp'
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "storages",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "kaplancloudaccounts",
+    "kaplancloudapi",
+    "kaplancloudapp",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'kaplancloud.urls'
+ROOT_URLCONF = "kaplancloud.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'kaplancloud.wsgi.application'
+WSGI_APPLICATION = "kaplancloud.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.environ.get('DB_NAME', BASE_DIR / 'db.sqlite3'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT')
+    "default": {
+        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.environ.get("DB_NAME", BASE_DIR / "db.sqlite3"),
+        "USER": os.environ.get("DB_USER"),
+        "PASSWORD": os.environ.get("DB_PASSWORD"),
+        "HOST": os.environ.get("DB_HOST"),
+        "PORT": os.environ.get("DB_PORT"),
     }
 }
 
@@ -92,16 +91,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -109,9 +108,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -121,69 +120,78 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_URL = '/accounts/login'
+LOGIN_URL = "/accounts/login"
 
-PROJECTS_DIR = 'kaplancloudapp/projects'
+PROJECTS_DIR = "kaplancloudapp/projects"
 
 # https://docs.djangoproject.com/en/4.2/ref/settings/#std-setting-STORAGES
 
 STORAGES = {
-    'default': {
-        'BACKEND': os.environ.get('FILE_STORAGE', 'django.core.files.storage.FileSystemStorage'),
+    "default": {
+        "BACKEND": os.environ.get(
+            "FILE_STORAGE", "django.core.files.storage.FileSystemStorage"
+        ),
     },
-    'staticfiles': {
-        'BACKEND': os.environ.get('STATICFILES_STORAGE', 'django.contrib.staticfiles.storage.StaticFilesStorage'),
-    }
+    "staticfiles": {
+        "BACKEND": os.environ.get(
+            "STATICFILES_STORAGE",
+            "django.contrib.staticfiles.storage.StaticFilesStorage",
+        ),
+    },
 }
 
 # This will set s3 parameters only if default file storage and/or staticfiles
 # storage is set to S3Boto3Storage
-if STORAGES['default']['BACKEND'] == 'storages.backends.s3boto3.S3Boto3Storage' or STORAGES['staticfiles']['BACKEND'] == 'storages.backends.s3boto3.S3StaticStorage':
-    AWS_DEFAULT_ACL = os.environ.get('S3_DEFAULT_ACL')
-    AWS_S3_ACCESS_KEY_ID = os.environ.get('S3_ACCESS_KEY_ID')
-    AWS_S3_SECRET_ACCESS_KEY = os.environ.get('S3_SECRET_ACCESS_KEY')
-    AWS_S3_REGION_NAME = os.environ.get('S3_REGION_NAME')
-    AWS_STORAGE_BUCKET_NAME = os.environ.get('S3_PUBLIC_BUCKET')
-    S3_PRIVATE_BUCKET_NAME = os.environ.get('S3_PRIVATE_BUCKET')
-    AWS_S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
-    AWS_S3_CUSTOM_DOMAIN = os.environ.get('S3_CUSTOM_DOMAIN')
-    AWS_S3_USE_SSL = os.environ.get('S3_USE_SSL', 'True') == 'True'
-    AWS_LOCATION = os.environ.get('S3_PUBLIC_BUCKET_LOCATION', 'static')
-    S3_PRIVATE_BUCKET_LOCATION = os.environ.get('S3_PRIVATE_BUCKET_LOCATION', '')
-    AWS_QUERYSTRING_AUTH = os.environ.get('AWS_QUERYSTRING_AUTH', 'False') == 'True'
+if (
+    STORAGES["default"]["BACKEND"] == "storages.backends.s3boto3.S3Boto3Storage"
+    or STORAGES["staticfiles"]["BACKEND"] == "storages.backends.s3boto3.S3StaticStorage"
+):
+    AWS_DEFAULT_ACL = os.environ.get("S3_DEFAULT_ACL")
+    AWS_S3_ACCESS_KEY_ID = os.environ.get("S3_ACCESS_KEY_ID")
+    AWS_S3_SECRET_ACCESS_KEY = os.environ.get("S3_SECRET_ACCESS_KEY")
+    AWS_S3_REGION_NAME = os.environ.get("S3_REGION_NAME")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("S3_PUBLIC_BUCKET")
+    S3_PRIVATE_BUCKET_NAME = os.environ.get("S3_PRIVATE_BUCKET")
+    AWS_S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL")
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get("S3_CUSTOM_DOMAIN")
+    AWS_S3_USE_SSL = os.environ.get("S3_USE_SSL", "True") == "True"
+    AWS_LOCATION = os.environ.get("S3_PUBLIC_BUCKET_LOCATION", "static")
+    S3_PRIVATE_BUCKET_LOCATION = os.environ.get("S3_PRIVATE_BUCKET_LOCATION", "")
+    AWS_QUERYSTRING_AUTH = os.environ.get("AWS_QUERYSTRING_AUTH", "False") == "True"
 
 # This will set GCP Cloud Storage parameters only if the default file storage
 # and/or staticfiles storage is set to GoogleCloudStorage
-elif 'storages.backends.gcloud.GoogleCloudStorage' in (STORAGES['default']['BACKEND'], STORAGES['staticfiles']['BACKEND']):
+elif "storages.backends.gcloud.GoogleCloudStorage" in (
+    STORAGES["default"]["BACKEND"],
+    STORAGES["staticfiles"]["BACKEND"],
+):
     # Environmental variable GOOGLE_APPLICATION_CREDENTIALS is to be set to the
     # path of the key file
-    GS_BUCKET_NAME = os.environ.get('GS_PUBLIC_BUCKET_NAME')
-    GS_PRIVATE_BUCKET_NAME = os.environ.get('GS_PRIVATE_BUCKET_NAME')
-    GS_DEFAULT_ACL = os.environ.get('GS_DEFAULT_ACL')
-    GS_CUSTOM_ENDPOINT = os.environ.get('GS_CUSTOM_ENDPOINT')
-    GS_LOCATION = os.environ.get('GS_PUBLIC_BUCKET_LOCATION', 'static')
-    GS_PRIVATE_BUCKET_LOCATION = os.environ.get('GS_PRIVATE_BUCKET_LOCATION', '')
-    GS_QUERYSTRING_AUTH = os.environ.get('GS_QUERYSTRING_AUTH', 'False') == 'True'
+    GS_BUCKET_NAME = os.environ.get("GS_PUBLIC_BUCKET_NAME")
+    GS_PRIVATE_BUCKET_NAME = os.environ.get("GS_PRIVATE_BUCKET_NAME")
+    GS_DEFAULT_ACL = os.environ.get("GS_DEFAULT_ACL")
+    GS_CUSTOM_ENDPOINT = os.environ.get("GS_CUSTOM_ENDPOINT")
+    GS_LOCATION = os.environ.get("GS_PUBLIC_BUCKET_LOCATION", "static")
+    GS_PRIVATE_BUCKET_LOCATION = os.environ.get("GS_PRIVATE_BUCKET_LOCATION", "")
+    GS_QUERYSTRING_AUTH = os.environ.get("GS_QUERYSTRING_AUTH", "False") == "True"
 
 # https://www.django-rest-framework.org/api-guide/permissions/
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAdminUser'
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAdminUser"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication'
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 100,
 }

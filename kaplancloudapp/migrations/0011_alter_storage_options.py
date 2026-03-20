@@ -6,25 +6,40 @@ import kaplancloudapp.utils
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('kaplancloudapp', '0010_alter_projectfile'),
+        ("kaplancloudapp", "0010_alter_projectfile"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='projectfile',
-            name='bilingual_file',
-            field=models.FileField(blank=True, max_length=256, null=True, storage=kaplancloudapp.custom_storage.get_private_storage, upload_to=kaplancloudapp.utils.get_source_file_path),
+            model_name="projectfile",
+            name="bilingual_file",
+            field=models.FileField(
+                blank=True,
+                max_length=256,
+                null=True,
+                storage=kaplancloudapp.custom_storage.get_private_storage,
+                upload_to=kaplancloudapp.utils.get_source_file_path,
+            ),
         ),
         migrations.AlterField(
-            model_name='projectfile',
-            name='source_file',
-            field=models.FileField(blank=True, max_length=256, null=True, storage=kaplancloudapp.custom_storage.get_private_storage, upload_to=kaplancloudapp.utils.get_source_file_path),
+            model_name="projectfile",
+            name="source_file",
+            field=models.FileField(
+                blank=True,
+                max_length=256,
+                null=True,
+                storage=kaplancloudapp.custom_storage.get_private_storage,
+                upload_to=kaplancloudapp.utils.get_source_file_path,
+            ),
         ),
         migrations.AlterField(
-            model_name='projectpackage',
-            name='package',
-            field=models.FileField(max_length=256, storage=kaplancloudapp.custom_storage.get_private_storage, upload_to=kaplancloudapp.utils.get_kpp_path),
+            model_name="projectpackage",
+            name="package",
+            field=models.FileField(
+                max_length=256,
+                storage=kaplancloudapp.custom_storage.get_private_storage,
+                upload_to=kaplancloudapp.utils.get_kpp_path,
+            ),
         ),
     ]
