@@ -8,4 +8,4 @@ class KaplancloudapiConfig(AppConfig):
     def ready(self):
         # Import the signal instances and connect them
         # from myapp.signals import my_signal
-        import kaplancloudapi.signals
+        import kaplancloudapi.signals  # noqa: F401

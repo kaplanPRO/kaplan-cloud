@@ -7,7 +7,6 @@ from kaplan.kxliff import KXLIFF
 import difflib
 from pathlib import Path
 import regex
-import string
 import tempfile
 import threading
 
@@ -220,7 +219,7 @@ class NewFileThread(threading.Thread):
 
             instance.status = 1
             instance.save()
-        except ValueError as error:
+        except ValueError:
             instance.status = -1
             instance.save()
 
