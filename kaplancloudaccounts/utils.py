@@ -1,6 +1,5 @@
-import random
-import string
+import secrets
 
 
 def generate_random_token():
-    return "".join(random.choices(string.ascii_letters, k=8))
+    return secrets.token_urlsafe(32)
