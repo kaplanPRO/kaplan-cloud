@@ -24,4 +24,4 @@ class TokenStatusFilter(admin.SimpleListFilter):
 class UserRegistrationTokenAdmin(admin.ModelAdmin):
     list_display = ("token", "user_type", "user", "created_at")
     list_filter = (TokenStatusFilter,)
-    readonly_fields = ("user", "created_at")
+    readonly_fields = ("token", "user", "created_at")
