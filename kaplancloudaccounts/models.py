@@ -15,4 +15,5 @@ class UserRegistrationToken(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.token
+        status = self.user.username if self.user else "available"
+        return f"{self.token[:8]}… ({status})"
