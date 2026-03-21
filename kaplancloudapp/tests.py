@@ -1,8 +1,7 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import Permission, User
 from django.test import TestCase
-
 from lxml import etree
 
 from .forms import (
@@ -21,14 +20,13 @@ from .models import (
     ProjectReport,
     Segment,
     SegmentUpdate,
-    Termbase,
     TBEntry,
-    TranslationMemory,
+    Termbase,
     TMEntry,
     TMEntryUpdate,
+    TranslationMemory,
 )
 from .utils import trim_segment
-
 
 # ---------------------------------------------------------------------------
 # Helpers

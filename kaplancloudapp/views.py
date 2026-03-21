@@ -1,13 +1,23 @@
+import difflib
+import json
+import tempfile
+import zipfile
+from datetime import datetime
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import FileResponse, JsonResponse
 from django.shortcuts import redirect, render
+from kaplan.kdb import KDB
+from kaplan.project import Project as KPP
+from lxml import etree
 
 from .forms import (
+    AssignLinguistForm,
     KPPUploadForm,
     ProjectForm,
     SearchForm,
-    AssignLinguistForm,
     SegmentCommentForm,
     TranslationMemoryForm,
     TranslationMemoryImportForm,
@@ -15,34 +25,22 @@ from .forms import (
 from .models import (
     Client,
     Comment,
+    Project,
     ProjectFile,
     ProjectPackage,
     ProjectPreprocessingSettings,
     ProjectReferenceFile,
     ProjectReport,
-    Project,
     Segment,
-    TranslationMemory,
     TMEntry,
+    TranslationMemory,
 )
-
 from .thread_classes import (
     CreateTargetBilingualFileThread,
     GenerateTargetTranslationThread,
     ImportTargetBilingualFile,
     TMImportThread,
 )
-
-from datetime import datetime
-import difflib
-import json
-from pathlib import Path
-import tempfile
-import zipfile
-
-from lxml import etree
-from kaplan.kdb import KDB
-from kaplan.project import Project as KPP
 
 # Create your views here.
 

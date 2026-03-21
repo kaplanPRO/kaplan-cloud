@@ -1,14 +1,14 @@
+import difflib
+import tempfile
+import threading
+from pathlib import Path
+
+import regex
 from django.apps import apps
-from lxml import etree
 from kaplan import open_bilingualfile
 from kaplan.kdb import KDB
 from kaplan.kxliff import KXLIFF
-
-import difflib
-from pathlib import Path
-import regex
-import tempfile
-import threading
+from lxml import etree
 
 from .utils import trim_segment
 

@@ -5,6 +5,7 @@ from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
+from kaplancloudapi.models import ProjectFileWebHook, ProjectWebHook
 from kaplancloudapp.models import (
     Client,
     LanguageProfile,
@@ -13,7 +14,6 @@ from kaplancloudapp.models import (
     ProjectReferenceFile,
     TranslationMemory,
 )
-from kaplancloudapi.models import ProjectFileWebHook, ProjectWebHook
 
 
 class APITestBase(TestCase):

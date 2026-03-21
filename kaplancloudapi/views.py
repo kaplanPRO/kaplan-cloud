@@ -3,6 +3,20 @@ from django.contrib.auth.models import Group
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter
 
+from kaplancloudapi.models import ProjectFileWebHook, ProjectWebHook
+from kaplancloudapi.serializers import (
+    ClientSerializer,
+    GroupSerializer,
+    LanguageProfileSerializer,
+    ProjectFilePostSerializer,
+    ProjectFileSerializer,
+    ProjectFileWebHookSerializer,
+    ProjectReferenceFileSerializer,
+    ProjectSerializer,
+    ProjectWebHookSerializer,
+    TranslationMemorySerializer,
+    UserSerializer,
+)
 from kaplancloudapp.models import (
     Client,
     LanguageProfile,
@@ -10,20 +24,6 @@ from kaplancloudapp.models import (
     ProjectFile,
     ProjectReferenceFile,
     TranslationMemory,
-)
-from kaplancloudapi.models import ProjectFileWebHook, ProjectWebHook
-from kaplancloudapi.serializers import (
-    ClientSerializer,
-    GroupSerializer,
-    LanguageProfileSerializer,
-    ProjectFilePostSerializer,
-    ProjectFileWebHookSerializer,
-    ProjectSerializer,
-    ProjectFileSerializer,
-    ProjectReferenceFileSerializer,
-    ProjectWebHookSerializer,
-    TranslationMemorySerializer,
-    UserSerializer,
 )
 
 

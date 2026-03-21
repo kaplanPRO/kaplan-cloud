@@ -1,8 +1,8 @@
-from django.db import models
-
 import json
 import logging
+
 import requests
+from django.db import models
 
 
 class WebHook(models.Model):

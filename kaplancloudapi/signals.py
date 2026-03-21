@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from kaplancloudapi.models import ProjectWebHook, ProjectFileWebHook
+from kaplancloudapi.models import ProjectFileWebHook, ProjectWebHook
 from kaplancloudapp.models import Project, ProjectFile
 
 

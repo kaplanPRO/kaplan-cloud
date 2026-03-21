@@ -10,6 +10,16 @@ select = [
     "DJ",  # flake8-django
     "RUF", # ruff-specific rules
 ]
+# Existing codebase violations — to be addressed incrementally
+extend-ignore = [
+    "DJ008",  # models missing __str__
+    "DJ012",  # method/class ordering in models
+    "RUF005", # iterable unpacking in migrations
+    "RUF012", # mutable class attributes (Django Meta.ordering pattern)
+]
 
 [tool.ruff.lint.per-file-ignores]
 "*/migrations/*.py" = ["E501"]
+"kaplancloud/settings.py" = ["E501"]
+"kaplancloudapp/forms.py" = ["E501"]
+"kaplancloudapp/models.py" = ["E501"]
