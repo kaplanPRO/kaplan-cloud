@@ -1,20 +1,23 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# Compiled Tailwind + daisyUI CSS #}
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
     <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    {# Inter — replaces Ubuntu #}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    {# Alpine.js — lightweight reactivity for dropdowns, toggles, etc. #}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3/dist/cdn.min.js"></script>
+    <style>:root { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }</style>
     {% block head %}{% endblock %}
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}Kaplan Cloud{% endblock %}</title>
   </head>
   <body>
-    {% block body %}
-    {% endblock %}
+    {% block body %}{% endblock %}
   </body>
 </html>

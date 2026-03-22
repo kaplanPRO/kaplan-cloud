@@ -141,3 +141,9 @@ app/
 db/
 staticfiles/
 test-project/
+
+# Tailwind / npm
+theme/static_src/node_modules/
+# Allow the compiled CSS even though dist/ is globally ignored
+!theme/static/css/dist/
+!theme/static/css/dist/styles.css
