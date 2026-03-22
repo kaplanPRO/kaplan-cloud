@@ -146,13 +146,13 @@ class UserRegistrationFormTests(TestCase):
     def test_save_pm_token_sets_staff_and_group(self):
         from .forms import UserRegistrationForm
 
-        Group.objects.create(id=1, name="PM")
+        Group.objects.create(name="PM")
         pm_token = UserRegistrationToken.objects.create(user_type=1)
         form = UserRegistrationForm(data=self._form_data(token=pm_token.token))
         self.assertTrue(form.is_valid(), form.errors)
         user = form.save()
         self.assertTrue(user.is_staff)
-        self.assertTrue(user.groups.filter(id=1).exists())
+        self.assertTrue(user.groups.filter(name="PM").exists())
 
     def test_save_translator_token_not_staff(self):
         from .forms import UserRegistrationForm
