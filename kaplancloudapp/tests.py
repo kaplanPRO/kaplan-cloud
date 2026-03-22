@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth.models import Permission, User
@@ -6,6 +7,10 @@ from lxml import etree
 
 from .forms import (
     AssignLinguistForm,
+    KPPUploadForm,
+    MultipleFileField,
+    MultipleFileInput,
+    ProjectForm,
     SearchForm,
     SegmentCommentForm,
     TranslationMemoryForm,
@@ -26,7 +31,14 @@ from .models import (
     TMEntryUpdate,
     TranslationMemory,
 )
-from .utils import trim_segment
+from .utils import (
+    get_kpp_path,
+    get_project_directory,
+    get_reference_file_path,
+    get_source_file_path,
+    get_target_file_path,
+    trim_segment,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -937,3 +949,239 @@ class ReportViewTests(TestCase):
         self.assertTemplateUsed(response, "report.html")
         self.assertIn("total", response.context)
         self.assertIn("files", response.context)
+
+
+# ===========================================================================
+# Utils tests
+# ===========================================================================
+
+
+class GetKppPathTests(TestCase):
+    def test_returns_string_with_packages_dir(self):
+        instance = MagicMock()
+        instance.project.directory = "/data/projects/123"
+        result = get_kpp_path(instance, "package.kpp")
+        self.assertEqual(result, "/data/projects/123/packages/package.kpp")
+
+    def test_handles_nested_directory(self):
+        instance = MagicMock()
+        instance.project.directory = "kaplancloudapp/projects/abc"
+        result = get_kpp_path(instance, "my.kpp")
+        self.assertEqual(result, "kaplancloudapp/projects/abc/packages/my.kpp")
+
+
+class GetProjectDirectoryTests(TestCase):
+    def test_returns_path_with_id(self):
+        instance = MagicMock()
+        instance.id = 42
+        result = get_project_directory(instance)
+        self.assertEqual(result, "kaplancloudapp/projects/42")
+
+    def test_returns_string(self):
+        instance = MagicMock()
+        instance.id = 1
+        self.assertIsInstance(get_project_directory(instance), str)
+
+
+class GetReferenceFilePathTests(TestCase):
+    def test_returns_path_in_reference_dir(self):
+        instance = MagicMock()
+        instance.project.directory = "/data/proj"
+        result = get_reference_file_path(instance, "ref.pdf")
+        self.assertEqual(result, Path("/data/proj/reference/ref.pdf"))
+
+
+class GetSourceFilePathTests(TestCase):
+    def test_uses_source_language_iso_code(self):
+        instance = MagicMock()
+        instance.project.directory = "/data/proj"
+        instance.project.source_language.iso_code = "en"
+        result = get_source_file_path(instance, "doc.xliff")
+        self.assertEqual(result, Path("/data/proj/en/doc.xliff"))
+
+
+class GetTargetFilePathTests(TestCase):
+    def test_uses_target_language_iso_code(self):
+        instance = MagicMock()
+        instance.project.directory = "/data/proj"
+        instance.project.target_language.iso_code = "fr"
+        result = get_target_file_path(instance, "doc.xliff")
+        self.assertEqual(result, Path("/data/proj/fr/doc.xliff"))
+
+
+# ===========================================================================
+# Additional form tests
+# ===========================================================================
+
+
+class ProjectFormTests(TestCase):
+    def setUp(self):
+        self.en, self.fr = _make_languages()
+
+    def test_same_source_and_target_rejected(self):
+        form = ProjectForm(
+            data={
+                "name": "Test",
+                "source_language": self.en.iso_code,
+                "target_language": self.en.iso_code,
+                "translation_memories": "",
+            }
+        )
+        # Set choices dynamically like the view does
+        form.fields["translation_memories"].choices = (("", "-----"),)
+        self.assertFalse(form.is_valid())
+        self.assertIn("target_language", form.errors)
+
+    def test_valid_different_languages(self):
+        form = ProjectForm(
+            data={
+                "name": "Test",
+                "source_language": self.en.iso_code,
+                "target_language": self.fr.iso_code,
+                "translation_memories": "",
+            },
+            files={"project_files": MagicMock()},
+        )
+        form.fields["translation_memories"].choices = (("", "-----"),)
+        # Will fail on project_files clean (needs real files), but
+        # target_language should pass validation
+        form.is_valid()
+        self.assertNotIn("target_language", form.errors)
+
+    def test_name_max_length_64(self):
+        self.assertEqual(ProjectForm().fields["name"].max_length, 64)
+
+    def test_due_by_not_required(self):
+        self.assertFalse(ProjectForm().fields["due_by"].required)
+
+    def test_reference_files_not_required(self):
+        self.assertFalse(ProjectForm().fields["reference_files"].required)
+
+    def test_tm_language_mismatch_rejected(self):
+        tm = TranslationMemory.objects.create(
+            name="TM", source_language=self.en, target_language=self.fr
+        )
+        de = LanguageProfile.objects.create(name="German", iso_code="de")
+        form = ProjectForm(
+            data={
+                "name": "Test",
+                "source_language": de.iso_code,
+                "target_language": self.fr.iso_code,
+                "translation_memories": str(tm.id),
+            },
+            files={"project_files": MagicMock()},
+        )
+        form.fields["translation_memories"].choices = ((str(tm.id), tm.name),)
+        form.is_valid()
+        self.assertIn("translation_memories", form.errors)
+
+
+class KPPUploadFormTests(TestCase):
+    def test_accept_attribute_contains_kpp(self):
+        form = KPPUploadForm()
+        accept = form.fields["package"].widget.attrs.get("accept", "")
+        self.assertIn(".kpp", accept)
+        self.assertIn(".krpp", accept)
+
+    def test_missing_file_invalid(self):
+        form = KPPUploadForm(data={}, files={})
+        self.assertFalse(form.is_valid())
+        self.assertIn("package", form.errors)
+
+
+class MultipleFileFieldTests(TestCase):
+    def test_default_widget_is_multiple_file_input(self):
+        field = MultipleFileField()
+        self.assertIsInstance(field.widget, MultipleFileInput)
+
+    def test_clean_single_file(self):
+        mock_file = MagicMock()
+        mock_file.name = "test.txt"
+        mock_file.size = 100
+        field = MultipleFileField()
+        result = field.clean(mock_file)
+        self.assertEqual(result, mock_file)
+
+    def test_clean_list_of_files(self):
+        files = []
+        for name in ("a.txt", "b.txt"):
+            f = MagicMock()
+            f.name = name
+            f.size = 100
+            files.append(f)
+        field = MultipleFileField()
+        result = field.clean(files)
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 2)
+
+
+class MultipleFileInputTests(TestCase):
+    def test_allow_multiple_selected(self):
+        widget = MultipleFileInput()
+        self.assertTrue(widget.allow_multiple_selected)
+
+    def test_inherits_from_clearable_file_input(self):
+        from django.forms import ClearableFileInput
+
+        self.assertTrue(issubclass(MultipleFileInput, ClearableFileInput))
+
+
+# ===========================================================================
+# Editor: change_segment_locks tests
+# ===========================================================================
+
+
+class ChangeSegmentLocksTests(TestCase):
+    def setUp(self):
+        en, fr = _make_languages()
+        self.user = _pm_user()
+        self.project = _make_project(self.user, en, fr)
+
+    @patch("kaplancloudapp.models.NewFileThread")
+    def test_lock_segments(self, mock_thread):
+        mock_thread.return_value.run = MagicMock()
+        pf = ProjectFile.objects.create(name="e.xliff", project=self.project, status=4)
+        s1 = Segment.objects.create(tu_id=1, s_id=1, source="hello", file=pf)
+        s2 = Segment.objects.create(tu_id=1, s_id=2, source="world", file=pf)
+        self.client.login(username="pm", password="Testpass123!")
+        response = self.client.post(
+            f"/file/{pf.uuid}",
+            {"task": "change_segment_locks", "to_lock": "lock", "segments": "1;2"},
+        )
+        self.assertEqual(response.status_code, 200)
+        s1.refresh_from_db()
+        s2.refresh_from_db()
+        self.assertTrue(s1.is_locked)
+        self.assertTrue(s2.is_locked)
+
+    @patch("kaplancloudapp.models.NewFileThread")
+    def test_unlock_segments(self, mock_thread):
+        mock_thread.return_value.run = MagicMock()
+        pf = ProjectFile.objects.create(name="e.xliff", project=self.project, status=4)
+        seg = Segment.objects.create(
+            tu_id=1, s_id=1, source="hello", file=pf, is_locked=True
+        )
+        self.client.login(username="pm", password="Testpass123!")
+        response = self.client.post(
+            f"/file/{pf.uuid}",
+            {"task": "change_segment_locks", "to_lock": "unlock", "segments": "1"},
+        )
+        self.assertEqual(response.status_code, 200)
+        seg.refresh_from_db()
+        self.assertFalse(seg.is_locked)
+
+    @patch("kaplancloudapp.models.NewFileThread")
+    def test_lock_already_locked_is_noop(self, mock_thread):
+        mock_thread.return_value.run = MagicMock()
+        pf = ProjectFile.objects.create(name="e.xliff", project=self.project, status=4)
+        seg = Segment.objects.create(
+            tu_id=1, s_id=1, source="hello", file=pf, is_locked=True
+        )
+        self.client.login(username="pm", password="Testpass123!")
+        response = self.client.post(
+            f"/file/{pf.uuid}",
+            {"task": "change_segment_locks", "to_lock": "lock", "segments": "1"},
+        )
+        self.assertEqual(response.status_code, 200)
+        seg.refresh_from_db()
+        self.assertTrue(seg.is_locked)

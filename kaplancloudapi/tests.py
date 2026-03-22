@@ -1,11 +1,19 @@
 from unittest import mock
 
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
 
 from kaplancloudapi.models import ProjectFileWebHook, ProjectWebHook
+from kaplancloudapi.serializers import (
+    ProjectFilePostSerializer,
+    ProjectFileSerializer,
+    ProjectReferenceFileSerializer,
+    TranslationMemorySerializer,
+    UserSerializer,
+)
 from kaplancloudapp.models import (
     Client,
     LanguageProfile,
@@ -986,3 +994,139 @@ class WebHookSignalTests(TestCase):
         project_b.status = 3
         project_b.save()
         mock_post.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Serializer tests
+# ---------------------------------------------------------------------------
+
+
+class ProjectFilePostSerializerTests(APITestBase):
+    def setUp(self):
+        super().setUp()
+        self.project = self._create_project()
+
+    def test_excludes_bilingual_file_but_includes_source_file(self):
+        fields = ProjectFilePostSerializer().get_fields()
+        self.assertNotIn("bilingual_file", fields)
+        self.assertIn("source_file", fields)
+
+    def test_read_serializer_excludes_both_file_fields(self):
+        fields = ProjectFileSerializer().get_fields()
+        self.assertNotIn("bilingual_file", fields)
+        self.assertNotIn("source_file", fields)
+
+    @mock.patch("kaplancloudapp.models.NewFileThread")
+    def test_valid_data(self, mock_thread):
+        data = {"name": "test.xlf", "project": self.project.id, "status": 0}
+        serializer = ProjectFilePostSerializer(data=data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_missing_name_invalid(self):
+        data = {"project": self.project.id, "status": 0}
+        serializer = ProjectFilePostSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("name", serializer.errors)
+
+    def test_default_status_is_zero(self):
+        data = {"name": "test.xlf", "project": self.project.id}
+        serializer = ProjectFilePostSerializer(data=data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        self.assertEqual(serializer.validated_data["status"], 0)
+
+
+class ProjectReferenceFileSerializerTests(APITestBase):
+    def setUp(self):
+        super().setUp()
+        self.project = self._create_project()
+
+    def test_fields(self):
+        fields = set(ProjectReferenceFileSerializer().get_fields().keys())
+        self.assertEqual(fields, {"id", "uuid", "name", "reference_file", "project"})
+
+    def test_missing_project_invalid(self):
+        data = {"name": "ref.pdf"}
+        serializer = ProjectReferenceFileSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("project", serializer.errors)
+
+
+class TranslationMemorySerializerTests(APITestBase):
+    def test_fields(self):
+        fields = set(TranslationMemorySerializer().get_fields().keys())
+        expected = {
+            "id",
+            "uuid",
+            "name",
+            "source_language",
+            "target_language",
+            "client",
+        }
+        self.assertEqual(fields, expected)
+
+    def test_missing_name_invalid(self):
+        data = {
+            "source_language": "en",
+            "target_language": "fr",
+        }
+        serializer = TranslationMemorySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("name", serializer.errors)
+
+    @mock.patch("kaplancloudapp.models.Path.mkdir", mock.MagicMock())
+    def test_create_sets_created_by_from_context(self):
+        request = mock.MagicMock()
+        request.user = self.admin_user
+        data = {
+            "name": "TM via serializer",
+            "source_language": "en",
+            "target_language": "fr",
+        }
+        serializer = TranslationMemorySerializer(
+            data=data, context={"request": request}
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        tm = serializer.save()
+        self.assertEqual(tm.created_by, self.admin_user)
+
+    def test_client_is_optional(self):
+        data = {
+            "name": "TM",
+            "source_language": "en",
+            "target_language": "fr",
+        }
+        serializer = TranslationMemorySerializer(data=data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+
+class UserSerializerTests(APITestBase):
+    def test_password_is_write_only(self):
+        user = User.objects.create_user("testser", password="p")
+        serializer = UserSerializer(user)
+        self.assertNotIn("password", serializer.data)
+
+    def test_password_is_optional(self):
+        data = {"username": "nopw", "is_active": True}
+        serializer = UserSerializer(data=data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def test_create_hashes_password(self):
+        data = {"username": "hashtest", "password": "MySecretPass!", "is_active": True}
+        serializer = UserSerializer(data=data)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        user = serializer.save()
+        self.assertTrue(check_password("MySecretPass!", user.password))
+        self.assertNotEqual(user.password, "MySecretPass!")
+
+    def test_duplicate_username_rejected(self):
+        User.objects.create_user("taken", password="p")
+        data = {"username": "taken", "is_active": True}
+        serializer = UserSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("username", serializer.errors)
+
+    def test_fields_present(self):
+        fields = set(UserSerializer().get_fields().keys())
+        self.assertEqual(
+            fields, {"id", "username", "password", "email", "is_active", "groups"}
+        )
