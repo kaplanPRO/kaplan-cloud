@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from django import forms
 from django.contrib.auth import password_validation
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -83,7 +83,7 @@ class UserRegistrationForm(forms.ModelForm):
             user.save()
             token = self.cleaned_data["token"]
             if token.user_type == 1:
-                user.groups.add(1)
+                user.groups.add(Group.objects.get(name="PM"))
                 user.is_staff = True
                 user.save()
             token.user = user
