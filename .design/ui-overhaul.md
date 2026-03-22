@@ -1,7 +1,7 @@
 # Kaplan Cloud — UI Overhaul Design Document
 
-**Status:** Draft · Session 1 of ~6
-**Last updated:** 2026-03-22
+**Status:** In progress · S2 complete, S3 next
+**Last updated:** 2026-03-23
 **Branch:** `claude/ui-overhaul-planning-ZlwnV`
 
 ---
@@ -67,14 +67,14 @@ Kaplan Cloud is a functional Django-based translation management system. The UI 
 
 ### Static file inventory
 
-| File | Lines | Purpose |
-|---|---|---|
-| `main.css` | 236 | Global layout (CSS Grid shell, nav, buttons, modals, toasts, tables) |
-| `editor.css` | 151 | Editor-specific styles (3-col grid, segment rows, sidebars, filter dropdown) |
-| `main.js` | 5 | Search form toggle on Projects/TMs pages |
-| `editor.js` | 681 | Full editor logic: contenteditable, TM/comment lookups, propagation, keyboard shortcuts, submission workflow |
-| `project.js` | 242 | Project page: checkbox selection, context menus, file operations, linguist assignment |
-| `newproject.js` | 33 | Dynamic TM dropdown population via Fetch |
+| File | Lines | Purpose | Status |
+|---|---|---|---|
+| `main.css` | 236 | Global layout (CSS Grid shell, nav, buttons, modals, toasts, tables) | **Removed in S2** — caused global selector conflicts with daisyUI; `@layer legacy` wrapping was attempted but ineffective (Tailwind v4 also uses `@layer` internally) |
+| `editor.css` | 151 | Editor-specific styles (3-col grid, segment rows, sidebars, filter dropdown) | To migrate in S5 |
+| `main.js` | 5 | Search form toggle on Projects/TMs pages | To replace with Alpine `x-show` in S3 |
+| `editor.js` | 681 | Full editor logic: contenteditable, TM/comment lookups, propagation, keyboard shortcuts, submission workflow | Preserved as-is |
+| `project.js` | 242 | Project page: checkbox selection, context menus, file operations, linguist assignment | Minimal updates in S3 |
+| `newproject.js` | 33 | Dynamic TM dropdown population via Fetch | No changes needed |
 
 ### Third-party dependencies (current)
 
@@ -363,9 +363,8 @@ Each component below describes its current implementation, the proposed implemen
 
 ### Theme toggle
 
-**Current:** None — dark only
-**Proposed:** Alpine `x-data` + `localStorage` + Tailwind `dark:` class strategy; toggle button in header
-**Implementation:** Set `class="dark"` on `<html>` when dark mode active; persist in `localStorage`; default to system preference via `prefers-color-scheme`
+**Current:** ~~None — dark only~~ ✅ Implemented in S2
+**Implementation:** daisyUI `data-theme` attribute on `<html>`, toggled via checkbox `onchange` handler. Theme choice persisted to `localStorage`; inline `<script>` in `<head>` reads it before render to prevent flash. Two custom themes: `kaplan-light` (default) and `kaplan-dark`.
 
 ---
 
@@ -478,8 +477,8 @@ Current templates have minimal ARIA. Add:
 
 | Session | Scope | Key deliverables |
 |---|---|---|
-| **S1** (this session) | Research + design doc | `docs/ui-overhaul.md` committed |
-| **S2** | Shell + navigation | `django-tailwind` set up; `base.html` + `index.html` reskinned; sidebar nav; header; theme toggle (light/dark); Inter + Heroicons |
+| **S1** ✅ | Research + design doc | `.design/ui-overhaul.md` committed |
+| **S2** ✅ | Shell + navigation | `django-tailwind` set up; `base.html` + `index.html` reskinned; sidebar nav; header; theme toggle (light/dark); Inter + Heroicons; `main.css` removed |
 | **S3** | Project management screens | `projects.html`, `project.html`, `newproject.html`; daisyUI tables; form-control markup; modals reskinned |
 | **S4** | TM + auth screens | `translation-memories.html`, `tm.html`, `newtm.html`, `tm-import.html`; auth templates |
 | **S5** | Editor reskin | `editor.html` + `editor.css` replaced; JS logic preserved; segment table; TM/comments sidebars; status badges; filter bar |
@@ -495,3 +494,23 @@ All items confirmed during Session 1 design review:
 - [x] Icon set confirmed — Heroicons
 - [x] Component library confirmed — **daisyUI** (MIT licensed; Tailwind UI rejected due to per-person licensing incompatibility with open contributor model)
 - [x] `django-tailwind` confirmed as dev dependency
+
+---
+
+## 10. Session Log
+
+### S2 — Shell + navigation (2026-03-22/23)
+
+**Completed:**
+- django-tailwind set up with Tailwind v4 + daisyUI v5
+- Custom `kaplan-light` and `kaplan-dark` themes in `theme/static_src/src/styles.css`
+- `base.html` rewritten: Inter font, Alpine.js CDN, compiled CSS, Heroicons (removed Material Icons + Ubuntu)
+- `index.html` rewritten: daisyUI drawer sidebar, sticky navbar, user dropdown, dark mode toggle
+- Segment status CSS custom properties pre-built for S5 editor work
+- Compiled CSS committed (54KB purged vs 3MB CDN)
+
+**Findings:**
+- **`main.css` global selectors** (`body`, `button`, `nav a`, `:disabled`) override daisyUI components. Scoping individual rules (`nav a` → `header nav a`) is whack-a-mole. CSS `@layer legacy` wrapping was attempted but **does not work** because Tailwind v4 itself outputs layered CSS — two layered stylesheets don't get the expected priority ordering. **Resolution:** removed `main.css` entirely; un-migrated pages will be unstyled until S3/S4 migration.
+- **daisyUI `theme-controller` class** only styles the toggle visually — it does **not** include JS to switch `data-theme` on `<html>`. daisyUI is pure CSS. Theme switching requires: (1) `data-theme="kaplan-light"` on `<html>`, (2) an inline `<script>` in `<head>` to read `localStorage` before paint (prevents flash), (3) `onchange` handler on the checkbox to set `data-theme` and persist to `localStorage`.
+- **`django-tailwind` build** requires `npm install` in `theme/static_src/` before first build. Running `manage.py tailwind build` from the wrong working directory fails silently with a misleading error.
+- **Design doc location:** moved from `docs/` to `.design/` — `docs/` is reserved for user-facing documentation.
