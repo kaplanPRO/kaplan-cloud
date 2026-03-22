@@ -1,19 +1,18 @@
-from django.apps import apps
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.db import models
-
-from kaplan import open_bilingualfile
-
-from pathlib import Path
 import logging
 import shutil
 import tempfile
 import uuid
+from pathlib import Path
+
+from django.apps import apps
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.db import models
+from kaplan import open_bilingualfile
 
 from .custom_storage import get_private_storage
 from .thread_classes import NewFileThread, NewProjectReportThread
-from .utils import get_kpp_path, get_source_file_path, get_reference_file_path
+from .utils import get_kpp_path, get_reference_file_path, get_source_file_path
 
 # Create your models here.
 

@@ -1,14 +1,13 @@
+import tempfile
+from pathlib import Path
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-
-from .models import Client, LanguageProfile, TranslationMemory
-
-from pathlib import Path
-import tempfile
-
 from kaplan import open_bilingualfile
 from kaplan.kxliff import KXLIFF
+
+from .models import Client, LanguageProfile, TranslationMemory
 
 
 class MultipleFileInput(forms.ClearableFileInput):

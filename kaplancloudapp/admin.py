@@ -1,23 +1,23 @@
 from django.contrib import admin
 
 from .models import (
+    Client,
+    Comment,
     LanguageProfile,
-    Termbase,
-    TBEntry,
-    TBEntryUpdate,
-    TranslationMemory,
-    TMEntry,
-    TMEntryUpdate,
     Project,
     ProjectFile,
     ProjectPackage,
     ProjectPreprocessingSettings,
     ProjectReferenceFile,
     ProjectReport,
-    Client,
     Segment,
     SegmentUpdate,
-    Comment,
+    TBEntry,
+    TBEntryUpdate,
+    Termbase,
+    TMEntry,
+    TMEntryUpdate,
+    TranslationMemory,
 )
 
 # Register your models here.

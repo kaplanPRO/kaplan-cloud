@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from lxml import etree
 import regex
+from lxml import etree
 
 
 def get_kpp_path(instance, filename):

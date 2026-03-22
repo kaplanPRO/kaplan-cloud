@@ -1,8 +1,8 @@
+import json
+
 from django.core.management.base import BaseCommand, CommandError
 
 from ...models import UserRegistrationToken
-
-import json
 
 
 class Command(BaseCommand):
