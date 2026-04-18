@@ -1,6 +1,6 @@
 # Kaplan Cloud — UI Overhaul Design Document
 
-**Status:** In progress · S3 complete, S4 next
+**Status:** In progress · S4 complete, S5 next
 **Last updated:** 2026-04-18
 **Branch:** `claude/ui-overhaul-planning-ZlwnV`
 
@@ -480,7 +480,7 @@ Current templates have minimal ARIA. Add:
 | **S1** ✅ | Research + design doc | `.design/ui-overhaul.md` committed |
 | **S2** ✅ | Shell + navigation | `django-tailwind` set up; `base.html` + `index.html` reskinned; sidebar nav; header; theme toggle (light/dark); Inter + Heroicons; `main.css` removed |
 | **S3** ✅ | Project management screens | `projects.html`, `project.html`, `newproject.html`; daisyUI tables; form-control markup; modals reskinned; `_apply_daisy_classes()` for forms |
-| **S4** | TM + auth screens | `translation-memories.html`, `tm.html`, `newtm.html`, `tm-import.html`; auth templates |
+| **S4** ✅ | TM + auth screens | `translation-memories.html`, `tm.html`, `newtm.html`, `tm-import.html`; auth templates; `_apply_daisy_classes` for auth forms; HTML help_text fix |
 | **S5** | Editor reskin | `editor.html` + `editor.css` replaced; JS logic preserved; segment table; TM/comments sidebars; status badges; filter bar |
 | **S6** | Polish + report | `report.html`; accessibility audit; tablet layout pass; visual consistency review |
 
@@ -536,3 +536,18 @@ All items confirmed during Session 1 design review:
 - Auth templates (login, register, change-password): extend `base.html` with `{% block body %}`, rely on removed `main.css` grid layout — S4 scope
 - `editor.html`: standalone HTML, loads removed `main.css`, Material Icons, `oddrow`/`evenrow` — S5 scope
 - `report.html`: standalone HTML, no styling — S6 scope
+
+### S4 — TM + auth screens (2026-04-18)
+
+**Completed:**
+- `translation-memories.html` reskinned: daisyUI table, Alpine `x-show` search filter (replaces `main.js` toggle), navbar title + Create button, TM count with correct pluralization
+- `tm.html` reskinned: breadcrumb navigation, Import action button, daisyUI entry table with empty state
+- `newtm.html` reskinned: manual form-control layout replacing `form.as_table`, breadcrumb navigation
+- `tm-import.html` reskinned: manual form-control layout replacing `form.as_table`, breadcrumb navigation
+- Auth templates (login, register, change-password) reskinned: centered daisyUI card layout on `bg-base-200`, structured error display, full-width submit buttons
+- `kaplancloudaccounts/forms.py`: imported `_apply_daisy_classes`, added `__init__` to `UserRegistrationForm`
+- `kaplancloudaccounts/views.py`: applied `_apply_daisy_classes` to Django's built-in `AuthenticationForm` and `PasswordChangeForm` in view functions
+
+**Findings:**
+- **HTML help_text in tooltips** — `UserRegistrationForm.password1` used `password_validators_help_text_html()` which produces `<ul><li>...</li></ul>`. When placed in a `title` attribute, raw HTML tags appear as literal text in the tooltip. **Resolution:** changed to `password_validators_help_texts()` (returns plain text list, joined with spaces). For `PasswordChangeForm` (Django built-in, can't modify field definition), applied `strip_tags()` to help_text in the view.
+- **Auth pages and dark mode** — auth templates extend `base.html` directly (no sidebar/theme toggle). Dark mode activates via `prefers-color-scheme` since the `kaplan-dark` theme has `prefersdark: true`. No manual toggle on auth pages — acceptable since these are pre-login screens.
