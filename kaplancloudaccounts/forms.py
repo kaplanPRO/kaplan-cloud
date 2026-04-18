@@ -6,6 +6,8 @@ from django.contrib.auth.models import Group, User
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from kaplancloudapp.forms import _apply_daisy_classes
+
 from .models import UserRegistrationToken
 
 TOKEN_EXPIRY_HOURS = 48
@@ -16,7 +18,7 @@ class UserRegistrationForm(forms.ModelForm):
         label="Password",
         strip=False,
         widget=forms.PasswordInput(attrs={"autocomplete": "new-password"}),
-        help_text=password_validation.password_validators_help_text_html(),
+        help_text=" ".join(password_validation.password_validators_help_texts()),
     )
     password2 = forms.CharField(
         label="Password confirmation",
@@ -41,6 +43,10 @@ class UserRegistrationForm(forms.ModelForm):
             "password2",
             "token",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
 
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")

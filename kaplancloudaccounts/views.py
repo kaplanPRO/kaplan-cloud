@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.utils.html import strip_tags
+
+from kaplancloudapp.forms import _apply_daisy_classes
 
 from .forms import UserRegistrationForm
 
@@ -10,6 +13,10 @@ from .forms import UserRegistrationForm
 @login_required
 def change_password(request):
     form = PasswordChangeForm(user=request.user, data=request.POST or None)
+    _apply_daisy_classes(form)
+    for field in form.fields.values():
+        if field.help_text:
+            field.help_text = strip_tags(field.help_text)
 
     if request.method == "POST" and form.is_valid():
         form.save()
@@ -23,6 +30,7 @@ def change_password(request):
 def signin(request):
     if request.method == "POST":
         form = AuthenticationForm(request, request.POST)
+        _apply_daisy_classes(form)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
@@ -35,6 +43,7 @@ def signin(request):
 
     else:
         form = AuthenticationForm()
+        _apply_daisy_classes(form)
         return render(
             request,
             "accounts/login.html",
