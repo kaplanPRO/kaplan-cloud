@@ -264,10 +264,10 @@ def project(request, uuid):
             with tempfile.TemporaryDirectory(dir=".tmp") as p_tmpdir:
                 project_manifest["directory"] = p_tmpdir
 
-                p_s_tmpdir = Path(p_tmpdir, project.source_language)
+                p_s_tmpdir = Path(p_tmpdir, project.source_language.iso_code)
                 p_s_tmpdir.mkdir()
 
-                p_t_tmpdir = Path(p_tmpdir, project.target_language)
+                p_t_tmpdir = Path(p_tmpdir, project.target_language.iso_code)
                 p_t_tmpdir.mkdir()
 
                 for project_file_instance in ProjectFile.objects.filter(

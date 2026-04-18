@@ -269,8 +269,8 @@ class Project(models.Model):
         manifest_dict = {
             "title": self.name,
             "directory": str(Path(self.directory).resolve()),
-            "source_language": self.source_language.iso,
-            "target_language": self.target_language.iso,
+            "source_language": self.source_language.iso_code,
+            "target_language": self.target_language.iso_code,
         }
 
         return manifest_dict
