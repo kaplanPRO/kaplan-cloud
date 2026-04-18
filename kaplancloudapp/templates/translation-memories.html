@@ -1,56 +1,93 @@
 {% extends "index.html" %}
 {% load static %}
-{% block head %}
-<script type="text/javascript" src="{% static 'main.js' %}"></script>
+{% block title %}Translation Memories | Kaplan Cloud{% endblock %}
+
+{% block navbar_center %}
+<h1 class="text-lg font-semibold">Translation Memories</h1>
 {% endblock %}
-{% block title %}
-Translation Memories | Kaplan Cloud
+
+{% block navbar_actions %}
+{% if perms.kaplancloudapp.add_translationmemory %}
+<a href="{% url 'newtm' %}" class="btn btn-primary btn-sm">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+  </svg>
+  Create
+</a>
+{% endif %}
 {% endblock %}
+
 {% block div %}
-<header>
-  <nav>
-    <a {% if perms.kaplancloudapp.add_translationmemory %}href="{% url 'newtm' %}"{% else %}class="disabled"{% endif %}>Create</a>
-    {% if not user.is_authenticated %}
-    <a id="login" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
-    {% else %}
-    <a id="logout" href="{% url 'logout' %}"><span class="material-icons" title="logout">logout</span></a>
-    {% endif %}
-  </nav>
-</header>
-<div id="tms">
-  <div id="search-form" {% if display_form %}class="show"{% endif %}>
-    <form method="get">
-      <table>
-        <tr>
-          <th><label for="{{ form.source.id }}">Source:</label></th>
-          <td>{{ form.source }}</td>
-          <th><label for="{{ form.target.id }}">Target:</label></th>
-          <td>{{ form.target }}</td>
-          <th><label for="{{ form.client.id }}">Client:</label></th>
-          <td>{{ form.client }}</td>
-          <td><button type="submit" class="material-icons">search</button></td>
-        </tr>
-      </table>
-    </form>
-    <span id="search-form-toggle" class="material-icons">search</span>
+<div class="p-4 lg:p-6 space-y-4" x-data="{ showFilter: {{ display_form|yesno:'true,false' }} }">
+
+  {# ── Search / filter bar ── #}
+  <div class="flex items-center justify-between">
+    <div class="text-sm text-base-content/60">
+      {{ tms|length }} translation memor{{ tms|length|pluralize:"y,ies" }}
+    </div>
+    <button class="btn btn-ghost btn-sm gap-1" @click="showFilter = !showFilter" aria-label="Toggle search filters">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+      </svg>
+      Filter
+    </button>
   </div>
-  <table>
-    <tr>
-      <th>Name</th>
-      <th>Source Language</th>
-      <th>Target Language</th>
-      <th>Client</th>
-      <!--<th></th>-->
-    </tr>
-    {% for tm in tms %}
-    <tr>
-      <td><a href="{% url 'tm' tm.uuid %}">{{tm.name}}</a></td>
-      <td>{{tm.source_language}}</td>
-      <td>{{tm.target_language}}</td>
-      <td>{{tm.client.name}}</td>
-      <!--<td><span class="material-icons">expand_more</span></td> TODO-->
-    </tr>
-    {% endfor %}
-  </table>
+
+  <form method="get" x-show="showFilter" x-transition class="flex flex-wrap items-end gap-3">
+    <div class="form-control w-40">
+      <label class="label" for="{{ form.source.id_for_label }}">
+        <span class="label-text text-xs">Source</span>
+      </label>
+      {{ form.source }}
+    </div>
+    <div class="form-control w-40">
+      <label class="label" for="{{ form.target.id_for_label }}">
+        <span class="label-text text-xs">Target</span>
+      </label>
+      {{ form.target }}
+    </div>
+    <div class="form-control w-40">
+      <label class="label" for="{{ form.client.id_for_label }}">
+        <span class="label-text text-xs">Client</span>
+      </label>
+      {{ form.client }}
+    </div>
+    <button type="submit" class="btn btn-sm btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+      Search
+    </button>
+  </form>
+
+  {# ── TM table ── #}
+  <div class="overflow-x-auto rounded-lg border border-base-300">
+    <table class="table table-sm">
+      <thead>
+        <tr class="bg-base-200/50">
+          <th>Name</th>
+          <th>Source Language</th>
+          <th>Target Language</th>
+          <th>Client</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tm in tms %}
+        <tr class="hover:bg-base-200/30 transition-colors">
+          <td>
+            <a href="{% url 'tm' tm.uuid %}" class="link link-hover font-medium">{{ tm.name }}</a>
+          </td>
+          <td>{{ tm.source_language }}</td>
+          <td>{{ tm.target_language }}</td>
+          <td class="text-base-content/60">{{ tm.client.name|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="text-center py-8 text-base-content/40">No translation memories found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}
