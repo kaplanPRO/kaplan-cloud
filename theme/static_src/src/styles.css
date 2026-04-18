@@ -101,6 +101,14 @@
   --noise: 0;
 }
 
+/* ─── Native <option> elements in dark mode ─── */
+/* Browsers render <option> outside the DOM; they ignore most CSS but     */
+/* respect background-color and color on the element itself.              */
+[data-theme="kaplan-dark"] option {
+  background-color: #27272a;
+  color: #fafafa;
+}
+
 /* ─── Segment status colors (editor-specific, outside daisyUI theme) ─── */
 /* Used in editor.html (S5) and as badges on project/file tables (S3+)    */
 .segment-translated { --seg-bg: #dcfce7; --seg-text: #15803d; }
