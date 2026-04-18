@@ -64,7 +64,7 @@ window.onload = function() {
   }
 
   document.getElementById('context-btn-import').onclick = function() {
-    document.getElementById('kpp-upload-form').className = "show";
+    document.getElementById('kpp-upload-form').classList.add('show');
   }
 
   document.getElementById('context-btn-assign-reviewer').onclick = function() {
@@ -76,7 +76,7 @@ window.onload = function() {
   }
 
   function displayAssignLinguistForm(role=0) {
-    document.getElementById('assign-linguist-form').className = "show";
+    document.getElementById('assign-linguist-form').classList.add('show');
 
     assignLinguistForm['role'].value = role;
 
@@ -162,7 +162,7 @@ function checkReport(reportUuid)
       }
       else
       {
-        document.getElementById('report-toast').className = 'show'
+        document.getElementById('report-toast').classList.add('show')
       }
     }
   )
@@ -224,8 +224,7 @@ function exportFiles(fileUuids) {
 }
 
 function getCSRFToken() {
-  let inputs = document.getElementsByTagName('input');
-  return inputs[inputs.length-1].value;
+  return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
 function toggleExpand(span)

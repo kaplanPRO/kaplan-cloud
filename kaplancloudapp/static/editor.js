@@ -557,7 +557,7 @@ window.onload = function() {
   }
 
   function getCSRFToken() {
-    return document.getElementsByTagName('input')[0].value;
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
   }
 
   function insertInnerHTML(source, target) {
