@@ -1,7 +1,7 @@
 # Kaplan Cloud — UI Overhaul Design Document
 
-**Status:** In progress · S2 complete, S3 next
-**Last updated:** 2026-03-23
+**Status:** In progress · S3 complete, S4 next
+**Last updated:** 2026-04-18
 **Branch:** `claude/ui-overhaul-planning-ZlwnV`
 
 ---
@@ -479,7 +479,7 @@ Current templates have minimal ARIA. Add:
 |---|---|---|
 | **S1** ✅ | Research + design doc | `.design/ui-overhaul.md` committed |
 | **S2** ✅ | Shell + navigation | `django-tailwind` set up; `base.html` + `index.html` reskinned; sidebar nav; header; theme toggle (light/dark); Inter + Heroicons; `main.css` removed |
-| **S3** | Project management screens | `projects.html`, `project.html`, `newproject.html`; daisyUI tables; form-control markup; modals reskinned |
+| **S3** ✅ | Project management screens | `projects.html`, `project.html`, `newproject.html`; daisyUI tables; form-control markup; modals reskinned; `_apply_daisy_classes()` for forms |
 | **S4** | TM + auth screens | `translation-memories.html`, `tm.html`, `newtm.html`, `tm-import.html`; auth templates |
 | **S5** | Editor reskin | `editor.html` + `editor.css` replaced; JS logic preserved; segment table; TM/comments sidebars; status badges; filter bar |
 | **S6** | Polish + report | `report.html`; accessibility audit; tablet layout pass; visual consistency review |
@@ -514,3 +514,25 @@ All items confirmed during Session 1 design review:
 - **daisyUI `theme-controller` class** only styles the toggle visually — it does **not** include JS to switch `data-theme` on `<html>`. daisyUI is pure CSS. Theme switching requires: (1) `data-theme="kaplan-light"` on `<html>`, (2) an inline `<script>` in `<head>` to read `localStorage` before paint (prevents flash), (3) `onchange` handler on the checkbox to set `data-theme` and persist to `localStorage`.
 - **`django-tailwind` build** requires `npm install` in `theme/static_src/` before first build. Running `manage.py tailwind build` from the wrong working directory fails silently with a misleading error.
 - **Design doc location:** moved from `docs/` to `.design/` — `docs/` is reserved for user-facing documentation.
+
+### S3 — Project management screens (2026-04-18)
+
+**Completed:**
+- `projects.html` reskinned: daisyUI table, Alpine `x-show` search filter (replaces `main.js` toggle), navbar breadcrumb + Create button, project count
+- `project.html` reskinned: daisyUI file/reference tables, modal overlays for assign-linguist and KPP upload, styled context menu, report toast, breadcrumb navigation
+- `newproject.html` reskinned: manual form-control layout replacing `form.as_table`, file input and checkbox detection, help text as title tooltips
+- `forms.py`: added `_apply_daisy_classes()` utility that auto-applies daisyUI widget CSS (`input`, `select`, `file-input`, `checkbox`, `textarea`) to all form widgets via `__init__`; applied to all form classes including `SegmentCommentForm` (pre-work for S5)
+- Compiled CSS rebuilt via `manage.py tailwind build`
+
+**Findings:**
+- **`getCSRFToken()` broken by S2 layout** — `project.js` grabbed the last `<input>` on the page, which was now the sidebar theme toggle checkbox (`value="kaplan-dark"`) instead of the CSRF token. `editor.js` had the same issue with the first input (sidebar drawer toggle). **Resolution:** both now use `querySelector('[name=csrfmiddlewaretoken]')`.
+- **`className = "show"` strips Tailwind classes** — `project.js` and `main.js` used `el.className = "show"` to show modals/forms, which replaced all existing classes. **Resolution:** changed to `classList.add('show')` in all three JS files.
+- **`#checkbox-main` class collision** — adding daisyUI's `checkbox` class to the master checkbox caused `getElementsByClassName('checkbox')` to include it alongside file checkboxes, pushing an empty UUID into selection lists. **Resolution:** removed `checkbox` class from `#checkbox-main`.
+- **Assign-linguist modal `children[0]`** — wrapping the form in a modal box `<div>` broke `getElementById('assign-linguist-form').children[0]` (expected `<form>`, got `<div>`). **Resolution:** made `<form>` the direct child of the overlay.
+- **Pre-existing bug: `Project.get_manifest()`** — referenced `self.source_language.iso` (non-existent attribute) instead of `.iso_code`. Same in the export view where `LanguageProfile` objects were passed to `Path()` instead of their `.iso_code` strings. Export had never worked. **Resolution:** fixed both to use `.iso_code`.
+
+**Audit of unmigrated templates (S4–S6 scope):**
+- TM templates (`translation-memories.html`, `tm.html`, `newtm.html`, `tm-import.html`): old `<header><nav>`, Material Icons, `oddrow`/`evenrow` classes, `form.as_table` — all expected to be fixed in S4
+- Auth templates (login, register, change-password): extend `base.html` with `{% block body %}`, rely on removed `main.css` grid layout — S4 scope
+- `editor.html`: standalone HTML, loads removed `main.css`, Material Icons, `oddrow`/`evenrow` — S5 scope
+- `report.html`: standalone HTML, no styling — S6 scope
