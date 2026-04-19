@@ -9,6 +9,35 @@ from kaplan.kxliff import KXLIFF
 
 from .models import Client, LanguageProfile, TranslationMemory
 
+# Maps Django widget classes to daisyUI CSS classes for consistent styling.
+DAISY_WIDGET_CSS = {
+    forms.TextInput: "input input-bordered w-full",
+    forms.EmailInput: "input input-bordered w-full",
+    forms.NumberInput: "input input-bordered w-full",
+    forms.URLInput: "input input-bordered w-full",
+    forms.PasswordInput: "input input-bordered w-full",
+    forms.DateInput: "input input-bordered w-full",
+    forms.DateTimeInput: "input input-bordered w-full",
+    forms.TimeInput: "input input-bordered w-full",
+    forms.Select: "select select-bordered w-full",
+    forms.SelectMultiple: "select select-bordered w-full",
+    forms.Textarea: "textarea textarea-bordered w-full",
+    forms.ClearableFileInput: "file-input file-input-bordered w-full",
+    forms.CheckboxInput: "checkbox checkbox-primary",
+}
+
+
+def _apply_daisy_classes(form):
+    """Add daisyUI CSS classes to form widgets that don't already have them."""
+    for field in form.fields.values():
+        widget = field.widget
+        for widget_class, css in DAISY_WIDGET_CSS.items():
+            if isinstance(widget, widget_class):
+                existing = widget.attrs.get("class", "")
+                if not any(c in existing for c in css.split()[:1]):
+                    widget.attrs["class"] = f"{existing} {css}".strip()
+                break
+
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -38,6 +67,10 @@ class AssignLinguistForm(forms.Form):
     )
     file_uuids = forms.CharField(widget=forms.HiddenInput())
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
+
     def clean_username(self):
         username = self.cleaned_data["username"]
         try:
@@ -51,6 +84,10 @@ class KPPUploadForm(forms.Form):
     package = forms.FileField(
         widget=forms.ClearableFileInput(attrs={"accept": ",".join([".kpp", ".krpp"])})
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
 
 
 class ProjectForm(forms.Form):
@@ -92,6 +129,10 @@ class ProjectForm(forms.Form):
         required=False, widget=forms.DateTimeInput(attrs={"type": "datetime-local"})
     )
     will_pretranslate = forms.BooleanField(label="Pretranslate from TM", required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
 
     def clean_target_language(self):
         source_language = self.cleaned_data["source_language"].iso_code
@@ -162,9 +203,17 @@ class SearchForm(forms.Form):
     )
     client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
+
 
 class SegmentCommentForm(forms.Form):
     comment = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
 
 
 class TranslationMemoryForm(forms.Form):
@@ -181,6 +230,10 @@ class TranslationMemoryForm(forms.Form):
     )
     client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
+
 
 class TranslationMemoryImportForm(forms.Form):
     source_language = forms.CharField(
@@ -193,6 +246,10 @@ class TranslationMemoryImportForm(forms.Form):
         label="TM file",
         widget=forms.ClearableFileInput(attrs={"accept": ",".join([".kdb", ".tmx"])}),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _apply_daisy_classes(self)
 
     def clean_tm_file(self):
         tm_file = self.files["tm_file"]

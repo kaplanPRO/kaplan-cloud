@@ -1,32 +1,38 @@
+{% extends "base.html" %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'main.css' %}">
-    <link rel="stylesheet" href="{% static 'editor.css' %}">
-    <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
-    <script type="text/javascript" src="{% static 'editor.js' %}"></script>
-    <title>{{file.name}} | {{file.project.name}} | Kaplan Cloud</title>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <a href="{% url 'project' file.project.uuid %}">
-          <span class="material-icons">
-            arrow_back
-          </span>
-        </a>
-      </nav>
-      <button id="btn-filter">Filter</button>
-      <button id="btn-propagation">Propagation</button>
-      <button id="btn-submit-translation" {% if not can_edit %}disabled{% endif %}>
+{% block head %}
+<script type="text/javascript" src="{% static 'editor.js' %}"></script>
+{% endblock %}
+
+{% block title %}{{ file.name }} | {{ file.project.name }} | Kaplan Cloud{% endblock %}
+
+{% block body %}
+<div class="h-screen flex flex-col bg-base-100 text-base-content">
+
+  {# ── Header / toolbar ── #}
+  <header class="navbar bg-base-100 border-b border-base-300 px-2 min-h-0 h-12 flex-shrink-0">
+    <div class="navbar-start gap-1">
+      <a href="{% url 'project' file.project.uuid %}" class="btn btn-ghost btn-sm btn-square" title="Back to project">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+      </a>
+      <span class="text-sm text-base-content/60 truncate max-w-xs hidden sm:inline">{{ file.name }}</span>
+    </div>
+    <div class="navbar-center gap-1">
+      <button id="btn-filter" class="btn btn-ghost btn-sm">Filter</button>
+      <button id="btn-propagation" class="btn btn-ghost btn-sm">Propagation</button>
+    </div>
+    <div class="navbar-end gap-1">
+      {# Dark mode toggle #}
+      <label class="swap swap-rotate btn btn-ghost btn-sm btn-square" title="Toggle theme">
+        <input type="checkbox" onchange="var t = this.checked ? 'kaplan-dark' : 'kaplan-light'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t);"
+          x-data x-init="$el.checked = localStorage.getItem('theme') === 'kaplan-dark'" />
+        <svg class="swap-off w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"/></svg>
+        <svg class="swap-on w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"/></svg>
+      </label>
+      <button id="btn-submit-translation" class="btn btn-primary btn-sm" {% if not can_edit %}disabled{% endif %}>
         {% if file.status == 4 %}
           Submit Translation
         {% elif file.status == 5 %}
@@ -35,90 +41,127 @@
           File Delivered
         {% endif %}
       </button>
-    </header>
-    <main id="editor">
-        <div id="editor">
-          {% csrf_token %}
-          <hr>
-          {% for tu_id, translation_unit in translation_units.items %}
-          <table id="{{tu_id}}" class="tu">
-              {% for s_id, segment in translation_unit.items %}
-              <tr id="{{s_id}}" class="segment {% cycle 'oddrow' 'evenrow' %} {{segment.get_status.lower}} {% if segment.is_locked %}locked{% endif %}" status="{{segment.get_status.lower}}">
-                  <th class="sid">{{s_id}}</th>
-                  <td class="source" lang="{{file.project.source_language.iso_code}}">{{segment.source | safe}}</td>
-                  <td class="target" {% if can_edit and not segment.is_locked %}contenteditable{% endif %} lang="{{file.project.target_language.iso_code}}">{{segment.target | safe}}</td>
-              </tr>
-              {% endfor %}
-          </table>
-          <hr>
-          {% endfor %}
-        </div>
-      <div class="sidebar">
-        <div class="sidebar-icons">
-          <span class="material-icons expand-icon" onclick="toggleExpand(this)">expand_more</span>
-          <!--<span class="material-icons">feedback</span>-->
-          <span class="material-icons">question_answer</span>
-        </div>
-        <div class="toggle" hidden>
-          <div id="comments">
-            <div>
-              <form id="comment-form" method="post">
-                  <p><b><label for="{{ form.comment.id }}">Comment</label></b></p>
-                  <p>{{ form.comment }}</p>
-                  <button type="submit">Submit</button>
-              </form>
-            </div>
+    </div>
+  </header>
+
+  {# ── Main editor area: segments + sidebars ── #}
+  <main id="editor" class="flex-1 grid grid-cols-[1fr_auto_auto] overflow-hidden">
+
+    {# Segments column #}
+    <div id="segments-container" class="overflow-y-auto">
+      {% csrf_token %}
+      {% for tu_id, translation_unit in translation_units.items %}
+      <table id="{{ tu_id }}" class="tu border-collapse table-fixed w-full">
+        {% for s_id, segment in translation_unit.items %}
+        <tr id="{{ s_id }}" class="segment {% cycle 'oddrow' 'evenrow' %} {{ segment.get_status.lower }} {% if segment.is_locked %}locked{% endif %}" status="{{ segment.get_status.lower }}">
+          <th class="sid border border-base-300 p-1 w-16 text-xs select-none">{{ s_id }}</th>
+          <td class="source border border-base-300 p-1" lang="{{ file.project.source_language.iso_code }}">{{ segment.source|safe }}</td>
+          <td class="target border border-base-300 p-1" {% if can_edit and not segment.is_locked %}contenteditable{% endif %} lang="{{ file.project.target_language.iso_code }}">{{ segment.target|safe }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endfor %}
+    </div>
+
+    {# ── Comments sidebar ── #}
+    <aside class="sidebar border-l border-base-300 flex overflow-hidden" aria-label="Comments">
+      <div class="sidebar-icons flex flex-col items-center gap-1 p-1 border-r border-base-300">
+        <button class="btn btn-ghost btn-sm btn-square" data-expanded="false" onclick="toggleExpand(this)" title="Comments" aria-label="Toggle comments panel">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 -rotate-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </button>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" title="Comments">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+        </svg>
+      </div>
+      <div class="sidebar-panel overflow-y-auto w-48 lg:w-64 p-2" hidden>
+        <div id="comments">
+          <div>
+            <button id="btn-add-comment" class="btn btn-ghost btn-sm w-full hidden" onclick="document.getElementById('comment-form').classList.remove('hidden'); this.classList.add('hidden');">Add Comment</button>
+            <form id="comment-form" method="post" class="hidden space-y-2">
+              <label for="{{ form.comment.id }}" class="label"><span class="label-text font-semibold">Comment</span></label>
+              {{ form.comment }}
+              <span class="flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-1">Submit</button>
+                <button type="button" class="btn btn-ghost btn-sm flex-1" onclick="document.getElementById('comment-form').classList.add('hidden'); document.getElementById('btn-add-comment').classList.remove('hidden');">Cancel</button>
+              </span>
+            </form>
           </div>
         </div>
       </div>
-      <div class="sidebar">
-        <div class="sidebar-icons">
-          <span class="material-icons expand-icon" onclick="toggleExpand(this)">expand_less</span>
-          <span class="material-icons">translate</span>
+    </aside>
+
+    {# ── Translation Memory sidebar ── #}
+    <aside class="sidebar border-l border-base-300 flex overflow-hidden" aria-label="Translation Memory">
+      <div class="sidebar-icons flex flex-col items-center gap-1 p-1 border-r border-base-300">
+        <button class="btn btn-ghost btn-sm btn-square" data-expanded="true" onclick="toggleExpand(this)" title="Translation Memory" aria-label="Toggle translation memory panel">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+          </svg>
+        </button>
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-base-content/60" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" title="Translation Memory">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21l5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 016-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.148 15.08 2 17.558m15.849-6.08c.284.144.563.3.837.464" />
+        </svg>
+      </div>
+      <div class="sidebar-panel overflow-y-auto w-48 lg:w-64 p-2">
+        <div id="tm-hits">
+          <label for="concordance" class="sr-only">Concordance search</label>
+          <input id="concordance" type="text" class="input input-bordered input-sm w-full mb-2" placeholder="Concordance search…" />
         </div>
-        <div class="toggle">
-          <div id="tm-hits">
-            <input id="concordance" type="text"/>
-          </div>
-        </div>
       </div>
-    </main>
-    <div id="context-segment" class="hidden">
-      <button id="btn-context-lock">Lock</button>
-      <button id="btn-context-unlock">Unlock</button>
-    </div>
-    <div id="dropdown-filter" class="hidden">
-      <button id="btn-filter-all">All</button>
-      <hr/>
-      <button id="btn-filter-translated">Translated</button>
-      <button id="btn-filter-draft">Draft</button>
-      <button id="btn-filter-blank">Blank</button>
-    </div>
-    <div id="dropdown-propagation" class="hidden">
-      <button id="btn-settings-backward-propagation"><input id="checkbox-backward-propagation" type="checkbox" checked/>Backward Propagation</button>
-      <button id="btn-settings-forward-propagation"><input id="checkbox-forward-propagation" type="checkbox" checked/>Forward Propagation</button>
-    </div>
-    <div id="overlay-submit-translation"> <!--TODO: Add QA steps-->
-      <div>
-        <p>Checking to see if all segments are translated...</p>
-      </div>
-      <div>
-        <p>No untranslated segments found.</p>
-        <p>Are you sure you wish to proceed? You won't be able to further edit the file.</p>
-        <span>
-          <button class="advance-status">Continue</button>
-          <button class="cancel">Return</button>
-        </span>
-      </div>
-      <div>
-        <p>The following segments are not translated:</p>
-        <table class="tu"></table>
-        <p>Are you sure you wish to proceed? You won't be able to further edit the file.</p>
-        <span>
-          <button class="advance-status">Continue</button>
-          <button class="cancel">Return</button>
-        </span>
-      </div>
-    </div>
-  </body>
-</html>
+    </aside>
+  </main>
+</div>
+
+{# ── Context menu (segment right-click) ── #}
+<div id="context-segment" class="hidden fixed z-50 bg-base-200 border border-base-300 rounded-md shadow-md min-w-32">
+  <button id="btn-context-lock" class="btn btn-ghost btn-sm justify-start w-full rounded-none">Lock</button>
+  <button id="btn-context-unlock" class="btn btn-ghost btn-sm justify-start w-full rounded-none">Unlock</button>
+</div>
+
+{# ── Filter dropdown ── #}
+<div id="dropdown-filter" class="hidden fixed z-50 bg-base-200 border border-base-300 rounded-md shadow-md min-w-32">
+  <button id="btn-filter-all" class="btn btn-ghost btn-sm justify-start w-full rounded-none">All</button>
+  <div class="divider my-0"></div>
+  <button id="btn-filter-translated" class="btn btn-ghost btn-sm justify-start w-full rounded-none">Translated</button>
+  <button id="btn-filter-draft" class="btn btn-ghost btn-sm justify-start w-full rounded-none">Draft</button>
+  <button id="btn-filter-blank" class="btn btn-ghost btn-sm justify-start w-full rounded-none">Blank</button>
+</div>
+
+{# ── Propagation dropdown ── #}
+<div id="dropdown-propagation" class="hidden fixed z-50 bg-base-200 border border-base-300 rounded-md shadow-md min-w-48">
+  <button id="btn-settings-backward-propagation" class="btn btn-ghost btn-sm justify-start w-full rounded-none gap-2">
+    <input id="checkbox-backward-propagation" type="checkbox" checked class="checkbox checkbox-sm checkbox-primary" />
+    Backward Propagation
+  </button>
+  <button id="btn-settings-forward-propagation" class="btn btn-ghost btn-sm justify-start w-full rounded-none gap-2">
+    <input id="checkbox-forward-propagation" type="checkbox" checked class="checkbox checkbox-sm checkbox-primary" />
+    Forward Propagation
+  </button>
+</div>
+
+{# ── Submit translation overlay ── #}
+<div id="overlay-submit-translation">
+  <div class="bg-base-100 text-base-content">
+    <p class="text-center">Checking to see if all segments are translated...</p>
+  </div>
+  <div class="bg-base-100 text-base-content space-y-4">
+    <p>No untranslated segments found.</p>
+    <p>Are you sure you wish to proceed? You won't be able to further edit the file.</p>
+    <span class="flex gap-2">
+      <button class="advance-status btn btn-primary flex-1">Continue</button>
+      <button class="cancel btn btn-ghost flex-1">Return</button>
+    </span>
+  </div>
+  <div class="bg-base-100 text-base-content space-y-4">
+    <p>The following segments are not translated:</p>
+    <table class="tu border-collapse table-fixed w-full"></table>
+    <p>Are you sure you wish to proceed? You won't be able to further edit the file.</p>
+    <span class="flex gap-2">
+      <button class="advance-status btn btn-primary flex-1">Continue</button>
+      <button class="cancel btn btn-ghost flex-1">Return</button>
+    </span>
+  </div>
+</div>
+{% endblock %}

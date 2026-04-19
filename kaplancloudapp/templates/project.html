@@ -2,150 +2,210 @@
 {% load static %}
 {% block head %}
 <script type="text/javascript" src="{% static 'project.js' %}"></script>
+<style>
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgb(0 0 0 / 0.5); }
+  .modal-overlay.show { display: flex; }
+  #context-menu { display: none; }
+  #report-toast { display: none; }
+  #report-toast.show { display: flex; }
+</style>
 {% endblock %}
+
+{% block title %}{{ project.name }} | Kaplan Cloud{% endblock %}
+
+{% block navbar_center %}
+<div class="text-sm breadcrumbs">
+  <ul>
+    <li><a href="{% url 'projects' %}" class="text-base-content/60 hover:text-base-content">Projects</a></li>
+    <li class="font-semibold">{{ project.name }}</li>
+  </ul>
+</div>
+{% endblock %}
+
 {% block div %}
-{% if perms.kaplancloudapp.change_project %}
-<div id="assign-linguist-form" {% if form1.errors %}class="show"{% endif %}>
-  <form enctype="multipart/form-data" method="post">
-    {% csrf_token %}
-    <table>
-      {% if form1.username.errors %}
-      <tr>
-        <td colspan="2">{{form1.username.errors}}</td>
-      </tr>
+<div class="p-4 lg:p-6 space-y-6">
+
+  {# ── Files section ── #}
+  <section>
+    <h2 class="text-base font-semibold mb-3">Files</h2>
+    <div class="overflow-x-auto rounded-lg border border-base-300">
+      <table class="table table-sm">
+        <thead>
+          <tr class="bg-base-200/50">
+            <th scope="col" class="w-10"><input id="checkbox-main" type="checkbox" class="checkbox-sm" aria-label="Select all files"></th>
+            <th scope="col">Name</th>
+            <th scope="col">Status</th>
+            {% if perms.kaplancloudapp.change_project %}
+            <th scope="col">Translator</th>
+            <th scope="col">Reviewer</th>
+            {% endif %}
+            <th scope="col">Due By</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+          <tr class="file hover:bg-base-200/30 transition-colors" id="{{ file.uuid }}">
+            <th><input class="checkbox checkbox-sm" type="checkbox" aria-label="Select {{ file.name }}"></th>
+            <td>
+              <a href="{% url 'editor' file.uuid %}" class="link link-hover font-medium">{{ file.name }}</a>
+            </td>
+            <td>
+              <span class="badge badge-sm badge-ghost">{{ file.get_status }}</span>
+            </td>
+            {% if perms.kaplancloudapp.change_project %}
+            <td class="text-base-content/60">{{ file.translator.username|default:"-" }}</td>
+            <td class="text-base-content/60">{{ file.reviewer.username|default:"-" }}</td>
+            {% endif %}
+            <td class="text-base-content/60">
+              {% if file.due_by %}
+                {{ file.due_by }}
+              {% elif project.due_by %}
+                {{ project.due_by }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'editor' file.uuid %}" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center py-8 text-base-content/40">No files in this project.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {# ── Reference files section ── #}
+    <section>
+      <h2 class="text-base font-semibold mb-3">Reference</h2>
+      <div class="overflow-x-auto rounded-lg border border-base-300">
+        <table class="table table-sm">
+          <thead>
+            <tr class="bg-base-200/50">
+              <th scope="col">File</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ref in reference %}
+            <tr class="hover:bg-base-200/30 transition-colors">
+              <td><a href="{% url 'reference-file' ref.uuid %}" target="_blank" class="link link-hover">{{ ref.name }}</a></td>
+              <td>
+                <a href="{% url 'reference-file' ref.uuid %}" target="_blank" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="2" class="text-center py-6 text-base-content/40">No reference files.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    {# ── Reports section ── #}
+    <section>
+      <h2 class="text-base font-semibold mb-3">Reports</h2>
+      {% if reports %}
+      <ul class="space-y-1">
+        {% for report in reports %}
+        <li>
+          <a href="{% url 'report' report.uuid %}" target="_blank" class="link link-hover text-sm">{{ report.created_at }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-sm text-base-content/40">No reports yet.</p>
       {% endif %}
-      <tr>
-        <th>{{form1.username.label_tag}}</th>
-        <td>{{form1.username}}</td>
-      </tr>
-      <tr>
-        <th></th>
-        <td>{{form1.override}}<label for="{{ form1.override.id_for_label }}">Override assignments for selected files.</label></td>
-      </tr>
-      <tr>
-        <th></th>
-        <td>
-          {{form1.role}}
-          {{form1.file_uuids}}
-        </td>
-      </tr>
-      <tr>
-        <th></th>
-        <td><button type="submit" name="button">Assign</button></td>
-      </tr>
-      <input type="hidden" name="task">
-    </table>
+    </section>
+  </div>
+</div>
+
+{# ── Context menu (right-click) ── #}
+<div id="context-menu" class="fixed z-50 bg-base-100 border border-base-300 rounded-lg shadow-md py-1 min-w-[180px]">
+  <button id="context-btn-download-translation" type="button" class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200 transition-colors">Download Translation</button>
+  {% if perms.kaplancloudapp.change_project %}
+  <div class="divider my-0.5 px-3"></div>
+  <button id="context-btn-analyze" class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200 transition-colors">Analyze</button>
+  <button id="context-btn-export" class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200 transition-colors">Export</button>
+  <button id="context-btn-import" class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200 transition-colors">Import</button>
+  <div class="divider my-0.5 px-3"></div>
+  <button id="context-btn-assign-reviewer" class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200 transition-colors">Assign Reviewer</button>
+  <button id="context-btn-assign-translator" class="w-full text-left px-3 py-1.5 text-sm hover:bg-base-200 transition-colors">Assign Translator</button>
+  {% endif %}
+</div>
+
+{# ── Assign Linguist modal ── #}
+{% if perms.kaplancloudapp.change_project %}
+<div id="assign-linguist-form" class="modal-overlay {% if form1.errors %}show{% endif %}">
+  <form enctype="multipart/form-data" method="post" class="bg-base-100 rounded-lg shadow-lg w-full max-w-md p-6 space-y-4" @click.stop>
+    {% csrf_token %}
+    <h3 class="text-lg font-semibold">Assign Linguist</h3>
+    {% if form1.username.errors %}
+    <div class="text-error text-sm">{{ form1.username.errors }}</div>
+    {% endif %}
+    <div class="form-control">
+      <label class="label" for="{{ form1.username.id_for_label }}">
+        <span class="label-text">{{ form1.username.label }}</span>
+      </label>
+      {{ form1.username }}
+    </div>
+    <label class="flex items-center gap-2 cursor-pointer">
+      {{ form1.override }}
+      <span class="label-text text-sm">Override assignments for selected files.</span>
+    </label>
+    {{ form1.role }}
+    {{ form1.file_uuids }}
+    <input type="hidden" name="task">
+    <div class="flex justify-end gap-2 pt-2">
+      <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+    </div>
   </form>
 </div>
-<div id="kpp-upload-form" {% if form.errors %}class="show"{% endif %}>
-  <form enctype="multipart/form-data" method="post">
+
+{# ── KPP Upload modal ── #}
+<div id="kpp-upload-form" class="modal-overlay {% if form.errors %}show{% endif %}">
+  <form enctype="multipart/form-data" method="post" class="bg-base-100 rounded-lg shadow-lg w-full max-w-md p-6 space-y-4" @click.stop>
     {% csrf_token %}
-    <table>
-      {{form.as_table}}
-      <tr>
-        <th></th>
-        <td><button type="submit" name="button">Submit</button></td>
-      </tr>
-      <input type="hidden" name="task" value="import">
-    </table>
+    <h3 class="text-lg font-semibold">Import Package</h3>
+    {% for field in form %}
+    <div class="form-control">
+      <label class="label" for="{{ field.id_for_label }}">
+        <span class="label-text">{{ field.label }}</span>
+      </label>
+      {{ field }}
+    </div>
+    {% endfor %}
+    <input type="hidden" name="task" value="import">
+    <div class="flex justify-end gap-2 pt-2">
+      <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+    </div>
   </form>
 </div>
 {% endif %}
-<header id="header-project">
-  <nav>
-    <!--<a class="disabled" href="#" title="Not yet implemented">Settings</a> TODO-->
-    <!--<a class="disabled" href="#" title="Not yet implemented">Archive</a> TODO-->
-    {% if not user.is_authenticated %}
-    <a id="login" href="{% url 'login' %}"><span class="material-icons" title="login">login</span></a>
-    {% else %}
-    <a id="logout" href="{% url 'logout' %}"><span class="material-icons" title="logout">logout</span></a>
-    {% endif %}
-  </nav>
-</header>
-<div id="project">
-  <div>
-    <h3>Files</h3>
-    <table>
-      <tr>
-        <th><input id="checkbox-main" type="checkbox"></th>
-        <th>Name</th>
-        <th>Status</th>
-        {% if perms.kaplancloudapp.change_project %}
-        <th>Translator</th>
-        <th>Reviewer</th>
-        {% endif %}
-        <th>Due by</th>
-      </tr>
-      {% for file in files %}
-      <tr class="file" id="{{ file.uuid }}">
-        <th><input class="checkbox" type="checkbox"></th>
-        <td><a href="{% url 'editor' file.uuid %}">{{file.name}}</a></td>
-        <td>{{file.get_status}}</td>
-        {% if perms.kaplancloudapp.change_project %}
-        <td>
-          {% if file.translator %}
-            {{file.translator.username}}
-          {% else %}
-            -
-          {% endif %}
-        </td>
-        <td>
-          {% if file.reviewer %}
-            {{file.reviewer.username}}
-          {% else %}
-            -
-          {% endif %}
-        </td>
-        {% endif %}
-        <td>
-            {% if file.due_by %}
-              {{file.due_by}}
-            {% elif project.due_by %}
-              {{project.due_by}}
-            {% else %}
-              -
-            {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </table>
-  </div>
-  <div>
-    <h3>Reference</h3>
-    <table>
-      <tr>
-        <th>File</th>
-      </tr>
-      {% for ref in reference %}
-      <tr>
-        <td><a href="{% url 'reference-file' ref.uuid %}" target="_blank">{{ ref.name }}</a></td>
-      </tr>
-      {% endfor %}
-    </table>
-  </div>
-  <div>
-    <h3>Reports</h3>
-    <ul>
-      {% for report in reports %}
-      <li><a href="{% url 'report' report.uuid %}" target="_blank">{{report.created_at}}</a></li>
-      {% endfor %}
-    </ul>
-  </div>
-</div>
-<div id="context-menu">
-  <button id="context-btn-download-translation" type="button">Download Translation</button>
-  {% if perms.kaplancloudapp.change_project %}
-  <hr/>
-  <button id="context-btn-analyze">Analyze</button>
-  <button id="context-btn-export">Export</button>
-  <button id="context-btn-import">Import</button>
-  <hr/>
-  <button id="context-btn-assign-reviewer">Assign Reviewer</button>
-  <button id="context-btn-assign-translator">Assign Translator</button>
-  {% endif %}
-</div>
-<div id="report-toast">
+
+{# ── Report toast ── #}
+<div id="report-toast" class="fixed bottom-4 right-4 z-50 items-center gap-3 bg-base-100 border border-base-300 rounded-lg shadow-lg px-4 py-3 text-sm">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
   <p>Your report is ready. Please refresh this page to see it listed.</p>
 </div>
+
 {% csrf_token %}
 {% endblock %}

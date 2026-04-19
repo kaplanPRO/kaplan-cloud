@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     "storages",
     "rest_framework",
     "rest_framework.authtoken",
+    "tailwind",
+    "theme",
     "kaplancloudaccounts",
     "kaplancloudapi",
     "kaplancloudapp",
@@ -119,6 +121,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
+
+TAILWIND_APP_NAME = "theme"
 
 STATIC_URL = "/static/"
 

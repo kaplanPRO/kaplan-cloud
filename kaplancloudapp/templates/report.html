@@ -1,45 +1,58 @@
-{% extends "base.html" %}
-{% block title %}
-Kaplan Cloud
+{% extends "index.html" %}
+{% block title %}Report | {{ project.name }} | Kaplan Cloud{% endblock %}
+
+{% block navbar_center %}
+<ul class="breadcrumb text-sm">
+  <li><a href="{% url 'projects' %}" class="link link-hover">Projects</a></li>
+  <li><a href="{% url 'project' project.uuid %}" class="link link-hover">{{ project.name }}</a></li>
+  <li>Report — {{ report.created_at|date:"N j, Y, P" }}</li>
+</ul>
 {% endblock %}
-{% block body %}
-<main>
-  <table>
-    <tr>
-      <th>File</th>
-      <th>Repetitions</th>
-      <th>100%</th>
-      <th>95%-99%</th>
-      <th>85%-94%</th>
-      <th>75%-84%</th>
-      <th>50%-74%</th>
-      <th>New</th>
-      <th>Total</th>
-    </tr>
-    <tr>
-      <td>Total</td>
-      <td>{{ total.Repetitions }}</td>
-      <td>{{ total.100 }}</td>
-      <td>{{ total.95 }}</td>
-      <td>{{ total.85 }}</td>
-      <td>{{ total.75 }}</td>
-      <td>{{ total.50 }}</td>
-      <td>{{ total.New }}</td>
-      <td>{{ total.Total }}</td>
-    </tr>
-    {% for name, report in files.items %}
-    <tr>
-      <td>{{ name }}</td>
-      <td>{{ report.Repetitions }}</td>
-      <td>{{ report.100 }}</td>
-      <td>{{ report.95 }}</td>
-      <td>{{ report.85 }}</td>
-      <td>{{ report.75 }}</td>
-      <td>{{ report.50 }}</td>
-      <td>{{ report.New }}</td>
-      <td>{{ report.Total }}</td>
-    </tr>
-    {% endfor %}
-  </table>
-</main>
+
+{% block div %}
+<section class="p-4 lg:p-6">
+  <div class="overflow-x-auto rounded-lg border border-base-300">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th scope="col">File</th>
+          <th scope="col">Repetitions</th>
+          <th scope="col">100%</th>
+          <th scope="col">95%-99%</th>
+          <th scope="col">85%-94%</th>
+          <th scope="col">75%-84%</th>
+          <th scope="col">50%-74%</th>
+          <th scope="col">New</th>
+          <th scope="col">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="font-semibold">
+          <td>Total</td>
+          <td>{{ total.Repetitions }}</td>
+          <td>{{ total.100 }}</td>
+          <td>{{ total.95 }}</td>
+          <td>{{ total.85 }}</td>
+          <td>{{ total.75 }}</td>
+          <td>{{ total.50 }}</td>
+          <td>{{ total.New }}</td>
+          <td>{{ total.Total }}</td>
+        </tr>
+        {% for name, report in files.items %}
+        <tr>
+          <td>{{ name }}</td>
+          <td>{{ report.Repetitions }}</td>
+          <td>{{ report.100 }}</td>
+          <td>{{ report.95 }}</td>
+          <td>{{ report.85 }}</td>
+          <td>{{ report.75 }}</td>
+          <td>{{ report.50 }}</td>
+          <td>{{ report.New }}</td>
+          <td>{{ report.Total }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {% endblock %}

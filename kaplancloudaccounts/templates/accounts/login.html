@@ -3,44 +3,49 @@
 {% block title %}Log In | Kaplan Cloud{% endblock %}
 
 {% block body %}
-<main id="login">
-  <div id="login-window">
-    <div>
+<div class="min-h-screen flex items-center justify-center bg-base-200 p-4">
+  <div class="card w-full max-w-sm bg-base-100 shadow-md">
+    <div class="card-body">
+      <h2 class="card-title justify-center text-xl mb-2">Log In</h2>
+
       {% if form.errors %}
-      <p>Your username and password didn't match. Please try again.</p>
+      <div class="alert alert-error text-sm">
+        Your username and password didn't match. Please try again.
+      </div>
       {% endif %}
 
       {% if next %}
-          {% if user.is_authenticated %}
-          <p>Your account doesn't have access to this page. To proceed,<br/>
-          please log in with an account that has access.</p>
-          {% else %}
-          <p>Please log in to see this page.</p>
-          {% endif %}
+        {% if user.is_authenticated %}
+        <div class="alert alert-warning text-sm">
+          Your account doesn't have access to this page. Please log in with an account that has access.
+        </div>
+        {% else %}
+        <div class="alert alert-info text-sm">
+          Please log in to see this page.
+        </div>
+        {% endif %}
       {% endif %}
 
-      <form method="post" action="{% url 'login' %}">
-      {% csrf_token %}
-      <table>
-      <tr>
-          <td>{{ form.username.label_tag }}</td>
-          <td>{{ form.username }}</td>
-      </tr>
-      <tr>
-          <td>{{ form.password.label_tag }}</td>
-          <td>{{ form.password }}</td>
-      </tr>
-      <tr>
-          <td></td>
-          <td><button type="submit">Log In</button></td>
-      </tr>
-      </table>
-      <input type="hidden" name="next" value="{{ next }}">
+      <form method="post" action="{% url 'login' %}" class="space-y-4">
+        {% csrf_token %}
+        <div class="form-control">
+          <label class="label" for="{{ form.username.id_for_label }}">
+            <span class="label-text">Username</span>
+          </label>
+          {{ form.username }}
+        </div>
+        <div class="form-control">
+          <label class="label" for="{{ form.password.id_for_label }}">
+            <span class="label-text">Password</span>
+          </label>
+          {{ form.password }}
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="pt-2">
+          <button type="submit" class="btn btn-primary w-full">Log In</button>
+        </div>
       </form>
     </div>
   </div>
-  <footer>
-    <p>v0.5.1</p>
-  </footer>
-</main>
+</div>
 {% endblock %}
