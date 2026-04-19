@@ -82,7 +82,8 @@ window.onload = function() {
   document.body.addEventListener('focusin', function(e) {
     if (e.target.classList.contains('target')) {
       currentSegment = e.target.parentElement;
-      commentForm.style.display = 'block';
+      document.getElementById('btn-add-comment').classList.remove('hidden');
+      commentForm.classList.add('hidden');
 
       while (comments.children.length > 1) {
         comments.removeChild(comments.children[1]);
@@ -102,21 +103,21 @@ window.onload = function() {
 
         comments_data = data['comments'];
         Object.keys(comments_data).forEach((key, i) => {
-          commentSpan = document.createElement('span');
-          commentSpan.className = 'comment';
+          commentSpan = document.createElement('div');
+          commentSpan.className = 'comment grid gap-1 w-full border border-base-300 p-2 mb-2 rounded-md cursor-pointer text-sm break-words hover:border-base-content/40';
 
           commentP = document.createElement('p');
           commentP.textContent = comments_data[key]['comment'];
           commentSpan.appendChild(commentP);
 
-          commentDetailsSpan = document.createElement('span');
-          commentDetailsSpan.className = 'details';
+          commentDetailsSpan = document.createElement('div');
+          commentDetailsSpan.className = 'flex items-center gap-1 border-t border-base-300/30 pt-1';
           userP = document.createElement('p');
-          userP.className = 'detail';
+          userP.className = 'text-[0.7rem] text-base-content/50 flex-1';
           userP.textContent = comments_data[key]['created_by'];
           commentDetailsSpan.appendChild(userP);
           datetimeP = document.createElement('p');
-          datetimeP.className = 'detail';
+          datetimeP.className = 'text-[0.7rem] text-base-content/50';
           datetimeP.textContent = new Date(comments_data[key]['created_at']).toLocaleString();
           commentDetailsSpan.appendChild(datetimeP);
           commentSpan.appendChild(commentDetailsSpan);
@@ -147,7 +148,7 @@ window.onload = function() {
       document.getElementById('concordance').oninput();
       return;
     }
-    if (e.target.tagName.toLowerCase() !== 'td' || e.target.className !== 'target')
+    if (e.target.tagName.toLowerCase() !== 'td' || !e.target.classList.contains('target'))
     {
       return;
     }
@@ -261,25 +262,25 @@ window.onload = function() {
   document.body.onclick = function(e) {
     if (['ec', 'g', 'sc', 'ph', 'x'].includes(e.target.tagName.toLowerCase())
         && e.target.parentElement.tagName.toLowerCase() === 'td'
-        && e.target.parentElement.className === 'source')
+        && e.target.parentElement.classList.contains('source'))
     {
       e.target.parentElement.nextElementSibling.innerHTML += e.target.outerHTML;
     }
-    else if (e.target.tagName.toLowerCase() === 'button' && e.target.className === 'cancel')
+    else if (e.target.tagName.toLowerCase() === 'button' && e.target.classList.contains('cancel'))
     {
       closeOverlay();
     }
-    else if (e.target.tagName.toLowerCase() === 'button' && e.target.className === 'advance-status')
+    else if (e.target.tagName.toLowerCase() === 'button' && e.target.classList.contains('advance-status'))
     {
       advanceFileStatus();
     }
-    else if (e.target.className === 'tm-hit')
+    else if (e.target.classList.contains('tm-hit'))
     {
       currentSegment.children[2].innerHTML = e.target.children[1].innerHTML;
       currentSegment.children[2].parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
       currentSegment.children[2].parentElement.classList.add('draft');
     }
-    else if (e.target.parentElement.className === 'tm-hit')
+    else if (e.target.parentElement.classList.contains('tm-hit'))
     {
       currentSegment.children[2].innerHTML = e.target.parentElement.children[1].innerHTML;
       currentSegment.children[2].parentElement.classList.remove('blank', 'error', 'translated', 'reviewed');
@@ -393,26 +394,29 @@ window.onload = function() {
       )
       .then(response => response.json())
       .then(data => {
-        commentSpan = document.createElement('span');
-        commentSpan.className = 'comment';
+        commentSpan = document.createElement('div');
+        commentSpan.className = 'comment grid gap-1 w-full border border-base-300 p-2 mb-2 rounded-md cursor-pointer text-sm break-words hover:border-base-content/40';
 
         commentP = document.createElement('p');
         commentP.textContent = data['comment'];
         commentSpan.appendChild(commentP);
 
-        commentDetailsSpan = document.createElement('span');
-        commentDetailsSpan.className = 'details';
+        commentDetailsSpan = document.createElement('div');
+        commentDetailsSpan.className = 'flex items-center gap-1 border-t border-base-300/30 pt-1';
         userP = document.createElement('p');
-        userP.className = 'detail';
+        userP.className = 'text-[0.7rem] text-base-content/50 flex-1';
         userP.textContent = data['created_by'];
         commentDetailsSpan.appendChild(userP);
         datetimeP = document.createElement('p');
-        datetimeP.className = 'detail';
+        datetimeP.className = 'text-[0.7rem] text-base-content/50';
         datetimeP.textContent = new Date(data['created_at']).toLocaleString();
         commentDetailsSpan.appendChild(datetimeP);
         commentSpan.appendChild(commentDetailsSpan);
 
         comments.appendChild(commentSpan);
+        commentForm.classList.add('hidden');
+        commentForm.reset();
+        document.getElementById('btn-add-comment').classList.remove('hidden');
       })
       .catch(error => {
         console.error(error);
@@ -571,8 +575,8 @@ window.onload = function() {
     }
 
     tm_data.forEach((tm_hit, i) => {
-      hitSpan = document.createElement('span');
-      hitSpan.className = 'tm-hit'
+      hitSpan = document.createElement('div');
+      hitSpan.className = 'tm-hit grid gap-1 w-full border border-base-300 p-2 mb-2 rounded-md cursor-pointer text-sm break-words hover:border-base-content/40';
       sourceP = document.createElement('p');
       sourceP.innerHTML = tm_hit[1]['source'];
       [...sourceP.children].forEach((child, i) => {
@@ -580,7 +584,6 @@ window.onload = function() {
         child.draggable = 'true';
       });
       hitSpan.appendChild(sourceP);
-      //hitSpan.appendChild(document.createElement('hr'));
       targetP = document.createElement('p');
       targetP.innerHTML = tm_hit[1]['target'];
       [...targetP.children].forEach((child, i) => {
@@ -589,20 +592,20 @@ window.onload = function() {
       });
       hitSpan.appendChild(targetP);
 
-      hitDetailsSpan = document.createElement('span');
-      hitDetailsSpan.className = 'details';
+      hitDetailsSpan = document.createElement('div');
+      hitDetailsSpan.className = 'flex items-center gap-1 border-t border-base-300/30 pt-1';
       matchP = document.createElement('p');
-      matchP.className = 'detail';
+      matchP.className = 'text-[0.7rem] text-base-content/50';
       if (display_diff) {
         matchP.textContent = new Intl.NumberFormat(undefined, {style:'percent'}).format(tm_hit[0]);
       }
       hitDetailsSpan.appendChild(matchP);
       userP = document.createElement('p');
-      userP.className = 'detail';
+      userP.className = 'text-[0.7rem] text-base-content/50 flex-1 text-center';
       userP.textContent = tm_hit[1]['updated_by'];
       hitDetailsSpan.appendChild(userP);
       datetimeP = document.createElement('p');
-      datetimeP.className = 'detail';
+      datetimeP.className = 'text-[0.7rem] text-base-content/50';
       datetimeP.textContent = new Date(tm_hit[1]['updated_at']).toLocaleString();
       hitDetailsSpan.appendChild(datetimeP);
       hitSpan.appendChild(hitDetailsSpan);
@@ -667,15 +670,14 @@ window.onload = function() {
     propagationDropdown.classList.toggle('hidden');
   }
 }
-function toggleExpand(span)
+function toggleExpand(btn)
 {
-  if (span.textContent === 'expand_more')
-  {
-    span.textContent = 'expand_less';
-    span.parentElement.nextSibling.nextElementSibling.hidden = false;
-  } else
-  {
-    span.textContent = 'expand_more';
-    span.parentElement.nextSibling.nextElementSibling.hidden = true;
-  }
+  const panel = btn.closest('.sidebar').querySelector('.sidebar-panel');
+  const expanded = btn.getAttribute('data-expanded') === 'true';
+  btn.setAttribute('data-expanded', !expanded);
+  panel.hidden = expanded;
+  // Rotate icon: chevron points right when collapsed, down when expanded
+  const svg = btn.querySelector('svg');
+  svg.classList.toggle('-rotate-90', expanded);
+  svg.classList.toggle('rotate-0', !expanded);
 }
