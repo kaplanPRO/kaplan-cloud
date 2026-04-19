@@ -69,6 +69,7 @@
           <th scope="col">Source Language</th>
           <th scope="col">Target Language</th>
           <th scope="col">Client</th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
@@ -80,10 +81,17 @@
           <td>{{ tm.source_language }}</td>
           <td>{{ tm.target_language }}</td>
           <td class="text-base-content/60">{{ tm.client.name|default:"-" }}</td>
+          <td>
+            <a href="{% url 'tm' tm.uuid %}" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </a>
+          </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="4" class="text-center py-8 text-base-content/40">No translation memories found.</td>
+          <td colspan="5" class="text-center py-8 text-base-content/40">No translation memories found.</td>
         </tr>
         {% endfor %}
       </tbody>

@@ -40,6 +40,7 @@
             <th scope="col">Reviewer</th>
             {% endif %}
             <th scope="col">Due By</th>
+            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
@@ -65,10 +66,17 @@
                 -
               {% endif %}
             </td>
+            <td>
+              <a href="{% url 'editor' file.uuid %}" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+              </a>
+            </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="6" class="text-center py-8 text-base-content/40">No files in this project.</td>
+            <td colspan="7" class="text-center py-8 text-base-content/40">No files in this project.</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -85,16 +93,24 @@
           <thead>
             <tr class="bg-base-200/50">
               <th scope="col">File</th>
+              <th scope="col"></th>
             </tr>
           </thead>
           <tbody>
             {% for ref in reference %}
             <tr class="hover:bg-base-200/30 transition-colors">
               <td><a href="{% url 'reference-file' ref.uuid %}" target="_blank" class="link link-hover">{{ ref.name }}</a></td>
+              <td>
+                <a href="{% url 'reference-file' ref.uuid %}" target="_blank" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </a>
+              </td>
             </tr>
             {% empty %}
             <tr>
-              <td class="text-center py-6 text-base-content/40">No reference files.</td>
+              <td colspan="2" class="text-center py-6 text-base-content/40">No reference files.</td>
             </tr>
             {% endfor %}
           </tbody>

@@ -71,6 +71,7 @@
           <th scope="col">Status</th>
           <th scope="col">Due By</th>
           <th scope="col">Client</th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
@@ -86,10 +87,17 @@
           </td>
           <td class="text-base-content/60">{{ project.due_by|default:"-" }}</td>
           <td class="text-base-content/60">{{ project.client.name|default:"-" }}</td>
+          <td>
+            <a href="{% url 'project' project.uuid %}" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </a>
+          </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="6" class="text-center py-8 text-base-content/40">No projects found.</td>
+          <td colspan="7" class="text-center py-8 text-base-content/40">No projects found.</td>
         </tr>
         {% endfor %}
       </tbody>
