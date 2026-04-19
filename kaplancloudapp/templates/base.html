@@ -2,6 +2,13 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
+    <script>
+      // Apply saved theme before paint to prevent flash
+      (function() {
+        var t = localStorage.getItem('theme') || 'kaplan-light';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {# Compiled Tailwind + daisyUI CSS #}

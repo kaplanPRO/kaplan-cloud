@@ -32,14 +32,14 @@
       <table class="table table-sm">
         <thead>
           <tr class="bg-base-200/50">
-            <th class="w-10"><input id="checkbox-main" type="checkbox" class="checkbox-sm" aria-label="Select all files"></th>
-            <th>Name</th>
-            <th>Status</th>
+            <th scope="col" class="w-10"><input id="checkbox-main" type="checkbox" class="checkbox-sm" aria-label="Select all files"></th>
+            <th scope="col">Name</th>
+            <th scope="col">Status</th>
             {% if perms.kaplancloudapp.change_project %}
-            <th>Translator</th>
-            <th>Reviewer</th>
+            <th scope="col">Translator</th>
+            <th scope="col">Reviewer</th>
             {% endif %}
-            <th>Due By</th>
+            <th scope="col">Due By</th>
           </tr>
         </thead>
         <tbody>
@@ -84,7 +84,7 @@
         <table class="table table-sm">
           <thead>
             <tr class="bg-base-200/50">
-              <th>File</th>
+              <th scope="col">File</th>
             </tr>
           </thead>
           <tbody>

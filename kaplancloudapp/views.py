@@ -736,14 +736,22 @@ def reference_file(request, uuid):
 
 @login_required
 def report(request, uuid):
-    project_report = ProjectReport.objects.get(uuid=uuid)
+    project_report = ProjectReport.objects.select_related("project").get(uuid=uuid)
     if request.GET.get("task") == "get_status":
         return JsonResponse({"status": project_report.status})
-    project_report = project_report.content
-    total_report = project_report["Total"]
-    del project_report["Total"]
+    project = project_report.project
+    report_content = project_report.content
+    total_report = report_content["Total"]
+    del report_content["Total"]
     return render(
-        request, "report.html", {"total": total_report, "files": project_report}
+        request,
+        "report.html",
+        {
+            "project": project,
+            "report": project_report,
+            "total": total_report,
+            "files": report_content,
+        },
     )
 
 
