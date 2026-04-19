@@ -1,6 +1,6 @@
 # Kaplan Cloud — UI Overhaul Design Document
 
-**Status:** In progress · S5 complete, S6 next
+**Status:** Complete · S6 done
 **Last updated:** 2026-04-19
 **Branch:** `claude/ui-overhaul-planning-ZlwnV`
 
@@ -60,10 +60,10 @@ Kaplan Cloud is a functional Django-based translation management system. The UI 
 | `accounts/login.html` | `base.html` | Login form |
 | `accounts/register.html` | `base.html` | Registration form |
 | `accounts/change-password.html` | `base.html` | Password change form |
-| `editor.html` | *(standalone)* | Full-page translation editor |
-| `report.html` | *(standalone)* | Translation analysis report |
+| `editor.html` | `base.html` | Full-page translation editor |
+| `report.html` | `index.html` | Translation analysis report |
 
-`editor.html` and `report.html` do **not** extend `base.html` — they are self-contained pages with their own CSS links.
+`editor.html` extends `base.html` directly (no sidebar shell). `report.html` extends `index.html` (full sidebar/navbar shell with breadcrumb navigation).
 
 ### Static file inventory
 
@@ -71,7 +71,7 @@ Kaplan Cloud is a functional Django-based translation management system. The UI 
 |---|---|---|---|
 | `main.css` | 236 | Global layout (CSS Grid shell, nav, buttons, modals, toasts, tables) | **Removed in S2** — caused global selector conflicts with daisyUI; `@layer legacy` wrapping was attempted but ineffective (Tailwind v4 also uses `@layer` internally) |
 | `editor.css` | 151 | Editor-specific styles (3-col grid, segment rows, sidebars, filter dropdown) | **Removed in S5** — replaced by Tailwind utilities in `editor.html` + segment status rules in `styles.css` |
-| `main.js` | 5 | Search form toggle on Projects/TMs pages | To replace with Alpine `x-show` in S3 |
+| `main.js` | 5 | Search form toggle on Projects/TMs pages | **Removed in S6** — replaced by Alpine `x-show` in S3; file was orphaned |
 | `editor.js` | 681 | Full editor logic: contenteditable, TM/comment lookups, propagation, keyboard shortcuts, submission workflow | Preserved as-is |
 | `project.js` | 242 | Project page: checkbox selection, context menus, file operations, linguist assignment | Minimal updates in S3 |
 | `newproject.js` | 33 | Dynamic TM dropdown population via Fetch | No changes needed |
@@ -482,7 +482,7 @@ Current templates have minimal ARIA. Add:
 | **S3** ✅ | Project management screens | `projects.html`, `project.html`, `newproject.html`; daisyUI tables; form-control markup; modals reskinned; `_apply_daisy_classes()` for forms |
 | **S4** ✅ | TM + auth screens | `translation-memories.html`, `tm.html`, `newtm.html`, `tm-import.html`; auth templates; `_apply_daisy_classes` for auth forms; HTML help_text fix |
 | **S5** ✅ | Editor reskin | `editor.html` reskinned (extends `base.html`); `editor.css` removed; `editor.js` classList fixes + TM/comment Tailwind refactor; segment status CSS in theme; sidebar UX improvements |
-| **S6** | Polish + report | `report.html`; accessibility audit; tablet layout pass; visual consistency review |
+| **S6** ✅ | Polish + report | `report.html` reskinned; accessibility audit; tablet layout pass; visual consistency review; theme persistence fix; sidebar/navbar border alignment |
 
 ### Session 2 entry checklist
 
@@ -569,3 +569,24 @@ All items confirmed during Session 1 design review:
 - **`toggleExpand()` Material Icons dependency** — original function checked `span.textContent === 'expand_more'` to determine state. **Resolution:** replaced with `data-expanded` attribute on the button + `classList.toggle('-rotate-90')` / `classList.toggle('rotate-0')` on the SVG chevron.
 - **TM hit/comment bubbles styled via custom CSS** — original approach used bare class names (`tm-hit`, `comment`, `details`, `detail`) with ~45 lines of custom CSS including manual dark mode overrides with `oklch()` colors. **Resolution:** refactored to apply Tailwind utilities directly in JS (`border-base-300`, `text-base-content/50`, etc.) — daisyUI theme tokens handle light/dark automatically, eliminating all manual overrides.
 - **Comment form UX** — the textarea + Submit button appeared immediately on segment focus, consuming most of the sidebar vertical space and pushing existing comments out of view. **Resolution:** replaced with a compact "Add Comment" button that reveals the form on click; Cancel button dismisses it; form auto-hides and resets after successful submit.
+
+### S6 — Polish, report, and full audit (2026-04-19)
+
+**Completed:**
+- `report.html` reskinned: extends `index.html` (sidebar/navbar shell), daisyUI `table table-sm`, breadcrumb navigation (Projects > Project Name > Report date), `overflow-x-auto` for tablet
+- `views.py` report view updated: `select_related("project")`, passes `project`, `total`, and `files` context separately
+- `main.js` deleted (orphaned since S3 — Alpine `x-show` replaced its toggle logic)
+- Accessibility: `scope="col"` added to all `<th>` elements across 5 templates (`projects.html`, `project.html`, `translation-memories.html`, `tm.html`, `report.html`)
+- Accessibility: ARIA labels added to editor sidebar expand buttons (`aria-label="Toggle comments/TM panel"`)
+- Accessibility: `<aside>` landmark elements with `aria-label` wrapping both editor sidebars (Comments, Translation Memory)
+- Accessibility: `sr-only` label added to concordance search input
+- Tablet responsiveness: editor sidebar panels changed from `w-64` to `w-48 lg:w-64`
+- Theme persistence: moved theme init script from `editor.html` to `base.html` — dark mode now works on all pages including login, register, and change-password
+- Visual fix: sidebar brand height aligned with navbar (`h-14` → `h-16`) so bottom borders form a continuous line
+- Compiled CSS rebuilt
+
+**Findings:**
+- **Theme init missing from `base.html`** — only `editor.html` had the inline `<script>` that reads `localStorage` and sets `data-theme` before paint. `index.html` relied on Alpine `x-init` on the sidebar toggle checkbox to set the checked state, but this doesn't apply the theme on page load — it only initializes the checkbox visual state. Auth pages (login, register, change-password) had no theme support at all. **Resolution:** moved the blocking theme init script to `base.html` `<head>` so all pages inherit it; removed the duplicate from `editor.html`.
+- **Sidebar/navbar border misalignment** — the sidebar brand section used `h-14` (56px) while the daisyUI `navbar` defaults to `min-h-16` (64px), causing their bottom borders to sit at different vertical positions. **Resolution:** changed sidebar brand to `h-16`.
+- **Tailwind CSS rebuild required after class changes** — adding new utility classes (e.g. `h-16`, `w-48`) to templates requires `python manage.py tailwind build` before they take effect, since Tailwind scans source files at build time. Forgetting to rebuild results in classes being present in HTML but having no CSS rules.
+- **Playwright browser caching** — Playwright's Chromium instance aggressively caches static assets. After rebuilding CSS or JS, a simple `page.reload()` may still serve stale files. Cache-busting via query parameter (`?_=timestamp`) or full browser restart is needed for verification.
