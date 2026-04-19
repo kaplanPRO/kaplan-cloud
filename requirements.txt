@@ -1,6 +1,0 @@
-Django~=5.2
-djangorestframework~=3.17
-django-storages[boto3,google]>=1.14,<2.0
-kaplan>=0.16,<0.17
-psycopg2-binary>=2.9
-django-tailwind>=3.8

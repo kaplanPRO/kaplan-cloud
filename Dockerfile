@@ -9,8 +9,7 @@ RUN apt-get update && \
     apt-get install -y postgresql-client
 
 RUN pip install -U pip && \
-    pip install -r requirements.txt && \
-    pip install gunicorn
+    pip install --group prod
 
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
