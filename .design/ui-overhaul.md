@@ -1,7 +1,7 @@
 # Kaplan Cloud — UI Overhaul Design Document
 
-**Status:** In progress · S4 complete, S5 next
-**Last updated:** 2026-04-18
+**Status:** In progress · S5 complete, S6 next
+**Last updated:** 2026-04-19
 **Branch:** `claude/ui-overhaul-planning-ZlwnV`
 
 ---
@@ -70,7 +70,7 @@ Kaplan Cloud is a functional Django-based translation management system. The UI 
 | File | Lines | Purpose | Status |
 |---|---|---|---|
 | `main.css` | 236 | Global layout (CSS Grid shell, nav, buttons, modals, toasts, tables) | **Removed in S2** — caused global selector conflicts with daisyUI; `@layer legacy` wrapping was attempted but ineffective (Tailwind v4 also uses `@layer` internally) |
-| `editor.css` | 151 | Editor-specific styles (3-col grid, segment rows, sidebars, filter dropdown) | To migrate in S5 |
+| `editor.css` | 151 | Editor-specific styles (3-col grid, segment rows, sidebars, filter dropdown) | **Removed in S5** — replaced by Tailwind utilities in `editor.html` + segment status rules in `styles.css` |
 | `main.js` | 5 | Search form toggle on Projects/TMs pages | To replace with Alpine `x-show` in S3 |
 | `editor.js` | 681 | Full editor logic: contenteditable, TM/comment lookups, propagation, keyboard shortcuts, submission workflow | Preserved as-is |
 | `project.js` | 242 | Project page: checkbox selection, context menus, file operations, linguist assignment | Minimal updates in S3 |
@@ -481,7 +481,7 @@ Current templates have minimal ARIA. Add:
 | **S2** ✅ | Shell + navigation | `django-tailwind` set up; `base.html` + `index.html` reskinned; sidebar nav; header; theme toggle (light/dark); Inter + Heroicons; `main.css` removed |
 | **S3** ✅ | Project management screens | `projects.html`, `project.html`, `newproject.html`; daisyUI tables; form-control markup; modals reskinned; `_apply_daisy_classes()` for forms |
 | **S4** ✅ | TM + auth screens | `translation-memories.html`, `tm.html`, `newtm.html`, `tm-import.html`; auth templates; `_apply_daisy_classes` for auth forms; HTML help_text fix |
-| **S5** | Editor reskin | `editor.html` + `editor.css` replaced; JS logic preserved; segment table; TM/comments sidebars; status badges; filter bar |
+| **S5** ✅ | Editor reskin | `editor.html` reskinned (extends `base.html`); `editor.css` removed; `editor.js` classList fixes + TM/comment Tailwind refactor; segment status CSS in theme; sidebar UX improvements |
 | **S6** | Polish + report | `report.html`; accessibility audit; tablet layout pass; visual consistency review |
 
 ### Session 2 entry checklist
@@ -551,3 +551,21 @@ All items confirmed during Session 1 design review:
 **Findings:**
 - **HTML help_text in tooltips** — `UserRegistrationForm.password1` used `password_validators_help_text_html()` which produces `<ul><li>...</li></ul>`. When placed in a `title` attribute, raw HTML tags appear as literal text in the tooltip. **Resolution:** changed to `password_validators_help_texts()` (returns plain text list, joined with spaces). For `PasswordChangeForm` (Django built-in, can't modify field definition), applied `strip_tags()` to help_text in the view.
 - **Auth pages and dark mode** — auth templates extend `base.html` directly (no sidebar/theme toggle). Dark mode activates via `prefers-color-scheme` since the `kaplan-dark` theme has `prefersdark: true`. No manual toggle on auth pages — acceptable since these are pre-login screens.
+
+### S5 — Editor reskin (2026-04-18/19)
+
+**Completed:**
+- `editor.html` rewritten to extend `base.html`: full Tailwind layout, daisyUI navbar, Heroicons, dark mode toggle, no more Material Icons/Ubuntu/main.css/editor.css dependencies
+- `editor.js` compatibility fixes: 6 `className ===` comparisons → `classList.contains()` (same pattern as S3); `toggleExpand()` rewritten to use `data-expanded` attribute + `classList.toggle()` for SVG rotation
+- TM hit and comment bubble creation refactored: bare `className` assignments replaced with Tailwind utility classes applied directly in JS; ~45 lines of custom CSS removed from `styles.css`
+- Sidebar UX: expand/collapse with Heroicons chevrons, fixed-width panels (`w-64`), "Add Comment" button (form hidden until clicked, with Cancel to dismiss)
+- Segment status color rules added to `theme/static_src/src/styles.css` with dark mode overrides
+- Overlay visibility rules moved from `editor.css` to theme CSS
+- `editor.css` deleted entirely
+
+**Findings:**
+- **daisyUI `.toggle` class collision** — sidebar content panels used a CSS class `toggle` which collides with daisyUI's built-in toggle switch component. daisyUI applied `display: grid`, a 3-column template, and ~24px fixed height to the panels, crushing them into thin slivers. **Resolution:** renamed to `.sidebar-panel` in both HTML and JS.
+- **`className ===` exact-match checks** — same issue as S3. Adding Tailwind classes to elements breaks `className === 'target'` comparisons. **Resolution:** mechanical replacement with `classList.contains()` (6 occurrences).
+- **`toggleExpand()` Material Icons dependency** — original function checked `span.textContent === 'expand_more'` to determine state. **Resolution:** replaced with `data-expanded` attribute on the button + `classList.toggle('-rotate-90')` / `classList.toggle('rotate-0')` on the SVG chevron.
+- **TM hit/comment bubbles styled via custom CSS** — original approach used bare class names (`tm-hit`, `comment`, `details`, `detail`) with ~45 lines of custom CSS including manual dark mode overrides with `oklch()` colors. **Resolution:** refactored to apply Tailwind utilities directly in JS (`border-base-300`, `text-base-content/50`, etc.) — daisyUI theme tokens handle light/dark automatically, eliminating all manual overrides.
+- **Comment form UX** — the textarea + Submit button appeared immediately on segment focus, consuming most of the sidebar vertical space and pushing existing comments out of view. **Resolution:** replaced with a compact "Add Comment" button that reveals the form on click; Cancel button dismisses it; form auto-hides and resets after successful submit.
