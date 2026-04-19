@@ -13,6 +13,7 @@ A Django-based cloud translation management system. Manages translation projects
 Local dev uses SQLite by default — no database setup needed.
 
 ```bash
+cp .env.example .env                        # then fill in SECRET_KEY
 uv sync                                     # or: pip install --group dev
 python manage.py migrate
 python manage.py runserver 0.0.0.0:8080
