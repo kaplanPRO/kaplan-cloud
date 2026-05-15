@@ -5,6 +5,7 @@ from pathlib import Path
 
 import regex
 from django.apps import apps
+from django.db import connection
 from kaplan import open_bilingualfile
 from kaplan.kdb import KDB
 from kaplan.kxliff import KXLIFF
@@ -257,32 +258,20 @@ class NewProjectReportThread(threading.Thread):
         super(NewProjectReportThread, self).__init__(**kwargs)
 
     def run(self):
-        instance = self.projectreport_instance
+        try:
+            instance = self.projectreport_instance
 
-        for project_file in instance.project_files.all():
-            if project_file.status == 1:
-                project_file.status = 2
-                project_file.save()
+            for project_file in instance.project_files.all():
+                if project_file.status == 1:
+                    project_file.status = 2
+                    project_file.save()
 
-        SegmentModel = apps.get_model("kaplancloudapp", "Segment")
+            SegmentModel = apps.get_model("kaplancloudapp", "Segment")
 
-        entries = []
+            entries = []
 
-        project_report = {}
-        project_total = {
-            "Repetitions": 0,
-            "100": 0,  # TODO
-            "95": 0,
-            "85": 0,
-            "75": 0,
-            "50": 0,
-            "New": 0,
-            "Total": 0,
-        }
-
-        sm = difflib.SequenceMatcher()
-        for project_file in instance.project_files.all():
-            file_report = {
+            project_report = {}
+            project_total = {
                 "Repetitions": 0,
                 "100": 0,  # TODO
                 "95": 0,
@@ -293,66 +282,83 @@ class NewProjectReportThread(threading.Thread):
                 "Total": 0,
             }
 
-            for segment in SegmentModel.objects.filter(file=project_file):
-                source_segment = etree.fromstring(
-                    "<source>" + segment.source + "</source>"
-                )
-                source_entry, _ = KDB.segment_to_entry(source_segment)
-                word_count = len(source_entry.split())
-                char_count = len(source_entry)
+            sm = difflib.SequenceMatcher()
+            for project_file in instance.project_files.all():
+                file_report = {
+                    "Repetitions": 0,
+                    "100": 0,  # TODO
+                    "95": 0,
+                    "85": 0,
+                    "75": 0,
+                    "50": 0,
+                    "New": 0,
+                    "Total": 0,
+                }
 
-                if source_entry in entries:
-                    file_report["Repetitions"] += word_count
-                # elif entry in project_tm_entries TODO
-                else:
-                    sm.set_seq2(source_entry)
+                for segment in SegmentModel.objects.filter(file=project_file):
+                    source_segment = etree.fromstring(
+                        "<source>" + segment.source + "</source>"
+                    )
+                    source_entry, _ = KDB.segment_to_entry(source_segment)
+                    word_count = len(source_entry.split())
+                    char_count = len(source_entry)
 
-                    highest_match = 0.0
-                    for entry in filter(
-                        lambda x: len(x) >= char_count / 2 and len(x) <= char_count * 2,
-                        entries,
-                    ):
-                        sm.set_seq1(entry)
-                        highest_match = max(sm.ratio(), highest_match)
-                        if highest_match >= 0.95:
-                            break
-
-                    if highest_match >= 0.95:
-                        file_report["95"] += word_count
-                    elif highest_match >= 0.85:
-                        file_report["85"] += word_count
-                    elif highest_match >= 0.75:
-                        file_report["75"] += word_count
-                    elif highest_match >= 0.5:
-                        file_report["50"] += word_count
+                    if source_entry in entries:
+                        file_report["Repetitions"] += word_count
+                    # elif entry in project_tm_entries TODO
                     else:
-                        file_report["New"] += word_count
+                        sm.set_seq2(source_entry)
 
-                    entries.append(source_entry)
+                        highest_match = 0.0
+                        for entry in filter(
+                            lambda x: (
+                                len(x) >= char_count / 2 and len(x) <= char_count * 2
+                            ),
+                            entries,
+                        ):
+                            sm.set_seq1(entry)
+                            highest_match = max(sm.ratio(), highest_match)
+                            if highest_match >= 0.95:
+                                break
 
-                file_report["Total"] += word_count
+                        if highest_match >= 0.95:
+                            file_report["95"] += word_count
+                        elif highest_match >= 0.85:
+                            file_report["85"] += word_count
+                        elif highest_match >= 0.75:
+                            file_report["75"] += word_count
+                        elif highest_match >= 0.5:
+                            file_report["50"] += word_count
+                        else:
+                            file_report["New"] += word_count
 
-            project_total["Repetitions"] += file_report["Repetitions"]
-            project_total["100"] += file_report["100"]
-            project_total["95"] += file_report["95"]
-            project_total["85"] += file_report["85"]
-            project_total["75"] += file_report["75"]
-            project_total["50"] += file_report["50"]
-            project_total["New"] += file_report["New"]
-            project_total["Total"] += file_report["Total"]
+                        entries.append(source_entry)
 
-            project_report[project_file.name] = file_report
+                    file_report["Total"] += word_count
 
-        project_report["Total"] = project_total
+                project_total["Repetitions"] += file_report["Repetitions"]
+                project_total["100"] += file_report["100"]
+                project_total["95"] += file_report["95"]
+                project_total["85"] += file_report["85"]
+                project_total["75"] += file_report["75"]
+                project_total["50"] += file_report["50"]
+                project_total["New"] += file_report["New"]
+                project_total["Total"] += file_report["Total"]
 
-        instance.content = project_report
-        instance.status = 3
-        instance.save()
+                project_report[project_file.name] = file_report
 
-        for project_file in instance.project_files.all():
-            if project_file.status == 2:
-                project_file.status = 3
-                project_file.save()
+            project_report["Total"] = project_total
+
+            instance.content = project_report
+            instance.status = 3
+            instance.save()
+
+            for project_file in instance.project_files.all():
+                if project_file.status == 2:
+                    project_file.status = 3
+                    project_file.save()
+        finally:
+            connection.close()
 
 
 class TMImportThread(threading.Thread):
