@@ -6,8 +6,6 @@
   .modal-overlay { display: none; position: fixed; inset: 0; z-index: 50; align-items: center; justify-content: center; background: rgb(0 0 0 / 0.5); }
   .modal-overlay.show { display: flex; }
   #context-menu { display: none; }
-  #report-toast { display: none; }
-  #report-toast.show { display: flex; }
 </style>
 {% endblock %}
 
@@ -130,14 +128,14 @@
               <th scope="col"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="reports-body">
             {% for report in reports %}
-            <tr class="hover:bg-base-200/30 transition-colors">
+            <tr id="report-{{ report.uuid }}" data-status="{{ report.status }}" class="hover:bg-base-200/30 transition-colors">
               <td>
                 <a href="{% url 'report' report.uuid %}" target="_blank" class="link link-hover">{{ report.created_at }}</a>
               </td>
               <td>
-                <span class="badge badge-sm badge-ghost">{{ report.get_status_display }}</span>
+                <span class="badge badge-sm badge-ghost report-status">{{ report.get_status_display }}</span>
               </td>
               <td>
                 <a href="{% url 'report' report.uuid %}" target="_blank" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
@@ -217,14 +215,6 @@
   </form>
 </div>
 {% endif %}
-
-{# ── Report toast ── #}
-<div id="report-toast" class="fixed bottom-4 right-4 z-50 items-center gap-3 bg-base-100 border border-base-300 rounded-lg shadow-lg px-4 py-3 text-sm">
-  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-success shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-  <p>Your report is ready. Please refresh this page to see it listed.</p>
-</div>
 
 {% csrf_token %}
 {% endblock %}

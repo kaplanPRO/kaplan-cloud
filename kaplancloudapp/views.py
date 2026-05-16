@@ -402,7 +402,7 @@ def project(request, uuid):
             "form": form,
             "form1": form1,
             "project": project,
-            "reports": ProjectReport.objects.filter(project=project).filter(status=3),
+            "reports": ProjectReport.objects.filter(project=project),
         },
     )
 
