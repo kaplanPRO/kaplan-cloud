@@ -121,17 +121,36 @@
     {# ── Reports section ── #}
     <section>
       <h2 class="text-base font-semibold mb-3">Reports</h2>
-      {% if reports %}
-      <ul class="space-y-1">
-        {% for report in reports %}
-        <li>
-          <a href="{% url 'report' report.uuid %}" target="_blank" class="link link-hover text-sm">{{ report.created_at }}</a>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="text-sm text-base-content/40">No reports yet.</p>
-      {% endif %}
+      <div class="overflow-x-auto rounded-lg border border-base-300">
+        <table class="table table-sm">
+          <thead>
+            <tr class="bg-base-200/50">
+              <th scope="col">Created</th>
+              <th scope="col">Status</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for report in reports %}
+            <tr class="hover:bg-base-200/30 transition-colors">
+              <td>
+                <a href="{% url 'report' report.uuid %}" target="_blank" class="link link-hover">{{ report.created_at }}</a>
+              </td>
+              <td>
+                <span class="badge badge-sm badge-ghost">{{ report.get_status_display }}</span>
+              </td>
+              <td>
+                <a href="{% url 'report' report.uuid %}" target="_blank" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </section>
   </div>
 </div>
