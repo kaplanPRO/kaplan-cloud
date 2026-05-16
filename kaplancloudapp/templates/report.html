@@ -2,11 +2,13 @@
 {% block title %}Report | {{ project.name }} | Kaplan Cloud{% endblock %}
 
 {% block navbar_center %}
-<ul class="breadcrumb text-sm">
-  <li><a href="{% url 'projects' %}" class="link link-hover">Projects</a></li>
-  <li><a href="{% url 'project' project.uuid %}" class="link link-hover">{{ project.name }}</a></li>
-  <li>Report — {{ report.created_at|date:"N j, Y, P" }}</li>
-</ul>
+<div class="text-sm breadcrumbs">
+  <ul>
+    <li><a href="{% url 'projects' %}" class="text-base-content/60 hover:text-base-content">Projects</a></li>
+    <li><a href="{% url 'project' project.uuid %}" class="text-base-content/60 hover:text-base-content">{{ project.name }}</a></li>
+    <li class="font-semibold">Report — {{ report.created_at|date:"N j, Y, P" }}</li>
+  </ul>
+</div>
 {% endblock %}
 
 {% block div %}

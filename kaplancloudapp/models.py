@@ -456,7 +456,7 @@ class ProjectReport(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.status == 1:
-            NewProjectReportThread(self).run()
+            NewProjectReportThread(self).start()
 
 
 class Segment(models.Model):

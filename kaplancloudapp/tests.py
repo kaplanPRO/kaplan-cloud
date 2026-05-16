@@ -442,14 +442,14 @@ class ProjectReportModelTests(TestCase):
 
     @patch("kaplancloudapp.models.NewProjectReportThread")
     def test_save_with_status_1_triggers_thread(self, mock_thread):
-        mock_thread.return_value.run = MagicMock()
+        mock_thread.return_value.start = MagicMock()
         report = ProjectReport.objects.create(
             project=self.project, content={"s": "processing"}
         )
         report.status = 1
         report.save()
         mock_thread.assert_called_once()
-        mock_thread.return_value.run.assert_called_once()
+        mock_thread.return_value.start.assert_called_once()
 
 
 # ===========================================================================

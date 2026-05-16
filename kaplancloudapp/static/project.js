@@ -1,9 +1,24 @@
+const REPORT_STATUS_LABELS = {
+  0: 'Blank',
+  1: 'Ready for Processing',
+  2: 'Processing',
+  3: 'Complete',
+};
+
 window.onload = function() {
   const assignLinguistForm = document.getElementById('assign-linguist-form').children[0];
   const checkboxMain = document.getElementById('checkbox-main');
   const contextMenu = document.getElementById('context-menu');
 
   let filesList = [];
+
+  document.querySelectorAll('#reports-body tr').forEach(row => {
+    const status = parseInt(row.dataset.status, 10);
+    if (status < 3) {
+      const uuid = row.id.replace(/^report-/, '');
+      checkReport(uuid);
+    }
+  });
 
   checkboxMain.onclick = function() {
     [...document.getElementsByClassName('checkbox')].forEach((item, i) => {
@@ -139,11 +154,45 @@ function analyzeFiles(fileUuids)
     )
     .then(response => response.json())
     .then(data => {
+      addReportRow(data['uuid']);
       checkReport(data['uuid']);
     })
     .catch(error => {
       console.error(error);
     })
+}
+
+function addReportRow(reportUuid)
+{
+  const tbody = document.getElementById('reports-body');
+  const row = document.createElement('tr');
+  row.id = 'report-' + reportUuid;
+  row.dataset.status = '1';
+  row.className = 'hover:bg-base-200/30 transition-colors';
+  const href = '/report/' + reportUuid;
+  row.innerHTML = `
+    <td><a href="${href}" target="_blank" class="link link-hover">Just now</a></td>
+    <td><span class="badge badge-sm badge-ghost report-status">${REPORT_STATUS_LABELS[1]}</span></td>
+    <td>
+      <a href="${href}" target="_blank" class="btn btn-ghost btn-xs btn-square" aria-label="Open">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </a>
+    </td>
+  `;
+  tbody.prepend(row);
+}
+
+function setReportStatus(reportUuid, status)
+{
+  const row = document.getElementById('report-' + reportUuid);
+  if (!row) return;
+  row.dataset.status = String(status);
+  const badge = row.querySelector('.report-status');
+  if (badge && REPORT_STATUS_LABELS[status] !== undefined) {
+    badge.textContent = REPORT_STATUS_LABELS[status];
+  }
 }
 
 function checkReport(reportUuid)
@@ -156,13 +205,10 @@ function checkReport(reportUuid)
   .then(response => response.json())
   .then(data =>
     {
-      if (data['status'] == 1 || data['status'] == 2)
+      setReportStatus(reportUuid, data['status']);
+      if (data['status'] < 3)
       {
         setTimeout(checkReport, 5000, reportUuid);
-      }
-      else
-      {
-        document.getElementById('report-toast').classList.add('show')
       }
     }
   )
