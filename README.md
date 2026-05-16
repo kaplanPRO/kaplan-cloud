@@ -1,32 +1,45 @@
 # Kaplan Cloud
 
-Kaplan Cloud is a cloud-based translation management system.
+Kaplan Cloud is a cloud-based translation management system. It handles
+translation projects, source and bilingual files, translation memories,
+terminology databases, and team collaboration between project managers,
+translators, and reviewers.
 
-The official documentation is available at https://docs.kaplan.pro/projects/kaplan-cloud
+User-facing documentation is published at
+<https://docs.kaplan.pro/projects/kaplan-cloud>.
 
-## Local installation with Docker
+## Quick start (local development)
 
-Please see [here](https://docs.kaplan.pro/projects/kaplan-cloud/en/latest/installation.html#local-installation-with-docker)
-for instructions; however, for testing purposes, all you need to do is first
-start a [Kaplan Cloud container](https://hub.docker.com/r/kaplanpro/cloud):
+Requires Python 3.12+ and [`uv`](https://docs.astral.sh/uv/). SQLite is
+used by default, so no separate database setup is needed.
 
-```
-docker run -d \
--p 8080:8080 \
---restart always \
---name kaplan-cloud \
-kaplanpro/cloud
-```
-
-And then create a superuser account:
-
-```
-docker exec -it kaplan-cloud python manage.py createsuperuser
+```bash
+cp .env.example .env                        # then fill in SECRET_KEY
+uv sync
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8080
 ```
 
-That's it! Head on over to http://0.0.0.0:8080 and explore Kaplan Cloud.
+`.env.example` documents every environment variable `settings.py`
+reads — uncomment the ones you need (Postgres, S3, GCS, etc.).
 
-## Production installation with Docker Compose
+## Container deployment
 
-Please see [here](https://docs.kaplan.pro/projects/kaplan-cloud/en/latest/installation.html#production-installation-with-docker-compose)
-for instructions.
+A reference `podman compose` (or `docker compose`) stack lives in
+[`compose/`](compose/README.md). It bundles Postgres, the Gunicorn app
+server, and an Nginx static-files sidecar designed to sit behind an
+external reverse proxy.
+
+## Tests and linting
+
+```bash
+python manage.py test
+ruff check .
+ruff format .
+```
+
+CI runs `ruff check` and the full test suite on every PR.
+
+## License
+
+See [`LICENSE`](LICENSE).
