@@ -11,8 +11,8 @@ RUN apt-get update && \
 RUN pip install -U pip && \
     pip install --group prod
 
-COPY docker-entrypoint.sh /usr/local/bin/
-ENTRYPOINT ["docker-entrypoint.sh"]
+COPY container-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["container-entrypoint.sh"]
 
 EXPOSE 8080
 
