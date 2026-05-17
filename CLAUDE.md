@@ -22,7 +22,7 @@ python manage.py runserver 0.0.0.0:8080
 For container-based dev use **podman compose** (not `docker compose`):
 
 ```bash
-cd .docker
+cd compose
 cp .env.template .env && cp .env.web.template .env.web
 podman compose up -d
 podman compose exec app python manage.py createsuperuser

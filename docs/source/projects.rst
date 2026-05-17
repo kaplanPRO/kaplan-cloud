@@ -1,38 +1,56 @@
 Projects
 ========
 
-================
-Create a project
-================
+After signing in, the project list is your home page. This page covers
+the project list and the project detail view from a translator or
+reviewer perspective — for creating projects yourself, see
+:doc:`creating-projects`.
 
-1. Log in with your admin or PM account.
+The project list
+----------------
 
-2. Go to the Projects tab and click Create.
+The landing page at ``/`` shows every project you are involved in. A
+project appears in your list if any of the following is true:
 
-  .. image:: ./_static/img/projects-tab.png
-    :alt: Projects tab
+- You are a member of the client team the project belongs to.
+- You created the project (PM workflow).
+- You are assigned as translator or reviewer on at least one of its
+  files.
 
-3. Fill out the form, select files, and submit.
+.. image:: ./_static/img/projects-tab.png
+   :alt: Projects tab
 
-  .. image:: ./_static/img/project-form.png
-    :alt: Project form
+Each row shows the project's name, source and target languages,
+client, due date, and current status. Status flows from **Preparing**
+through **Ready for Analysis**, **Analyzing**, **Ready for
+Translation**, **In Translation**, **In Review**, **Complete**, and
+**Delivered**. (You may also see **Error** if file ingestion failed.)
 
-  Once all files are processed and if there are no errors, a project analysis will be run. When the analysis is ready, the project will be moved to the Ready for Translation stage. To move on, you'll need to assign team members as translator/reviewer for the files.
+The project detail page
+-----------------------
 
-===================
-Assign team members
-===================
+Clicking a project takes you to ``/project/<uuid>``. The header shows
+project metadata; below it is a table of files, each with its own
+status that follows the same lifecycle as the project itself.
 
-1. Log in with your admin or PM account.
+For each file you'll see:
 
-2. Open the project and tick the checkboxes for the file(s) you wish to assign to a team member. No ticks means all files.
+- The original filename and source-language file size.
+- The current status badge.
+- Who, if anyone, is assigned as translator and reviewer.
+- A row action to open the file in the editor — see :doc:`editor`.
 
-3. Right click anywhere on the page and select the appropriate function based on whether you wish to assign the team member as a translator or reviewer.
+Files appear as **Ready for Translation** once the project's initial
+analysis is complete. A file you are assigned to as a translator will
+move to **In Translation** the first time you open it; when you finish,
+it goes to **In Review** for your reviewer, and finally to
+**Complete**.
 
-  .. image:: ./_static/img/files-context-menu.png
-    :alt: Files context menu
+Reference files
+---------------
 
-4. Enter the username of the team member and submit the form.
-
-  .. image:: ./_static/img/assign-team-member-form.png
-    :alt: Assign team member form
+If the PM uploaded reference material (style guides, glossaries,
+brand assets) alongside the source files, they appear in a dedicated
+section on the project page. Click any reference file to download it.
+Reference files are read-only — they don't go through the segment
+editor.
